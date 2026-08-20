@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="김가빈의 개인 포트폴리오" />
+  <title>김가빈 | Portfolio</title>
+
+  <style>
+    :root {
+      --bg: #f7f7f4;
+      --surface: #ffffff;
+      --text: #171717;
+      --muted: #707070;
+      --subtle: #a2a2a2;
+      --line: #e6e6e2;
+      --accent: #4b46d8;
+      --accent-soft: #efefff;
+      --focus: #2563eb;
+      --max-width: 1120px;
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans KR",
+        Arial,
+        sans-serif;
+      line-height: 1.7;
+      letter-spacing: -0.018em;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+
+    .container {
+      width: min(calc(100% - 48px), var(--max-width));
+      margin-inline: auto;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -60px;
+      left: 16px;
+      z-index: 1000;
+      padding: 10px 14px;
+      background: #111;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+    }
+
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      background: rgba(247, 247, 244, 0.92);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: color 160ms ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* Hero */
+    .hero {
+      min-height: calc(100vh - 68px);
+      display: flex;
+      align-items: center;
+      padding: 76px 0;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(270px, 0.65fr);
+      gap: 72px;
+      align-items: end;
+    }
+
+    .eyebrow {
+      margin: 0 0 22px;
+      color: var(--accent);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin-top: 0;
+      line-height: 1.2;
+      letter-spacing: -0.045em;
+    }
+
+    h1 {
+      max-width: 13ch;
+      margin-bottom: 26px;
+      font-size: clamp(3rem, 5.8vw, 5.9rem);
+      font-weight: 800;
+    }
+
+    h2 {
+      margin-bottom: 14px;
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 760;
+    }
+
+    h3 {
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+      font-weight: 760;
+    }
+
+    p {
+      margin-top: 0;
+    }
+
+    .lead {
+      max-width: 680px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.3vw, 1.18rem);
+      line-height: 1.85;
+    }
+
+    .summary {
+      padding-left: 30px;
+      border-left: 1px solid var(--line);
+    }
+
+    .summary-item + .summary-item {
+      margin-top: 26px;
+    }
+
+    .summary-label {
+      margin-bottom: 6px;
+      color: var(--subtle);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    /* Section */
+    .section {
+      padding: 108px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-header {
+      display: grid;
+      grid-template-columns: 0.55fr 1.45fr;
+      gap: 52px;
+      align-items: start;
+      margin-bottom: 54px;
+    }
+
+    .section-index {
+      color: var(--subtle);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .section-copy p {
+      max-width: 700px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    /* Public Scope */
+    .scope-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .scope-card {
+      padding: 28px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .scope-card h3 {
+      margin-bottom: 18px;
+    }
+
+    .scope-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .scope-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      color: var(--muted);
+      border-top: 1px solid #f0f0ed;
+    }
+
+    .scope-list li:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .scope-mark {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 900;
+      margin-top: 1px;
+    }
+
+    /* Strengths */
+    .strength-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+align-items: start;
+    }
+
+    .strength-card {
+      overflow: hidden;\
+align-self: start;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .strength-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.05);
+    }
+
+    .strength-main {
+      padding: 26px;
+    }
+
+    .strength-number {
+      margin-bottom: 28px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .strength-main p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .strength-toggle {
+      width: 100%;
+      padding: 15px 24px;
+      border: 0;
+      border-top: 1px solid var(--line);
+      background: #fbfbfa;
+      color: var(--text);
+      text-align: left;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .strength-toggle:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .strength-detail {
+      padding: 4px 24px 24px;
+      background: #fbfbfa;
+      border-top: 1px solid var(--line);
+    }
+
+    .strength-detail[hidden] {
+      display: none;
+    }
+
+    .detail-item {
+      padding-top: 18px;
+    }
+
+    .detail-item strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.92rem;
+    }
+
+    .detail-item p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    /* Evidence */
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: 0.85fr 1.15fr;
+      gap: 18px;
+    }
+
+    .evidence-card {
+      min-height: 300px;
+      padding: 32px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .evidence-label {
+      margin-bottom: 22px;
+      color: var(--accent);
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .certificate-mark {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 30px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 1.3rem;
+      font-weight: 900;
+    }
+
+    .evidence-card p {
+      color: var(--muted);
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 11px 16px;
+      border-radius: 10px;
+      background: var(--text);
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .github-link:hover {
+      opacity: 0.88;
+    }
+
+    .quote {
+      margin-top: 30px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--text) !important;
+      font-weight: 700;
+    }
+
+    .site-footer {
+      padding: 36px 0 44px;
+      border-top: 1px solid var(--line);
+      color: var(--subtle);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .section-header,
+      .evidence-grid {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .summary {
+        padding-left: 0;
+        padding-top: 26px;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .strength-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .container {
+        width: min(calc(100% - 28px), var(--max-width));
+      }
+
+      .nav {
+        min-height: auto;
+        padding: 16px 0;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        gap: 16px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding: 64px 0 78px;
+      }
+
+      h1 {
+        max-width: none;
+        font-size: clamp(2.7rem, 13vw, 4.2rem);
+      }
+
+      .section {
+        padding: 78px 0;
+      }
+
+      .scope-grid,
+      .strength-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">본문 바로가기</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <div class="brand">김가빈</div>
+
+      <nav class="nav-links" aria-label="주요 메뉴">
+        <a href="#about">소개</a>
+        <a href="#scope">공개 범위</a>
+        <a href="#strengths">강점</a>
+        <a href="#evidence">근거</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- Intro -->
+    <section class="hero" id="about">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Personal Portfolio</p>
+
+          <h2>
+            배운 것을 나의 것으로 만들기 위해 끊임없이 노력하는 사람
+          </h2>
+
+          <p class="lead">
+            영남대학교 컴퓨터공학전공으로 새로운 것을 배우는 것을 좋아합니다.
+            백엔드 프로젝트로 전공진단플랫폼을 개발한 경험이 있으며,
+            현재 네트워크·보안·AI·인프라 분야에 관심을 두고 학습하고 있습니다.
+          </p>
+        </div>
+
+        <aside class="summary" aria-label="핵심 정보">
+          <div class="summary-item">
+            <div class="summary-label">Who</div>
+            <p class="summary-value">김가빈 · 컴퓨터공학전공</p>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-label">Interest</div>
+            <p class="summary-value">네트워크 · 보안 · AI · 인프라</p>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-label">Now</div>
+            <p class="summary-value">SKT ALEPH AI 보안·인프라 과정 수강 중</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Public Scope -->
+    <section class="section" id="scope">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-index">01 · Public Scope</div>
+
+          <div class="section-copy">
+            <h2>공개 범위</h2>
+            <p>
+              이 페이지에서는 나의 학습 경험과 관심 분야는 공개하되,
+              개인 연락처처럼 불필요한 개인정보는 공개하지 않습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="scope-grid">
+          <article class="scope-card">
+            <h3>공개할 것</h3>
+            <ul class="scope-list">
+              <li>
+                <span class="scope-mark">✓</span>
+                <span>이름 및 전공</span>
+              </li>
+              <li>
+                <span class="scope-mark">✓</span>
+                <span>관심 분야와 현재 학습 활동</span>
+              </li>
+              <li>
+                <span class="scope-mark">✓</span>
+                <span>강점, 프로젝트 및 학습 경험</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="scope-card">
+            <h3>공개하지 않을 것</h3>
+            <ul class="scope-list">
+              <li>
+                <span class="scope-mark">–</span>
+                <span>주소 및 상세 거주 정보</span>
+              </li>
+              <li>
+                <span class="scope-mark">–</span>
+                <span>전화번호 및 개인 연락처</span>
+              </li>
+              <li>
+                <span class="scope-mark">–</span>
+                <span>비밀번호·토큰 등 비밀 정보</span>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Strengths -->
+    <section class="section" id="strengths">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-index">02 · Strengths</div>
+
+          <div class="section-copy">
+            <h2>나를 보여주는 3가지</h2>
+            <p>
+              꾸준함, 도전 정신, 문제 해결력을 실제 경험을 통해 설명합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="strength-grid">
+          <article class="strength-card">
+            <div class="strength-main">
+              <div class="strength-number">01</div>
+              <h3>꾸준함</h3>
+              <p>
+                이해되지 않는 부분은 그냥 넘기지 않고,
+                끝까지 이해하려고 노력합니다.
+              </p>
+            </div>
+
+            <button
+              class="strength-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="strength-detail-1"
+            >
+              자세히 보기
+            </button>
+
+            <div class="strength-detail" id="strength-detail-1" hidden>
+              <div class="detail-item">
+                <strong>상황</strong>
+                <p>
+                  운영체제 전공 수업에서 페이지 교체 알고리즘이
+                  잘 이해되지 않았습니다.
+                </p>
+              </div>
+
+              <div class="detail-item">
+                <strong>행동</strong>
+                <p>
+                  그냥 넘어가지 않고 웹 자료를 찾아보고 선배들에게 질문하며
+                  여러 방식으로 개념을 다시 확인했습니다.
+                </p>
+              </div>
+
+              <div class="detail-item">
+                <strong>결과</strong>
+                <p>
+                  결국 페이지 교체 알고리즘을 스스로 설명할 수 있을 정도로
+                  이해하고 내 지식으로 만들 수 있었습니다.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article class="strength-card">
+            <div class="strength-main">
+              <div class="strength-number">02</div>
+              <h3>도전 정신</h3>
+              <p>
+                다른 사람이 어려워하는 문제도 직접 부딪혀보는 과정을 즐깁니다.
+              </p>
+            </div>
+
+            <button
+              class="strength-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="strength-detail-2"
+            >
+              자세히 보기
+            </button>
+
+            <div class="strength-detail" id="strength-detail-2" hidden>
+              <div class="detail-item">
+                <strong>상황</strong>
+                <p>
+                  팀 프로젝트 중 문제의 분기점을 설계하는 활동을
+                  팀원들이 어려워했습니다.
+                </p>
+              </div>
+
+              <div class="detail-item">
+                <strong>행동</strong>
+                <p>
+                  직접 나서서 여러 분기점을 만들고,
+                  팀원들에게 하나씩 확인받으며 내용을 보완했습니다.
+                </p>
+              </div>
+
+              <div class="detail-item">
+                <strong>결과</strong>
+                <p>
+                  팀에서 사용할 수 있는 분기 구조를 완성하고
+                  다음 작업을 진행할 수 있었습니다.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <article class="strength-card">
+            <div class="strength-main">
+              <div class="strength-number">03</div>
+              <h3>문제 해결력</h3>
+              <p>
+                복잡한 문제도 하나씩 확인하며 원인을 좁혀 해결합니다.
+              </p>
+            </div>
+
+            <button
+              class="strength-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="strength-detail-3"
+            >
+              자세히 보기
+            </button>
+
+            <div class="strength-detail" id="strength-detail-3" hidden>
+              <div class="detail-item">
+                <strong>상황</strong>
+                <p>
+                  네트워크 실습 중 라우터 설정 오류로
+                  서로 다른 네트워크 간 통신이 되지 않았습니다.
+                </p>
+              </div>
+
+              <div class="detail-item">
+                <strong>행동</strong>
+                <p>
+                  여러 설정을 한꺼번에 바꾸지 않고 인터페이스와 라우팅 설정을
+                  하나씩 확인하며 문제 원인을 좁혀갔습니다.
+                </p>
+              </div>
+
+              <div class="detail-item">
+                <strong>결과</strong>
+                <p>
+                  잘못된 설정을 찾아 수정했고,
+                  최종적으로 네트워크 간 통신에 성공했습니다.
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Evidence -->
+    <section class="section" id="evidence">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-index">03 · Evidence</div>
+
+          <div class="section-copy">
+            <h2>배운 것을 결과로 남깁니다.</h2>
+            <p>
+              자격증과 GitHub 기록을 통해 학습한 내용을 실제 결과물로 남기고 있습니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="evidence-grid">
+          <article class="evidence-card">
+            <div class="evidence-label">Certificate</div>
+            <div class="certificate-mark">✓</div>
+            <h3>정보처리기사</h3>
+            <p>
+              컴퓨터공학 전공 지식과 소프트웨어 개발 전반에 대한 학습을
+              자격 취득이라는 결과로 연결했습니다.
+            </p>
+          </article>
+
+          <article class="evidence-card">
+            <div class="evidence-label">GitHub</div>
+            <h3>vinn81</h3>
+            <p>
+              백엔드 프로젝트와 학습 과정에서 작성한 코드를 GitHub에 기록하고 있습니다.
+            </p>
+
+            <a
+              class="github-link"
+              href="https://github.com/vinn81"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub 보기 →
+            </a>
+
+            <p class="quote">
+              이해한 내용을 코드와 결과물로 남기며
+              나의 지식으로 만들어가고 있습니다.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      김가빈 · Personal Portfolio
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll(".strength-toggle").forEach((button) => {
+      button.addEventListener("click", () => {
+        const detail = document.getElementById(
+          button.getAttribute("aria-controls")
+        );
+
+        const isExpanded =
+          button.getAttribute("aria-expanded") === "true";
+
+        button.setAttribute("aria-expanded", String(!isExpanded));
+        detail.hidden = isExpanded;
+        button.textContent = isExpanded ? "자세히 보기" : "접기";
+      });
+    });
+  </script>
+</body>
+</html>
