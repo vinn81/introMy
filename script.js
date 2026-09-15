@@ -142,10 +142,6 @@ function initPrivateArea() {
   const passkeyName = area.querySelector("[data-passkey-name]");
   const privateGrid = area.querySelector("[data-private-grid]");
   const passkeyList = area.querySelector("[data-passkey-list]");
-  const addButton = area.querySelector("[data-add-passkey-button]");
-  const addPanel = area.querySelector("[data-add-passkey-panel]");
-  const additionalName = area.querySelector("[data-additional-passkey-name]");
-  const confirmAdd = area.querySelector("[data-confirm-add-passkey]");
   const logoutButton = area.querySelector("[data-logout-button]");
 
   const setMessage = (text, isError = false) => {
@@ -153,7 +149,7 @@ function initPrivateArea() {
     message.dataset.error = String(isError);
   };
   const setBusy = (busy, text) => {
-    [loginButton, registerButton, addButton, confirmAdd, logoutButton].forEach((button) => { if (button) button.disabled = busy; });
+    [loginButton, registerButton, logoutButton].forEach((button) => { if (button) button.disabled = busy; });
     if (text) setMessage(text);
   };
   const renderPrivateItems = (items) => {
@@ -238,8 +234,6 @@ function initPrivateArea() {
 
   loginButton.addEventListener("click", login);
   registerButton.addEventListener("click", () => register(passkeyName));
-  addButton.addEventListener("click", () => { addPanel.hidden = !addPanel.hidden; if (!addPanel.hidden) additionalName.focus(); });
-  confirmAdd.addEventListener("click", () => register(additionalName));
   logoutButton.addEventListener("click", async () => {
     setBusy(true, "로그아웃하고 있습니다…");
     try {

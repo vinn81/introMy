@@ -982,8 +982,7 @@
     }
 
     .private-actions,
-    .private-setup,
-    .passkey-add {
+    .private-setup {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -994,8 +993,7 @@
       justify-content: flex-end;
     }
 
-    .private-setup,
-    .passkey-add {
+    .private-setup {
       width: 100%;
       margin-top: 14px;
       justify-content: flex-end;
@@ -1008,8 +1006,7 @@
       font-weight: 700;
     }
 
-    .private-setup input,
-    .passkey-add input {
+    .private-setup input {
       min-width: 180px;
       padding: 10px 12px;
       border: 1px solid var(--line-strong);
