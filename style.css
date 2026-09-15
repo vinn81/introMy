@@ -1323,6 +1323,43 @@
       }
     }
 
+    /* Global dark technical canvas */
+    body {
+      position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(67, 88, 220, 0.2), transparent 32rem),
+        radial-gradient(circle at 88% 22%, rgba(111, 73, 207, 0.16), transparent 30rem),
+        linear-gradient(rgba(111, 132, 190, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(111, 132, 190, 0.035) 1px, transparent 1px),
+        #0b1020;
+      background-size: auto, auto, 42px 42px, 42px 42px, auto;
+      color: #f4f6ff;
+    }
+
+    .hero,
+    .profile-section,
+    .strengths-section,
+    .aleph-section,
+    .evidence-section,
+    .private-section {
+      background: transparent;
+    }
+
+    .section + .section::before {
+      background: linear-gradient(90deg, transparent, rgba(154, 169, 220, 0.22), transparent);
+    }
+
+    .section-copy p,
+    .section-header .section-copy p {
+      color: rgba(226, 231, 246, 0.72);
+    }
+
+    .section-index {
+      border: 1px solid rgba(164, 159, 255, 0.16);
+    }
+
     /* Portfolio visual system */
     :root {
       --bg: #f7f8fb;
