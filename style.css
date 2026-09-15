@@ -1589,6 +1589,22 @@
       background: linear-gradient(145deg, #171927 0%, #24234b 100%);
     }
 
+    .evidence-visual {
+      position: relative;
+      overflow: hidden;
+      height: 132px;
+      margin: -8px -8px 22px;
+      border-radius: 12px;
+    }
+
+    .evidence-visual img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      opacity: 0.82;
+    }
+
     .private-lock-card,
     .private-content {
       background: rgba(255, 255, 255, 0.86);
