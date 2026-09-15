@@ -1472,6 +1472,41 @@
       box-shadow: 0 22px 48px rgba(25, 31, 58, 0.1);
     }
 
+    .summary-item:first-child {
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      background: #171927;
+    }
+
+    .summary-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.58;
+    }
+
+    .summary-item:first-child::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(23, 25, 39, 0.08), rgba(23, 25, 39, 0.9));
+      pointer-events: none;
+    }
+
+    .summary-item:first-child > div,
+    .summary-item:first-child > p {
+      position: relative;
+      z-index: 1;
+    }
+
+    .summary-item:first-child .summary-label,
+    .summary-item:first-child .summary-value {
+      color: #fff;
+    }
+
     .summary-item:last-child {
       background: linear-gradient(145deg, #514bd0 0%, #3630a7 100%);
     }
