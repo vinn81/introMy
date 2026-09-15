@@ -17,7 +17,10 @@ module.exports = async function handler(req, res) {
     setSession(res, challengeRecord.user_id);
     res.status(200).json({ verified: true, userId: challengeRecord.user_id, ...result });
   } catch (error) {
-    console.error(`REGISTER_VERIFY_ERROR ${error.message}`);
-    res.status(error.code === "23505" ? 409 : 400).json({ error: error.code === "23505" ? "이미 등록된 패스키입니다." : "패스키 등록을 검증하지 못했습니다." });
+    const requestId = require("node:crypto").randomUUID().slice(0, 8);
+    console.error(`REGISTER_VERIFY_ERROR id=${requestId} name=${error.name || "Error"} code=${error.code || "-"} message=${error.message}`);
+    res.status(error.code === "23505" ? 409 : 400).json({
+      error: error.code === "23505" ? "이미 등록된 패스키입니다." : `패스키 등록을 검증하지 못했습니다. (오류 ID: ${requestId})`,
+    });
   }
 };

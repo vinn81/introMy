@@ -7,7 +7,9 @@ function config() {
   const secret = process.env.SESSION_SECRET;
   if (!secret || secret.length < 32) throw new Error("SESSION_SECRET must contain at least 32 characters.");
   const origins = (process.env.ALLOWED_ORIGINS || process.env.EXPECTED_ORIGIN || "http://localhost:3000")
-    .split(",").map((origin) => origin.trim()).filter(Boolean);
+    .split(",")
+    .map((origin) => origin.trim().replace(/\/$/, ""))
+    .filter(Boolean);
   return {
     secret,
     origins,
