@@ -1621,6 +1621,69 @@
       background: #f8f9fc;
     }
 
+    .strengths-section,
+    .aleph-section {
+      background: linear-gradient(180deg, #fbfcfe 0%, #f7f8fb 100%);
+    }
+
+    .strengths-section > .container,
+    .aleph-section > .container {
+      position: relative;
+      overflow: hidden;
+      width: min(calc(100% - 112px), 1040px);
+      padding: 64px 56px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .strengths-section > .container {
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.78) 48%, rgba(10, 14, 28, 0.44) 100%),
+        url("assets/strengths-bg.png") center / cover no-repeat;
+    }
+
+    .aleph-section > .container {
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.8) 48%, rgba(10, 14, 28, 0.46) 100%),
+        url("assets/aleph-bg.png") center / cover no-repeat;
+    }
+
+    .strengths-section .section-header,
+    .aleph-section .section-header {
+      position: relative;
+      z-index: 1;
+    }
+
+    .strengths-section .section-index,
+    .aleph-section .section-index {
+      color: #bdb9ff;
+      background: rgba(189, 185, 255, 0.12);
+    }
+
+    .strengths-section .section-copy h2,
+    .aleph-section .section-copy h2 {
+      color: #fff;
+    }
+
+    .strengths-section .section-copy p,
+    .aleph-section .section-copy p {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .strengths-section .strength-card,
+    .aleph-section .aleph-course-card,
+    .aleph-section .aleph-note-card,
+    .aleph-section .aleph-task {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .aleph-section .aleph-task {
+      background: rgba(255, 255, 255, 0.92);
+    }
+
     .aleph-intro {
       gap: 14px;
     }
@@ -1834,7 +1897,9 @@
       }
 
       .evidence-section > .container,
-      .private-section > .container {
+      .private-section > .container,
+      .strengths-section > .container,
+      .aleph-section > .container {
         width: 100%;
         padding: 42px 26px;
         border-radius: 18px;
