@@ -67,6 +67,7 @@ async function registrationOptions(userId, existingCredentials) {
     excludeCredentials: existingCredentials.map((credential) => ({ id: credential.credential_id, transports: credential.transports || [] })),
     authenticatorSelection: { residentKey: "preferred", userVerification: "required" },
   });
+  await query`UPDATE challenges SET challenge = ${options.challenge} WHERE id = ${challenge.id}`;
   return { ...options, challengeId: challenge.id };
 }
 
@@ -94,6 +95,7 @@ async function authenticationOptions(userId) {
     allowCredentials: credentials.map((credential) => ({ id: credential.credential_id, transports: credential.transports || [] })),
     userVerification: "required",
   });
+  await query`UPDATE challenges SET challenge = ${options.challenge} WHERE id = ${challenge.id}`;
   return { ...options, challengeId: challenge.id };
 }
 
