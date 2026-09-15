@@ -91,7 +91,7 @@ function serializeAuthenticationCredential(credential) {
 
 async function startPasskeyRegistration(name) {
   assertWebAuthnSupport();
-  const options = await requestJSON("/api/passkeys/register/options", { method: "POST", body: JSON.stringify({ name }) });
+  const options = await requestJSON("/api/passkeys/register-options", { method: "POST", body: JSON.stringify({ name }) });
   const publicKey = {
     ...options,
     challenge: base64urlToBuffer(options.challenge),
@@ -101,7 +101,7 @@ async function startPasskeyRegistration(name) {
   delete publicKey.challengeId;
   const credential = await navigator.credentials.create({ publicKey });
   if (!credential) throw new Error("패스키 등록을 취소했습니다.");
-  return requestJSON("/api/passkeys/register/verify", { method: "POST", body: JSON.stringify({ challengeId: options.challengeId, name, response: serializeCreationCredential(credential) }) });
+  return requestJSON("/api/passkeys/register-verify", { method: "POST", body: JSON.stringify({ challengeId: options.challengeId, name, response: serializeCreationCredential(credential) }) });
 }
 
 async function startPasskeyLogin() {
