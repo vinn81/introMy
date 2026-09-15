@@ -1659,22 +1659,6 @@
       background: linear-gradient(145deg, #171927 0%, #24234b 100%);
     }
 
-    .evidence-visual {
-      position: relative;
-      overflow: hidden;
-      height: 132px;
-      margin: -8px -8px 22px;
-      border-radius: 12px;
-    }
-
-    .evidence-visual img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      opacity: 0.82;
-    }
-
     .private-lock-card,
     .private-content {
       background: rgba(255, 255, 255, 0.86);
@@ -1688,6 +1672,95 @@
         linear-gradient(90deg, rgba(10, 14, 28, 0.94), rgba(36, 35, 75, 0.82)),
         url("assets/private-security.png") center / cover no-repeat;
       box-shadow: 0 24px 70px rgba(25, 31, 58, 0.14);
+    }
+
+    .evidence-section {
+      background: linear-gradient(180deg, #fbfcfe 0%, #f7f8fb 100%);
+    }
+
+    .evidence-section > .container {
+      position: relative;
+      overflow: hidden;
+      width: min(calc(100% - 112px), 1040px);
+      padding: 64px 56px;
+      color: #fff;
+      background:
+        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.8) 48%, rgba(10, 14, 28, 0.46) 100%),
+        url("assets/learning-notes.png") center / cover no-repeat;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .evidence-section .section-header {
+      position: relative;
+      z-index: 1;
+    }
+
+    .evidence-section .section-index {
+      color: #bdb9ff;
+      background: rgba(189, 185, 255, 0.12);
+    }
+
+    .evidence-section .section-copy h2 {
+      color: #fff;
+    }
+
+    .evidence-section .section-copy p {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .evidence-section .evidence-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 0.54);
+    }
+
+    .evidence-section .evidence-card:last-child {
+      background: rgba(23, 25, 39, 0.82);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .private-section {
+      background: linear-gradient(180deg, #fbfcfe 0%, #f7f8fb 100%);
+    }
+
+    .private-section > .container {
+      position: relative;
+      overflow: hidden;
+      width: min(calc(100% - 112px), 1040px);
+      padding: 64px 56px;
+      background:
+        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(36, 35, 75, 0.82) 100%),
+        url("assets/private-security.png") center / cover no-repeat;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .private-section .section-header {
+      position: relative;
+      z-index: 1;
+    }
+
+    .private-section .section-index {
+      color: #bdb9ff;
+      background: rgba(189, 185, 255, 0.12);
+    }
+
+    .private-section .section-copy h2 {
+      color: #fff;
+    }
+
+    .private-section .section-copy p {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .private-section .private-lock-card {
+      background: rgba(23, 25, 39, 0.62);
+    }
+
+    .private-section .private-content {
+      background: rgba(255, 255, 255, 0.94);
     }
 
     .private-lock-card h3,
@@ -1755,6 +1828,13 @@
       }
 
       .profile-section > .container {
+        width: 100%;
+        padding: 42px 26px;
+        border-radius: 18px;
+      }
+
+      .evidence-section > .container,
+      .private-section > .container {
         width: 100%;
         padding: 42px 26px;
         border-radius: 18px;
