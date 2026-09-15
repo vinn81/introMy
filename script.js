@@ -246,7 +246,23 @@ function initPrivateArea() {
       setBusy(false);
     }
   });
-  fetchAuthStatus().catch(() => setMessage("인증 상태를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.", true));
+
+  const resetSessionOnPageLoad = async () => {
+    try {
+      await requestJSON("/api/auth/logout", { method: "POST", body: "{}" });
+      await fetchAuthStatus();
+    } catch (error) {
+      privateGrid.replaceChildren();
+      passkeyList.replaceChildren();
+      lockCard.hidden = false;
+      content.hidden = true;
+      setupPanel.hidden = true;
+      status.textContent = "잠금 상태";
+      setMessage("로그인 상태를 초기화하지 못했습니다. 페이지를 다시 열어 주세요.", true);
+    }
+  };
+
+  resetSessionOnPageLoad();
 }
 
 initStrengthToggles();
