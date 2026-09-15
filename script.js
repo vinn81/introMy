@@ -53,7 +53,17 @@ async function requestJSON(url, options = {}) {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });
-  const data = response.status === 204 ? null : await response.json();
+  const raw = response.status === 204 ? "" : await response.text();
+  let data = null;
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new Error(response.ok
+        ? "서버가 올바른 응답을 반환하지 않았습니다."
+        : `서버 오류가 발생했습니다. (${response.status})`);
+    }
+  }
   if (!response.ok) {
     const error = new Error(data?.error || "요청을 처리하지 못했습니다.");
     error.status = response.status;
