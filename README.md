@@ -257,3 +257,116 @@ AI에게 맡긴 일
 AI 제안을 따르지 않은 일
 
 AI가 제안한 내용 중 실제 경험과 맞지 않거나 불필요하게 개인적인 내용은 사용하지 않았습니다.
+
+---
+
+## Vercel 배포와 패스키 설정
+
+기존 `index.html` 기반 공개 페이지는 그대로 Vercel에 배포되고, 인증 API만 Vercel Functions(`/api/*`)로 실행됩니다. 패스키, challenge, 비공개 자료는 로컬 파일이 아니라 외부 PostgreSQL에 저장됩니다.
+
+### 로컬 확인
+
+```bash
+npm install
+npx vercel dev
+```
+
+로컬 `.env`는 `.env.example`을 참고합니다. `DATABASE_URL`은 Neon PostgreSQL 연결 문자열이어야 하며, 로컬 SQLite나 Vercel 파일 시스템에 의존하지 않습니다.
+
+Neon 콘솔의 SQL Editor에서 [db/schema.sql](db/schema.sql) 전체를 실행하면 필요한 테이블, 인덱스, owner 계정, 가상 private 샘플 3개가 생성됩니다. 패스키 credential과 challenge는 SQL 파일에 넣지 않고 등록/로그인 API가 런타임에 저장합니다.
+
+### Vercel Environment Variables
+
+Vercel Project Settings > Environment Variables에 다음 값을 Production과 필요한 Preview 환경에 등록합니다.
+
+```env
+DATABASE_URL=postgresql://...
+SESSION_SECRET=[32자 이상 임의의 값]
+RP_NAME=김가빈의 포트폴리오
+RP_ID=your-production-domain.vercel.app
+EXPECTED_ORIGIN=https://your-production-domain.vercel.app
+ALLOWED_ORIGINS=https://your-production-domain.vercel.app
+NODE_ENV=production
+INITIAL_SETUP=true
+TEST_MODE=false
+```
+
+실제 Production URL이 `https://example.vercel.app`이면 `RP_ID=example.vercel.app`, `EXPECTED_ORIGIN=https://example.vercel.app`으로 설정합니다. 커스텀 도메인을 사용하면 `RP_ID`는 해당 도메인, `EXPECTED_ORIGIN`은 정확한 HTTPS origin으로 바꿉니다. 요청의 `Origin`을 그대로 신뢰하지 않고 `ALLOWED_ORIGINS`에 명시된 값만 사용합니다.
+
+Preview URL을 테스트하려면 해당 Preview origin을 `ALLOWED_ORIGINS`에 명시적으로 추가하고, 그 Preview hostname에 맞는 `RP_ID`를 별도 Preview 환경 변수로 설정합니다. 모든 `*.vercel.app`을 와일드카드로 허용하지 않습니다.
+
+### 최초 패스키 등록
+
+1. `DATABASE_URL`을 연결한 상태로 `INITIAL_SETUP=true`로 Production 배포합니다.
+2. Production URL의 `나만의 공간`에서 첫 패스키를 등록합니다.
+3. 등록 확인 후 `INITIAL_SETUP=false`로 변경하고 재배포합니다.
+4. 이후 패스키 추가는 로그인된 세션에서만 가능합니다.
+
+운영에서는 항상 `TEST_MODE=false`를 사용합니다. 실제 패스키 등록·로그인은 Windows Hello, Touch ID 또는 보안 키가 필요합니다. 배포 후에는 공개 첫 화면, 최초 등록, 로그아웃 후 `401`, 로그인 후 private 카드 표시, 두 번째 패스키 추가/삭제, 마지막 패스키 삭제 차단 순서로 확인합니다.
+
+---
+
+## 로컬 실행
+
+이 프로젝트는 공개 포트폴리오를 Express가 제공하고, `나만의 공간`은 서버 세션과 WebAuthn 패스키로 보호합니다. 비공개 자료는 서버 전용 코드와 SQLite DB에서만 관리하며 HTML이나 브라우저 JavaScript에 미리 넣지 않습니다.
+
+### 설치 및 환경 설정
+
+```bash
+npm install
+copy .env.example .env
+```
+
+`.env`에서 `SESSION_SECRET`을 충분히 긴 임의 값으로 바꾸고, 로컬 개발에서는 다음 설정을 사용합니다.
+
+```env
+RP_ID=localhost
+EXPECTED_ORIGIN=http://localhost:3000
+INITIAL_SETUP=true
+TEST_MODE=false
+```
+
+### 실행과 최초 등록
+
+```bash
+npm start
+```
+
+브라우저에서 `http://localhost:3000`을 열고 `나만의 공간`으로 이동합니다. 최초 설정 상태에서 패스키 이름을 입력한 뒤 `첫 패스키 등록`을 선택합니다. 등록이 끝나면 서버 세션이 생성되고 비공개 자료와 패스키 관리가 표시됩니다.
+
+로그인 상태에서 `패스키 추가`로 두 번째 패스키를 등록할 수 있습니다. 마지막 하나는 삭제할 수 없습니다. `로그아웃` 후에는 세션이 폐기되고 비공개 자료가 화면에서 제거됩니다.
+
+### TEST_MODE 두 계정 검증
+
+개발 환경에서만 다음처럼 설정하면 `owner-test`와 `other-test` 계정이 초기 등록 대상으로 생깁니다.
+
+```env
+INITIAL_SETUP=true
+TEST_MODE=true
+```
+
+운영 UI에는 계정 선택을 노출하지 않습니다. API 테스트에서 초기 등록/로그인 요청에 `x-test-user: owner-test` 또는 `x-test-user: other-test` 헤더를 붙여 각 계정의 패스키를 등록할 수 있습니다. 로그인 후 `GET /api/accounts/:userId/private`는 현재 세션 사용자와 경로의 사용자가 다르면 `403`을 반환합니다.
+
+### 보안 동작 확인
+
+```bash
+curl -i http://localhost:3000/api/private
+curl -i http://localhost:3000/api/auth/status
+```
+
+로그인하지 않은 private API는 `401`이어야 합니다. 등록/로그인 options를 연속으로 요청하면 각각 다른 challenge가 생성되며, 같은 verify 요청을 다시 보내면 challenge가 이미 사용된 것으로 거절됩니다. 실제 패스키 인증과 삭제된 패스키 재로그인은 브라우저의 Windows Hello, Touch ID 또는 Android 패스키로 직접 확인해야 합니다.
+
+### 운영 배포
+
+운영에서는 HTTPS origin과 도메인에 맞춰 다음을 설정합니다.
+
+```env
+NODE_ENV=production
+RP_ID=example.com
+EXPECTED_ORIGIN=https://example.com
+INITIAL_SETUP=false
+TEST_MODE=false
+SESSION_SECRET=long-random-production-secret
+```
+
+`RP_ID`는 origin의 등록 가능한 도메인이고 `EXPECTED_ORIGIN`은 실제 페이지의 정확한 HTTPS origin이어야 합니다. `.env`, SQLite DB, 세션 DB 파일은 Git에 포함하지 않습니다. 상세 구현과 수동 검증 기록은 [AUTH_IMPLEMENTATION.md](AUTH_IMPLEMENTATION.md), 제출 양식은 [SUBMISSION.md](SUBMISSION.md)에 있습니다.
