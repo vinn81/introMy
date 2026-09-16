@@ -5,8 +5,7 @@
   "main": "index.html",
   "scripts": {
     "start": "npx vercel dev",
-    "dev": "npx vercel dev",
-    "test": "node --check script.js"
+    "dev": "npx vercel dev"
   },
   "repository": {
     "type": "git",
