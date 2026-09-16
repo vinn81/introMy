@@ -1353,7 +1353,7 @@
 
     .section-copy p,
     .section-header .section-copy p {
-      color: rgba(226, 231, 246, 0.72);
+      color: var(--muted);
     }
 
     .section-index {
@@ -1366,7 +1366,7 @@
       --surface-soft: #f5f6fa;
       --text: #11141b;
       --muted: #5f6878;
-      --subtle: #727b8b;
+      --subtle: #596273;
       --line: #e4e7ee;
       --line-strong: #d7dbe5;
       --accent: #514bd0;
@@ -1406,7 +1406,7 @@
       padding: clamp(42px, 6vw, 76px);
       justify-content: flex-end;
       background:
-        linear-gradient(90deg, rgba(10, 14, 28, 0.96) 0%, rgba(10, 14, 28, 0.82) 48%, rgba(10, 14, 28, 0.44) 100%),
+        linear-gradient(90deg, rgba(10, 14, 28, 0.97) 0%, rgba(10, 14, 28, 0.9) 48%, rgba(10, 14, 28, 0.72) 100%),
         url("assets/hero-network.png") center / cover no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.28);
       box-shadow: var(--shadow-lg);
@@ -1437,7 +1437,7 @@
     }
 
     .hero-copy .lead {
-      color: rgba(255, 255, 255, 0.76);
+      color: rgba(255, 255, 255, 0.92);
     }
 
     .hero-copy .eyebrow {
@@ -1546,7 +1546,7 @@
       padding: 64px 56px;
       color: #fff;
       background:
-        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.82) 48%, rgba(10, 14, 28, 0.48) 100%),
+        linear-gradient(90deg, rgba(10, 14, 28, 0.97) 0%, rgba(10, 14, 28, 0.9) 48%, rgba(10, 14, 28, 0.72) 100%),
         url("assets/profile-study.png") center / cover no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.28);
       border-radius: 24px;
@@ -1568,7 +1568,7 @@
     }
 
     .profile-section .section-copy p {
-      color: rgba(255, 255, 255, 0.72);
+      color: rgba(255, 255, 255, 0.92);
     }
 
     .profile-section .summary-item:first-child {
@@ -1677,14 +1677,14 @@
     .strengths-section > .container {
       color: #fff;
       background:
-        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.78) 48%, rgba(10, 14, 28, 0.44) 100%),
+        linear-gradient(90deg, rgba(10, 14, 28, 0.97) 0%, rgba(10, 14, 28, 0.9) 48%, rgba(10, 14, 28, 0.7) 100%),
         url("assets/strengths-bg.png") center / cover no-repeat;
     }
 
     .aleph-section > .container {
       color: #fff;
       background:
-        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.8) 48%, rgba(10, 14, 28, 0.46) 100%),
+        linear-gradient(90deg, rgba(10, 14, 28, 0.97) 0%, rgba(10, 14, 28, 0.9) 48%, rgba(10, 14, 28, 0.72) 100%),
         url("assets/aleph-bg.png") center / cover no-repeat;
     }
 
@@ -1707,7 +1707,7 @@
 
     .strengths-section .section-copy p,
     .aleph-section .section-copy p {
-      color: rgba(255, 255, 255, 0.72);
+      color: rgba(255, 255, 255, 0.92);
     }
 
     .strengths-section .strength-card,
@@ -1719,6 +1719,10 @@
 
     .aleph-section .aleph-task {
       background: rgba(255, 255, 255, 0.92);
+    }
+
+    .aleph-section .aleph-note-card .aleph-kicker {
+      color: var(--accent-deep);
     }
 
     .aleph-intro {
@@ -1785,7 +1789,7 @@
       padding: 64px 56px;
       color: #fff;
       background:
-        linear-gradient(90deg, rgba(10, 14, 28, 0.95) 0%, rgba(10, 14, 28, 0.8) 48%, rgba(10, 14, 28, 0.46) 100%),
+        linear-gradient(90deg, rgba(10, 14, 28, 0.97) 0%, rgba(10, 14, 28, 0.9) 48%, rgba(10, 14, 28, 0.72) 100%),
         url("assets/learning-notes.png") center / cover no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.24);
       border-radius: 24px;
@@ -1807,7 +1811,7 @@
     }
 
     .evidence-section .section-copy p {
-      color: rgba(255, 255, 255, 0.72);
+      color: rgba(255, 255, 255, 0.92);
     }
 
     .evidence-section .evidence-card {
@@ -1852,7 +1856,7 @@
     }
 
     .private-section .section-copy p {
-      color: rgba(255, 255, 255, 0.72);
+      color: rgba(255, 255, 255, 0.92);
     }
 
     .private-section .private-lock-card {
@@ -1877,12 +1881,29 @@
       background: rgba(189, 185, 255, 0.14);
     }
 
+    .private-section .private-lock-card .private-setup label {
+      color: #f4f6ff;
+    }
+
+    .private-section .private-lock-card .auth-message {
+      color: #9ff4c9;
+    }
+
+    .private-section .private-lock-card .auth-message[data-error="true"] {
+      color: #ffb4ae;
+    }
+
     .private-button-primary {
       background: #5b54dc;
     }
 
     .private-setup input {
       background: rgba(255, 255, 255, 0.96);
+    }
+
+    .private-setup input::placeholder {
+      color: #657086;
+      opacity: 1;
     }
 
     .private-content {
