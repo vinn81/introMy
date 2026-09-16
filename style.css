@@ -122,6 +122,7 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      color: #11141b;
       font-size: 0.98rem;
       font-weight: 850;
       letter-spacing: -0.03em;
@@ -1571,16 +1572,34 @@
       color: rgba(255, 255, 255, 0.92);
     }
 
-    .profile-section .summary-item:first-child {
-      background: rgba(255, 255, 255, 0.14);
+    .profile-section .summary-item {
+      color: #fff;
+      background: #171927;
+      border-color: rgba(255, 255, 255, 0.18);
     }
 
-    .profile-section .summary-item:not(:first-child) {
-      background: rgba(255, 255, 255, 0.9);
+    .profile-section .summary-item::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(23, 25, 39, 0.08), rgba(23, 25, 39, 0.9));
+      pointer-events: none;
     }
 
-    .summary-item:last-child {
-      background: linear-gradient(145deg, #514bd0 0%, #3630a7 100%);
+    .profile-section .summary-item::before {
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .profile-section .summary-item > div,
+    .profile-section .summary-item > p {
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-section .summary-label,
+    .profile-section .summary-value {
+      color: #fff;
     }
 
     .section {
