@@ -7,18 +7,10 @@
     "start": "npx vercel dev",
     "dev": "npx vercel dev"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vinn81/introMy.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/vinn81/introMy/issues"
-  },
-  "homepage": "https://github.com/vinn81/introMy#readme",
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "@simplewebauthn/server": "^14.0.2"

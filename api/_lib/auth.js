@@ -64,6 +64,7 @@ function clearSession(res) {
 }
 
 function requireSession(req, res) {
+  res.setHeader("Cache-Control", "no-store");
   const session = readSession(req);
   if (!session) {
     res.status(401).json({ error: "인증이 필요합니다." });
@@ -73,6 +74,7 @@ function requireSession(req, res) {
 }
 
 function method(req, res, expected) {
+  res.setHeader("Cache-Control", "no-store");
   if (req.method !== expected) {
     res.setHeader("Allow", expected);
     res.status(405).json({ error: "허용되지 않은 메서드입니다." });

@@ -80,8 +80,9 @@ ON CONFLICT (user_id, kind) DO NOTHING;
 
 COMMIT;
 
--- Optional TEST_MODE setup. Enable only in a non-production Neon database or
--- when TEST_MODE=true. The application also creates these users automatically.
+-- Optional TEST_MODE setup: users are NOT created automatically at runtime.
+-- Create them explicitly only in a separate non-production Neon database.
+-- Keep TEST_MODE=false in production.
 -- INSERT INTO users (id, display_name) VALUES
 --   ('owner-test', 'Owner Test'),
 --   ('other-test', 'Other Test')

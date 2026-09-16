@@ -47,7 +47,8 @@ async function consumeChallenge(id, purpose, userId) {
 }
 
 function requestTestUser(req) {
-  if (process.env.TEST_MODE !== "true") return null;
+  if (process.env.TEST_MODE !== "true" || process.env.VERCEL_ENV === "production" ||
+      (!process.env.VERCEL_ENV && process.env.NODE_ENV === "production")) return null;
   const value = req.headers["x-test-user"];
   return value === "owner-test" || value === "other-test" ? value : null;
 }

@@ -143,13 +143,18 @@ function initPrivateArea() {
   const privateGrid = area.querySelector("[data-private-grid]");
   const passkeyList = area.querySelector("[data-passkey-list]");
   const logoutButton = area.querySelector("[data-logout-button]");
+  const addPasskeyButton = area.querySelector("[data-add-passkey-button]");
+  const additionalPasskeyName = area.querySelector("[data-additional-passkey-name]");
+  const privateMessage = area.querySelector("[data-private-message]");
 
   const setMessage = (text, isError = false) => {
     message.textContent = text;
     message.dataset.error = String(isError);
+    privateMessage.textContent = text;
+    privateMessage.dataset.error = String(isError);
   };
   const setBusy = (busy, text) => {
-    [loginButton, registerButton, logoutButton].forEach((button) => { if (button) button.disabled = busy; });
+    [loginButton, registerButton, logoutButton, addPasskeyButton, ...passkeyList.querySelectorAll("button")].forEach((button) => { if (button) button.disabled = busy; });
     if (text) setMessage(text);
   };
   const renderPrivateItems = (items) => {
@@ -234,6 +239,7 @@ function initPrivateArea() {
 
   loginButton.addEventListener("click", login);
   registerButton.addEventListener("click", () => register(passkeyName));
+  addPasskeyButton.addEventListener("click", () => register(additionalPasskeyName));
   logoutButton.addEventListener("click", async () => {
     setBusy(true, "로그아웃하고 있습니다…");
     try {
