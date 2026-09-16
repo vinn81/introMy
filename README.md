@@ -180,7 +180,3 @@ Credential stored in Neon PostgreSQL
 - 런타임 `CREATE TABLE`: 사용하지 않음
 
 이를 통해 애플리케이션 코드와 실제 데이터베이스 스키마의 불일치를 방지합니다.
-
-## Test Scripts
-
-`package.json`의 `test`, `test:*` 스크립트는 사용하지 않으며 제거합니다.
