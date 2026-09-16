@@ -1132,6 +1132,10 @@
       display: block;
     }
 
+    .passkey-item strong {
+      color: var(--text);
+    }
+
     .passkey-item time {
       margin-top: 3px;
       color: var(--subtle);
@@ -1378,7 +1382,10 @@
     }
 
     body {
-      background: linear-gradient(180deg, #fbfcfe 0%, var(--bg) 42%, #f8f9fc 100%);
+      background:
+        radial-gradient(circle at 8% 7%, rgba(81, 75, 208, 0.11), transparent 27rem),
+        radial-gradient(circle at 94% 34%, rgba(25, 153, 170, 0.09), transparent 30rem),
+        linear-gradient(180deg, #fbfcfe 0%, var(--bg) 42%, #f8f9fc 100%);
       font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
     }
 
@@ -1387,9 +1394,30 @@
     }
 
     .nav {
+      background: rgba(255, 255, 255, 0.9);
       border-color: rgba(255, 255, 255, 0.82);
-      box-shadow: 0 12px 32px rgba(25, 31, 58, 0.06);
+      box-shadow: 0 14px 38px rgba(25, 31, 58, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(12px) saturate(120%);
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 4px;
+      width: 18px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #7a75ec);
+      opacity: 0;
+      transform: translateX(-50%) scaleX(0.35);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a[aria-current="page"]::after {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1);
     }
 
     .hero {
@@ -1410,7 +1438,7 @@
         linear-gradient(90deg, rgba(10, 14, 28, 0.97) 0%, rgba(10, 14, 28, 0.9) 48%, rgba(10, 14, 28, 0.72) 100%),
         url("assets/hero-network.png") center / cover no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.28);
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 34px 90px rgba(19, 24, 54, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
     .hero-copy::before {
@@ -1435,6 +1463,7 @@
       font-size: clamp(2.85rem, 5.7vw, 5.6rem);
       line-height: 1.02;
       letter-spacing: -0.065em;
+      text-shadow: 0 8px 34px rgba(0, 0, 0, 0.34);
     }
 
     .hero-copy .lead {
@@ -1465,6 +1494,8 @@
       background: rgba(14, 143, 156, 0.16);
       border: 1px solid rgba(169, 240, 237, 0.22);
       border-radius: 12px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 28px rgba(0, 0, 0, 0.14);
+      backdrop-filter: blur(10px);
     }
 
     .hero-current-dot {
@@ -1474,6 +1505,12 @@
       border-radius: 50%;
       background: #a9f0ed;
       box-shadow: 0 0 0 4px rgba(169, 240, 237, 0.12);
+      animation: status-pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes status-pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(169, 240, 237, 0.12); }
+      50% { box-shadow: 0 0 0 8px rgba(169, 240, 237, 0.04); }
     }
 
     .hero-current-label {
@@ -1615,6 +1652,17 @@
     .section-index {
       color: var(--accent-deep);
       background: var(--accent-soft);
+      box-shadow: inset 0 0 0 1px rgba(81, 75, 208, 0.08), 0 8px 18px rgba(56, 50, 167, 0.08);
+    }
+
+    .section-copy h2::after {
+      content: "";
+      display: block;
+      width: 46px;
+      height: 3px;
+      margin-top: 16px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #716bf0, #48b6c2);
     }
 
     .scope-card,
@@ -1630,7 +1678,14 @@
 
     .scope-card {
       padding: 32px;
-      background: rgba(255, 255, 255, 0.82);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(246, 247, 253, 0.9));
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+    .scope-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(81, 75, 208, 0.22);
+      box-shadow: 0 24px 52px rgba(25, 31, 58, 0.11);
     }
 
     .scope-card::before {
@@ -1650,6 +1705,21 @@
       transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
     }
 
+    .strength-card::before {
+      content: "";
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, #716bf0, #9c7cf3);
+    }
+
+    .strength-card:nth-child(2)::before {
+      background: linear-gradient(90deg, #4f8fe8, #52c0cc);
+    }
+
+    .strength-card:nth-child(3)::before {
+      background: linear-gradient(90deg, #8a63df, #e07cb1);
+    }
+
     .strength-card:hover {
       transform: translateY(-4px);
       border-color: rgba(81, 75, 208, 0.24);
@@ -1662,9 +1732,11 @@
     }
 
     .strength-number {
-      padding: 0;
+      padding: 6px 9px;
       color: var(--accent);
-      background: transparent;
+      background: rgba(81, 75, 208, 0.09);
+      border: 1px solid rgba(81, 75, 208, 0.1);
+      border-radius: 999px;
       font-size: 0.75rem;
       letter-spacing: 0.14em;
     }
@@ -1752,6 +1824,17 @@
     .aleph-note-card {
       min-height: 214px;
       padding: 32px;
+      transition: transform 220ms ease, box-shadow 220ms ease;
+    }
+
+    .aleph-course-card:hover,
+    .aleph-note-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 24px 54px rgba(18, 23, 49, 0.18);
+    }
+
+    .aleph-note-card {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(239, 238, 255, 0.94));
     }
 
     .aleph-task-list {
@@ -1776,6 +1859,16 @@
     .evidence-card {
       min-height: 300px;
       padding: 34px;
+      transition: transform 220ms ease, box-shadow 220ms ease;
+    }
+
+    .evidence-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 26px 58px rgba(18, 23, 49, 0.18);
+    }
+
+    .evidence-card:first-child {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(239, 242, 255, 0.94));
     }
 
     .evidence-card:last-child {
@@ -1929,6 +2022,54 @@
       background: rgba(255, 255, 255, 0.9);
     }
 
+    #scope {
+      background:
+        radial-gradient(circle at 15% 18%, rgba(81, 75, 208, 0.08), transparent 24rem),
+        linear-gradient(180deg, #f7f8fb 0%, #eef1f8 100%);
+    }
+
+    #scope > .container {
+      position: relative;
+      overflow: hidden;
+      width: min(calc(100% - 112px), 1040px);
+      padding: 64px 56px;
+      background:
+        radial-gradient(circle at 92% 4%, rgba(81, 75, 208, 0.13), transparent 18rem),
+        rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      box-shadow: 0 28px 70px rgba(25, 31, 58, 0.1);
+    }
+
+    #scope > .container::before {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -90px;
+      top: -90px;
+      border: 1px solid rgba(81, 75, 208, 0.12);
+      border-radius: 50%;
+      box-shadow: 0 0 0 36px rgba(81, 75, 208, 0.035), 0 0 0 72px rgba(81, 75, 208, 0.02);
+      pointer-events: none;
+    }
+
+    #scope .section-header,
+    #scope .scope-grid {
+      position: relative;
+      z-index: 1;
+    }
+
+    .site-footer {
+      padding: 38px 0;
+      color: #dfe3f4;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(113, 107, 240, 0.2), transparent 24rem),
+        #111522;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      letter-spacing: 0.04em;
+    }
+
     @media (max-width: 760px) {
       .hero {
         padding: 34px 0 58px;
@@ -1976,7 +2117,8 @@
       .evidence-section > .container,
       .private-section > .container,
       .strengths-section > .container,
-      .aleph-section > .container {
+      .aleph-section > .container,
+      #scope > .container {
         width: 100%;
         padding: 42px 26px;
         border-radius: 18px;
