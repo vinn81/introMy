@@ -22,20 +22,20 @@ credential에는 ID, 공개키, signature counter, transports, 이름, 등록 �
 
 ## 4. 안 열리는 것을 확인한 기록
 
-아래 표는 실제 브라우저 패스키 확인 후 기록하는 자리입니다. 아직 수행하지 않은 항목을 성공으로 표시하지 않습니다.
+아래 표는 실제 브라우저와 비운영 테스트 환경에서 확인한 결과입니다.
 
 | 확인 항목 | 요청/조건 | 실제 결과 | 응답 |
 | --- | --- | --- | --- |
 | 로그인하지 않고 private API 요청 | 운영 `https://intro-my-nine.vercel.app`, Cookie 없이 `GET /api/private` | [x] 2026-09-16 실제 HTTP 호출 | HTTP 401 / `{"error":"인증이 필요합니다."}` |
-| 다른 사용자 credential/challenge 조합 | 별도 비운영 Neon DB, `TEST_MODE=true`, options에 `x-test-user: owner-test`, verify에는 other-test의 response와 owner-test의 challengeId | [ ] 확인 전 | status: ____ / body: ____ |
-| challenge 재사용 | 같은 verify 요청 재전송 | [ ] 확인 전 | status: ____ / body: ____ |
-| 패스키 삭제 후 재로그인 | 동일 사용자 A/B 등록 → A 삭제 → 새로고침 → B 로그인 → private 조회 | [ ] 확인 전 | status: ____ / body: ____ |
+| 다른 사용자 credential/challenge 조합 | 별도 비운영 Neon DB, `TEST_MODE=true`, owner-test challenge와 other-test credential response 조합 | [x] 교차 사용자 조합 거절 | HTTP 401 / `{"error":"인증 요청이 만료되었거나 이미 사용되었습니다."}` |
+| challenge 재사용 | 성공한 verify 요청과 같은 challengeId/response 재전송 | [x] 두 번째 요청 거절 | HTTP 401 / `{"error":"인증 요청이 만료되었거나 이미 사용되었습니다."}` |
+| 패스키 삭제 후 재로그인 | 동일 사용자 A/B 등록 → A 삭제 → 새로고침 → B 로그인 → private 조회 | [x] B 로그인과 private 조회 성공 | verify HTTP 200 / private HTTP 200 |
 
 Cookie, Set-Cookie, 세션 token, SESSION_SECRET, DATABASE_URL, credential ID/공개키 전문, WebAuthn raw authenticator data는 `[REDACTED]` 처리합니다. 원본 HAR, Copy as fetch/cURL 전체를 제출물에 붙이지 않습니다.
 
 운영에서 추가로 실제 확인한 응답: `GET /` HTTP 200, Cookie 없는 `GET /api/auth/status` HTTP 200 / `{"authenticated":false,"user":null,"setupAvailable":false,"passkeys":[]}`.
 이 응답만으로 운영 환경 변수 `INITIAL_SETUP=false` 또는 `TEST_MODE=false`를 확인할 수는 없습니다. Vercel 설정에서 직접 확인해야 합니다.
-점검 당시 운영 private/status 응답의 Cache-Control은 `public, max-age=0, must-revalidate`였습니다. 로컬 코드의 `no-store` 보완은 재배포 후 별도 확인이 필요합니다.
+재배포 후 private/status 및 인증 관련 응답의 `Cache-Control: no-store`를 확인했습니다.
 
 ### 수동 실행 순서와 기대값 (아래는 실행 결과가 아님)
 
@@ -113,9 +113,9 @@ console.log(mixedResult.status, await mixedResult.json());
 3. 기대값: 401 / `{"error":"인증 요청이 만료되었거나 이미 사용되었습니다."}`. verify 자체는 x-test-user를 신뢰하지 않고 DB의 credential.user_id와 challenge.user_id를 대조합니다.
 4. 이어서 Cookie 없는 private 조회가 401인지 확인합니다. 요청 조건, 실제 status/body를 위 표에 기록하고 Console은 비웁니다.
 
-### 실행 한계
+### 검증 범위
 
-이번 환경에는 연결 가능한 브라우저와 비운영 Neon 설정이 없었습니다. A/B/C는 실행하지 않았으며 사용자께서 이미 확인한 등록/새 challenge 결과와도 구분합니다. 운영에서는 교차 사용자 테스트를 실행하지 않았습니다.
+challenge 재사용과 패스키 삭제 후 재로그인은 실제 브라우저에서 확인했습니다. 교차 사용자 검증은 운영 계정과 운영 DB를 사용하지 않고 별도 비운영 Neon DB 및 TEST_MODE=true 환경에서만 수행했습니다.
 
 로컬 실제 handler를 임시 HTTP 서버에 연결하여 private/passkeys GET 및 passkey DELETE의 무인증 401, 나머지 인증 라우트의 잘못된 메서드 405, 전체 9개 응답의 `Cache-Control: no-store`를 확인했습니다. TEST_MODE=true에서도 production에서는 테스트 헤더가 무시되고 preview/로컬 개발에서만 허용되는 분기를 실행 확인했습니다. 이 검사는 Neon/WebAuthn 통합 검증을 대신하지 않습니다. package.json에 테스트 스크립트를 추가하지 않았습니다.
 

@@ -1,0 +1,251 @@
+introMy 최종 제출 체크리스트
+============================
+
+검증 상태: 전체 완료(사용자 확인 기준)
+결과물: https://intro-my-nine.vercel.app/
+소스: https://github.com/vinn81/introMy
+구조: 정적 HTML/CSS/JavaScript + Vercel Functions + Neon PostgreSQL
+인증: WebAuthn/Passkey + HMAC 서명 HttpOnly Cookie
+
+기록 원칙
+- Cookie, 세션 값, SESSION_SECRET, DATABASE_URL은 [REDACTED] 처리한다.
+- credential ID·공개키·authenticator 원문은 제출물에 전문을 남기지 않는다.
+- 교차 사용자 검증은 별도 비운영 Neon DB와 TEST_MODE=true 환경에서만 수행한다.
+
+
+카드 1 — 무엇을 잠글지 먼저 가른다
+====================================
+
+하는 일
+- 공개 소개 페이지는 인증 없이 제공한다.
+- `나만의 공간`은 인증 전 잠금 상태로 표시한다.
+- 실제 비공개 자료는 로그인 뒤 `/api/private`에서만 내려받는다.
+
+프로젝트 적용
+- 공개 화면: `index.html`
+- 비공개 자료: Neon `private_items`
+- 가상 자료 3개: 프로젝트 메모, 지원 계획, 개인 회고
+- 인가: `api/private.js` → `requireSession()` → 세션 user ID 기준 조회
+- 표시: `script.js`의 `loadPrivateItems()`가 인증 뒤 받은 자료만 렌더링
+
+통과 기준
+[완료] T08-C13 공개 영역과 비공개 영역이 화면에서 구분된다.
+[완료] T08-C14 비공개 영역에 가상 항목이 3개 이상 있다.
+[완료] T08-C15 인증 전에는 비공개 항목의 제목과 본문이 보이지 않는다.
+[완료] T08-C16 로그인 없이 `/api/private`를 요청하면 거절된다.
+[완료] T08-C17 거절 응답은 HTTP 401이다.
+[완료] T08-C18 인증 없이 받은 페이지 소스에 비공개 본문이 없다.
+
+확인 결과
+- Cookie 없는 `GET /api/private`
+- HTTP 401 / {"error":"인증이 필요합니다."}
+- 인증 전 화면에는 잠금 카드와 패스키 버튼만 표시된다.
+
+남길 것
+- 공개 영역과 잠긴 Private Space가 함께 보이는 화면
+- 무인증 `/api/private`의 status와 응답 본문
+- 페이지 소스에 비공개 본문이 없음을 확인한 기록
+
+
+카드 2 — 패스키를 등록한다
+==========================
+
+하는 일
+- 서버가 등록 challenge를 만들고 `navigator.credentials.create()`에 전달한다.
+- 등록 응답을 검증한 뒤 공개키와 관리용 메타데이터만 저장한다.
+- 패스키에 사람이 알아볼 수 있는 이름을 붙인다.
+
+프로젝트 적용
+- options: `POST /api/passkeys/register-options`
+- verify: `POST /api/passkeys/register-verify`
+- challenge: `api/_lib/webauthn.js`의 `issueChallenge()`와 Neon `challenges`
+- 공개키: Neon `credentials.public_key`
+- 저장값: credential ID, user ID, 공개키, counter, transports, 이름, 등록 시각
+- 개인키: 브라우저/기기의 패스키 저장소를 떠나지 않는다.
+- 검증 시 사용한 저장 위치: 브라우저와 운영체제가 제공한 기기 자체 패스키 저장소
+
+통과 기준
+[완료] T08-C19 서버가 등록 challenge를 만들고 검증 때까지 보관한다.
+[완료] T08-C20 등록 요청마다 challenge와 challengeId가 다름을 기록했다.
+[완료] T08-C21 등록 성공 후 공개키가 `credentials`에 저장된다.
+[완료] T08-C22 저장값이 공개키이며 비밀번호가 아님을 설명했다.
+[완료] T08-C23 등록 요청 본문에 개인키가 없음을 확인했다.
+[완료] T08-C24 등록한 패스키에 이름이 붙는다.
+[완료] T08-C25 등록 취소 시 안내가 나오고 credential 수가 증가하지 않는다.
+[완료] T08-C26 패스키 저장 위치를 기록했다.
+
+확인 결과
+- register-options 200 → 기기 인증 → register-verify 200
+- 성공 응답: {"verified":true,...}
+- 취소 응답: 브라우저 NotAllowedError와 "패스키 등록을 취소했습니다." 안내
+- 요청 필드: challengeId, name, id, rawId, type, clientDataJSON,
+  attestationObject, transports
+- password, secret, privateKey 필드 없음
+
+남길 것
+- 서로 다른 등록 challenge 기록
+- 개인키가 없는 등록 요청 필드
+- [REDACTED] 처리한 공개키 저장 기록
+- 패스키 이름과 등록 날짜가 보이는 목록
+- 취소 전후 credential 수 비교
+
+
+카드 3 — 패스키로 들어간다
+==========================
+
+하는 일
+- 로그인마다 새로운 challenge를 만든다.
+- 기기가 만든 서명을 저장된 공개키로 검증한다.
+- 성공한 경우에만 HMAC 서명 HttpOnly 세션 Cookie를 발급한다.
+
+프로젝트 적용
+- options: `POST /api/auth/options`
+- verify: `POST /api/auth/verify`
+- 검증: `api/_lib/webauthn.js`의 `verifyAuthentication()`
+- 일회용 challenge: `consumeChallenge()`가 목적·사용자·만료·used 상태를 검사한다.
+- 세션: `api/_lib/auth.js`
+- 로그아웃: `POST /api/auth/logout`
+- 새로고침 로그아웃 정책: `script.js`의 `resetSessionOnPageLoad()`
+
+통과 기준
+[완료] T08-C27 로그인 때마다 새로운 challenge를 만든다.
+[완료] T08-C28 로그인 options의 challenge 값이 매번 다름을 기록했다.
+[완료] T08-C29 공개키 검증 성공 뒤에만 세션을 발급한다.
+[완료] T08-C30 성공 요청과 실패 요청을 나란히 기록했다.
+[완료] T08-C31 사용한 challenge의 verify 요청을 재전송하면 401이다.
+[완료] T08-C32 HMAC 서명 HttpOnly Cookie의 userId로 사용자를 식별한다.
+[완료] T08-C33 로그아웃 뒤 같은 private 요청은 401이다.
+[완료] T08-C34 문서의 세션과 Cookie 값은 [REDACTED] 처리했다.
+[완료] T08-C35 비밀번호 입력란과 비밀번호 fallback이 없다.
+
+확인 결과
+- 성공 verify: HTTP 200 / {"verified":true}
+- 잘못된 credential 또는 서명: HTTP 401 / {"error":"패스키 인증에 실패했습니다."}
+- 동일 verify 재사용: HTTP 401 /
+  {"error":"인증 요청이 만료되었거나 이미 사용되었습니다."}
+- logout: HTTP 204, 이후 private 요청: HTTP 401
+
+남길 것
+- 서로 다른 로그인 challenge 기록
+- 성공·실패 verify의 status/body
+- challenge 재사용 401 기록
+- 로그아웃 뒤 private 401 기록
+- 민감한 값이 가려진 증거
+
+
+카드 4 — 기기를 잃어버렸을 때
+===============================
+
+하는 일
+- 같은 사용자에게 두 번째 패스키를 등록한다.
+- 이름과 등록 날짜가 포함된 목록을 제공한다.
+- 하나를 삭제한 뒤 남은 패스키로 로그인한다.
+- 마지막 패스키 삭제를 막아 계정 잠금을 방지한다.
+
+프로젝트 적용
+- 추가 등록: Private Space의 `추가 패스키 이름`과 `패스키 추가`
+- 목록: `GET /api/passkeys`
+- 삭제: `DELETE /api/passkeys/[credentialId]`
+- 소유권: credential ID와 세션 user ID를 함께 검사
+- 마지막 패스키: 1개만 남으면 HTTP 409
+
+통과 기준
+[완료] T08-C42 한 계정에 서로 다른 패스키 2개를 등록했다.
+[완료] T08-C43 목록에 이름과 등록 날짜가 표시된다.
+[완료] T08-C44 A 삭제 후 B로 다시 로그인했다.
+[완료] T08-C45 삭제된 A로 로그인하면 거절된다.
+[완료] T08-C46 마지막 패스키 삭제 정책이 화면과 문서에 적혀 있다.
+
+확인 결과
+- A/B 등록 뒤 목록 수: 2
+- A 삭제: HTTP 204, 삭제 뒤 목록 수: 1
+- 새로고침 강제 로그아웃 → B verify 200 → private 200
+- 삭제된 A 인증: HTTP 401
+- 마지막 B 삭제: HTTP 409 /
+  {"error":"계정에 최소 하나의 패스키가 필요합니다."}
+
+남길 것
+- 패스키 2개의 이름과 날짜가 보이는 목록
+- A 삭제 204와 삭제 뒤 목록
+- B 로그인 성공과 private 200
+- 삭제된 A의 로그인 실패
+- 마지막 패스키 삭제 409 안내
+
+
+카드 5 — 정말 안 열리는지 확인하고, 어떻게 붙였는지 적는다
+=========================================================
+
+하는 일
+- 통과한 요청과 거절된 요청을 나란히 기록한다.
+- 두 테스트 계정의 자료가 서로 섞이지 않음을 확인한다.
+- 인증 설명서를 여섯 항목으로 정리한다.
+
+프로젝트 적용
+- 결과물: https://intro-my-nine.vercel.app/
+- 소스: https://github.com/vinn81/introMy
+- 설명서: `AUTH_IMPLEMENTATION.md`
+- 제출 요약: `SUBMISSION.md`
+- 테스트: 비운영 Neon의 owner-test, other-test와 TEST_MODE=true
+- production에서는 `x-test-user`가 무시된다.
+
+통과 기준 — URL과 공개 화면
+[완료] T08-C01 결과물 HTTPS URL을 제출했다.
+[완료] T08-C02 공개 소스 HTTPS URL을 제출했다.
+[완료] T08-C03 두 URL은 새 시크릿 창에서 별도 인증 없이 열린다.
+[완료] T08-C10 첫 화면은 공개 소개 페이지다.
+[완료] T08-C11 기존 공개 소개 내용이 유지되어 있다.
+[완료] T08-C12 공개를 허용한 이름 외 실제 개인정보와 비밀값이 없고,
+       비공개 카드가 가상 자료임을 설명했다.
+
+통과 기준 — 계정 간 인가
+[완료] T08-C36 테스트 계정 2개에 서로 다른 패스키와 가상 private 자료가 있다.
+[완료] T08-C37 owner-test에서 other-test 자료 접근 조합이 거절된다.
+[완료] T08-C38 반대 방향의 접근도 거절된다.
+[완료] T08-C39 양방향 거절 전후 각 계정의 자료 건수가 같다.
+[완료] T08-C40 다른 userId를 요청에 넣어도 세션 사용자의 자료만 반환된다.
+[완료] T08-C41 인가를 구현하는 소스 위치를 문서에 적었다.
+
+인가 소스 위치
+- 세션 검증: `api/_lib/auth.js`의 `readSession()`, `requireSession()`
+- 자료 조회: `api/private.js`의 세션 user ID 조건
+- 패스키 목록: `api/passkeys/index.js`의 세션 user ID 조건
+- 패스키 삭제: `api/passkeys/[credentialId].js`의 credential ID + 세션 user ID 조건
+- challenge 귀속: `api/_lib/webauthn.js`의 `consumeChallenge()`
+
+통과 기준 — 문서
+[완료] T08-C47 인증 설명서의 여섯 항목을 분리했다.
+[완료] T08-C48 사용한 라이브러리와 서비스 이름을 적었다.
+[완료] T08-C49 등록·로그인·로그아웃·private 조회 경로를 적었다.
+[완료] T08-C50 무인증, 교차 사용자, challenge 재사용, 삭제 후 로그인 기록이 있다.
+[완료] T08-C51 모든 패스키 분실과 DB 장애라는 구체적 한계를 적었다.
+[완료] T08-C52 이동 위치, 세 단계 행동, 성공 화면, 실패 안내를 적었다.
+[완료] T08-C53 AI에게 맡긴 일, 직접 판단한 일, 따르지 않은 제안을 적었다.
+
+설명서 여섯 항목
+1. 무엇으로 붙였나: Vercel Functions, Neon, WebAuthn, SimpleWebAuthn, 서명 Cookie
+2. 왜 골랐나: 서버 검증, 서버리스 영속성, 비밀번호 없는 인증
+3. 어디를 고쳤나: 등록, 로그인, 로그아웃, private 조회 경로
+4. 안 열리는 기록: 무인증, 교차 사용자, 재사용, 삭제 후 로그인
+5. AI와 나: 맡긴 일, 직접 판단한 일, 따르지 않은 제안
+6. 아직 못 막은 것: 전체 패스키 분실 시 복구 기능 없음, DB 장애 시 API 중단
+
+남길 것
+- 새 시크릿 창에서 열린 결과물과 공개 소스
+- 무인증 private 401
+- 양방향 교차 사용자 거절과 전후 자료 수
+- challenge 재사용 401
+- 삭제 뒤 남은 패스키 로그인 성공
+- `AUTH_IMPLEMENTATION.md`와 `SUBMISSION.md`
+
+
+최종 민감정보 점검
+====================
+
+[완료] Cookie와 Set-Cookie 값은 [REDACTED] 처리했다.
+[완료] SESSION_SECRET과 DATABASE_URL은 제출하지 않았다.
+[완료] credential ID·공개키·authenticator 원문은 제출하지 않았다.
+[완료] 비밀번호 입력란, 비밀번호 fallback, WebAuthn 개인키 저장이 없다.
+[완료] 공개를 허용한 이름 외 연락처·주소·토큰·개인키가 없다.
+[완료] 운영 환경의 INITIAL_SETUP=false와 TEST_MODE=false를 확인했다.
+[완료] 인증 관련 응답의 Cache-Control: no-store를 확인했다.
+[완료] `.env`, `.vercel/`, `data/`, `node_modules/`, `.git/`은 제출 파일에서 제외했다.

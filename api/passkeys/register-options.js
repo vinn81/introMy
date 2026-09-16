@@ -1,4 +1,5 @@
 const { method, jsonBody, readSession } = require("../_lib/auth");
+const { query } = require("../_lib/db");
 const { credentialsByUser, registrationOptions, requestTestUser, userById } = require("../_lib/webauthn");
 
 module.exports = async function handler(req, res) {
@@ -8,7 +9,7 @@ module.exports = async function handler(req, res) {
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name || name.length > 80) return res.status(400).json({ error: "패스키 이름을 입력해 주세요." });
     const session = readSession(req);
-    const totalRows = await require("../_lib/db").query`SELECT COUNT(*)::int AS count FROM credentials`;
+    const totalRows = await query`SELECT COUNT(*)::int AS count FROM credentials`;
     const setupAvailable = process.env.INITIAL_SETUP !== "false" && Number(totalRows[0]?.count || 0) === 0;
     const requestedTestUser = requestTestUser(req);
     const userId = session?.userId || requestedTestUser || "owner";

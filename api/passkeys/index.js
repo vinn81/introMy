@@ -1,4 +1,4 @@
-const { method, requireSession, jsonBody } = require("../_lib/auth");
+const { requireSession, jsonBody } = require("../_lib/auth");
 const { query } = require("../_lib/db");
 
 module.exports = async function handler(req, res) {

@@ -1,24 +1,24 @@
 :root {
-      --bg: #f4f5fb;
+      --bg: #f7f8fb;
       --surface: rgba(255, 255, 255, 0.82);
       --surface-solid: #ffffff;
-      --surface-soft: #f9f9fd;
-      --text: #15161b;
-      --muted: #596174;
-      --subtle: #626a7a;
-      --line: rgba(21, 22, 27, 0.09);
-      --line-strong: rgba(21, 22, 27, 0.14);
-      --accent: #5b57d9;
-      --accent-deep: #403bc2;
-      --accent-soft: #eeefff;
+      --surface-soft: #f5f6fa;
+      --text: #11141b;
+      --muted: #5f6878;
+      --subtle: #596273;
+      --line: #e4e7ee;
+      --line-strong: #d7dbe5;
+      --accent: #514bd0;
+      --accent-deep: #3832a7;
+      --accent-soft: #efeeff;
       --focus: #2457d6;
       --success: #0f766e;
       --max-width: 1180px;
       --radius-lg: 30px;
       --radius-md: 20px;
       --radius-sm: 13px;
-      --shadow-lg: 0 28px 80px rgba(34, 34, 68, 0.10);
-      --shadow-md: 0 18px 44px rgba(34, 34, 68, 0.08);
+      --shadow-lg: 0 24px 70px rgba(25, 31, 58, 0.12);
+      --shadow-md: 0 14px 38px rgba(25, 31, 58, 0.06);
     }
 
     * {
@@ -31,20 +31,17 @@
     }
 
     body {
+      position: relative;
+      isolation: isolate;
+      overflow-x: hidden;
       margin: 0;
       min-width: 320px;
       background:
-        radial-gradient(circle at 8% 2%, rgba(91, 87, 217, 0.11), transparent 27rem),
-        radial-gradient(circle at 92% 16%, rgba(110, 180, 255, 0.11), transparent 30rem),
-        linear-gradient(180deg, #f8f8fc 0%, var(--bg) 45%, #f7f7fb 100%);
+        radial-gradient(circle at 8% 7%, rgba(81, 75, 208, 0.11), transparent 27rem),
+        radial-gradient(circle at 94% 34%, rgba(25, 153, 170, 0.09), transparent 30rem),
+        linear-gradient(180deg, #fbfcfe 0%, var(--bg) 42%, #f8f9fc 100%);
       color: var(--text);
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        "Noto Sans KR",
-        Arial,
-        sans-serif;
+      font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
       line-height: 1.7;
       letter-spacing: -0.018em;
       -webkit-font-smoothing: antialiased;
@@ -322,16 +319,6 @@
       background: #c9cbe8;
     }
 
-    .summary-item:last-child {
-      background: linear-gradient(145deg, #514dd0 0%, #3d39b7 100%);
-      border-color: transparent;
-      box-shadow: 0 20px 48px rgba(64, 59, 194, 0.24);
-    }
-
-    .summary-item:last-child::before {
-      background: rgba(255, 255, 255, 0.75);
-    }
-
     .summary-label {
       margin-bottom: 8px;
       color: var(--subtle);
@@ -347,11 +334,6 @@
       font-weight: 760;
       line-height: 1.5;
       word-break: keep-all;
-    }
-
-    .summary-item:last-child .summary-label,
-    .summary-item:last-child .summary-value {
-      color: #fff;
     }
 
     /* Section */
@@ -896,7 +878,7 @@
       color: #cfd1dc;
     }
 
-    .notion-link {
+    .evidence-badge {
       position: relative;
       z-index: 1;
       display: inline-flex;
@@ -908,15 +890,8 @@
       border-radius: 11px;
       background: rgba(255, 255, 255, 0.10);
       color: #fff;
-      text-decoration: none;
       font-size: 0.9rem;
       font-weight: 760;
-      transition: transform 160ms ease, background 160ms ease;
-    }
-
-    .notion-link:hover {
-      transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.17);
     }
 
     .quote {
@@ -1317,41 +1292,7 @@
       }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.001ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.001ms !important;
-      }
-    }
-
-    /* Global dark technical canvas */
-    body {
-      position: relative;
-      isolation: isolate;
-      overflow-x: hidden;
-      background:
-        radial-gradient(circle at 12% 8%, rgba(67, 88, 220, 0.2), transparent 32rem),
-        radial-gradient(circle at 88% 22%, rgba(111, 73, 207, 0.16), transparent 30rem),
-        linear-gradient(rgba(111, 132, 190, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(111, 132, 190, 0.035) 1px, transparent 1px),
-        #0b1020;
-      background-size: auto, auto, 42px 42px, 42px 42px, auto;
-      color: #f4f6ff;
-    }
-
-    .hero,
-    .profile-section,
-    .strengths-section,
-    .aleph-section,
-    .evidence-section,
-    .private-section {
-      background: transparent;
-    }
-
+    /* Shared portfolio refinements */
     .section + .section::before {
       background: linear-gradient(90deg, transparent, rgba(154, 169, 220, 0.22), transparent);
     }
@@ -1363,30 +1304,6 @@
 
     .section-index {
       border: 1px solid rgba(164, 159, 255, 0.16);
-    }
-
-    /* Portfolio visual system */
-    :root {
-      --bg: #f7f8fb;
-      --surface-soft: #f5f6fa;
-      --text: #11141b;
-      --muted: #5f6878;
-      --subtle: #596273;
-      --line: #e4e7ee;
-      --line-strong: #d7dbe5;
-      --accent: #514bd0;
-      --accent-deep: #3832a7;
-      --accent-soft: #efeeff;
-      --shadow-lg: 0 24px 70px rgba(25, 31, 58, 0.12);
-      --shadow-md: 0 14px 38px rgba(25, 31, 58, 0.06);
-    }
-
-    body {
-      background:
-        radial-gradient(circle at 8% 7%, rgba(81, 75, 208, 0.11), transparent 27rem),
-        radial-gradient(circle at 94% 34%, rgba(25, 153, 170, 0.09), transparent 30rem),
-        linear-gradient(180deg, #fbfcfe 0%, var(--bg) 42%, #f8f9fc 100%);
-      font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
     }
 
     .site-header {
@@ -1545,32 +1462,6 @@
       transform: translateY(-3px);
       border-color: rgba(81, 75, 208, 0.2);
       box-shadow: 0 22px 48px rgba(25, 31, 58, 0.1);
-    }
-
-    .summary-item:first-child {
-      position: relative;
-      overflow: hidden;
-      color: #fff;
-      background: #171927;
-    }
-
-    .summary-item:first-child::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(23, 25, 39, 0.08), rgba(23, 25, 39, 0.9));
-      pointer-events: none;
-    }
-
-    .summary-item:first-child > div,
-    .summary-item:first-child > p {
-      position: relative;
-      z-index: 1;
-    }
-
-    .summary-item:first-child .summary-label,
-    .summary-item:first-child .summary-value {
-      color: #fff;
     }
 
     .profile-section {
@@ -1867,27 +1758,8 @@
       box-shadow: 0 26px 58px rgba(18, 23, 49, 0.18);
     }
 
-    .evidence-card:first-child {
+    .evidence-section .evidence-card:first-child {
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(239, 242, 255, 0.94));
-    }
-
-    .evidence-card:last-child {
-      background: linear-gradient(145deg, #171927 0%, #24234b 100%);
-    }
-
-    .private-lock-card,
-    .private-content {
-      background: rgba(255, 255, 255, 0.86);
-    }
-
-    .private-lock-card {
-      position: relative;
-      overflow: hidden;
-      border-color: rgba(255, 255, 255, 0.25);
-      background:
-        linear-gradient(90deg, rgba(10, 14, 28, 0.94), rgba(36, 35, 75, 0.82)),
-        url("assets/private-security.png") center / cover no-repeat;
-      box-shadow: 0 24px 70px rgba(25, 31, 58, 0.14);
     }
 
     .evidence-section {
@@ -1972,7 +1844,11 @@
     }
 
     .private-section .private-lock-card {
+      position: relative;
+      overflow: hidden;
+      border-color: rgba(255, 255, 255, 0.25);
       background: rgba(23, 25, 39, 0.62);
+      box-shadow: 0 24px 70px rgba(25, 31, 58, 0.14);
     }
 
     .private-section .private-content {
@@ -2016,10 +1892,6 @@
     .private-setup input::placeholder {
       color: #657086;
       opacity: 1;
-    }
-
-    .private-content {
-      background: rgba(255, 255, 255, 0.9);
     }
 
     #scope {

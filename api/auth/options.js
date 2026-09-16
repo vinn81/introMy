@@ -1,4 +1,4 @@
-const { method, jsonBody, setSession } = require("../_lib/auth");
+const { method, jsonBody } = require("../_lib/auth");
 const { userById, credentialsByUser, authenticationOptions, requestTestUser } = require("../_lib/webauthn");
 
 module.exports = async function handler(req, res) {
