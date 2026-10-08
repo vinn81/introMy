@@ -1,5 +1,8 @@
 {
   "cleanUrls": true,
+  "redirects": [
+    { "source": "/portfolio", "destination": "/#profile", "permanent": false }
+  ],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
