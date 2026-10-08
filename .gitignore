@@ -5,3 +5,8 @@ node_modules/
 .vercel/
 data/
 *.log
+# 갱신 장치: 개인 기록 원문과 후보 문장은 공개 저장소에 올리지 않음
+renew/input/*
+!renew/input/*.example.csv
+renew/out/candidates.*
+submission/
