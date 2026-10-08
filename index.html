@@ -34,7 +34,7 @@
   <main id="main-content">
     <!-- Intro -->
     <section class="hero" id="about">
-      <div class="container hero-grid">
+      <div class="container hero-grid hero-split">
         <div class="hero-copy">
           <p class="eyebrow">Personal Portfolio</p>
 
@@ -64,6 +64,9 @@
             <a href="#docs"><span>04</span>이력서</a>
           </nav>
         </div>
+        <!-- renew:glance -->
+<aside class="glance" aria-label="한눈에 보기"><p class="glance-title">13주 중 9주차 · 한눈에</p><ul><li><b>36<small>/37일</small></b><span>실천 또는 일부 실천</span><em>리추얼 기록</em></li><li><b>37<small>/38일</small></b><span>확정된 훈련일 중 출석</span><em>내 출석 기록</em></li><li><b>11<small>/11건</small></b><span>과제 최종 확인 완료</span><em>내 제출 현황</em></li></ul><a class="glance-link" href="#numbers">기록 자세히 보기</a></aside>
+<!-- /renew:glance -->
       </div>
     </section>
 
@@ -79,21 +82,39 @@
           </div>
         </div>
 
-        <div class="story-body">
-          <article class="chapter" id="scene-1">
+        <ol class="journey" aria-label="이야기의 흐름">
+          <li class="j-low"><a href="#scene-1"><span class="j-date">09.07</span><strong>무너진 날</strong><em>파일 두 번 손상 · ‘못 했다’</em></a></li>
+          <li class="j-up"><a href="#scene-2"><span class="j-date">09.09</span><strong>다시 일어난 날</strong><em>검색을 이어 가고 동료를 도움</em></a></li>
+          <li class="j-up"><a href="#scene-2"><span class="j-date">09.23</span><strong>개인 과제 마무리</strong><em>단계별 트러블슈팅</em></a></li>
+          <li class="j-top"><a href="#scene-3"><span class="j-date">10.07</span><strong>더 나아진 지금</strong><em>CTF 머신 제작 · 동료 응원</em></a></li>
+        </ol>
+
+        <div class="story-body timeline">
+          <article class="chapter" id="scene-1" data-stage="고난">
+            <span class="chapter-node" aria-hidden="true"></span>
+            <p class="chapter-kicker">Chapter 1 · 고난</p>
             <p class="date"><time datetime="2026-09-07">2026년 9월 7일</time> · 무너진 날</p>
             <p>2026년 9월 7일, 공들여 정리해 둔 네트워크 토폴로지가 제 화면에서 두 번 사라졌습니다. GNS3 실습 중 pfSense 관련 메모리 오류로 파일이 손상되고 초기화된 것입니다. 첫 번째에는 다시 하면 된다고 생각했지만, 두 번째에는 표정을 관리하지 못했습니다. 그날 마감 기록의 ‘강점 행동’ 칸에는 ‘못 했다’라고 적었습니다. ‘일부’라는 말로 줄이지 않았습니다. 8월 11일부터 남긴 마감 기록 37일 가운데 ‘못 했다’는 그날 하루뿐입니다.</p>
             <p>저는 원래 모르는 것 앞에서 쉽게 멈추던 사람이었습니다. 2021년 대학에서 처음 전공을 배울 때, 질문하면 모르는 게 드러날 것 같아 묻지 않았고 잘 모른다는 이유로 필기도 하지 않았습니다. 나중에 다시 보려고 노트를 펼쳤을 때 돌아갈 흔적이 남아 있지 않았습니다. 그 뒤로 모르는 내용도 일단 적는 습관을 들였습니다. 9월 7일에도 저는 적었습니다. “수업 시간 실습은 잊고 집에 가서 다시 해 보자.” 그날 파일을 되살렸다는 기록은 없습니다. 다만 돌아올 자리는 남겼습니다.</p>
           </article>
 
-          <article class="chapter" id="scene-2">
+          <blockquote class="pull">
+            <p>“못 했다.”</p>
+            <cite>2026년 9월 7일 마감 기록 · 마감 기록 37일 가운데 단 하루</cite>
+          </blockquote>
+
+          <article class="chapter" id="scene-2" data-stage="재기">
+            <span class="chapter-node" aria-hidden="true"></span>
+            <p class="chapter-kicker">Chapter 2 · 재기</p>
             <p class="date"><time datetime="2026-09-09">2026년 9월 9일</time> · 다시 일어난 날</p>
             <p>이틀 뒤인 9월 9일, 모르는 내용을 검색으로 하나씩 찾아 이어 갔습니다. 실패를 덮으려고 서둘러 답을 붙잡기보다 지금 필요한 설명이 무엇인지 보려 했습니다. 그날 한 동료는 제가 “본인 과제가 아님에도 타인의 과제를 적극적으로 도와준다”고 적어 주었습니다. 표정을 관리하지 못한 사람과 다른 사람의 화면을 함께 들여다본 사람은 이틀 차이의 같은 사람이었습니다. <mark class="ab" data-ab="대인관계력">대인관계력</mark></p>
             <p>9월 11일에는 다시 헤맸습니다. 보안 솔루션 팀 과제에서 결과가 어떻게 나와야 하는지 모른 채 진행해 시간을 많이 썼습니다. 이번에는 제가 도움을 청할 차례였습니다. 어디까지 했고 무엇을 모르는지 그대로 말했고, 동료의 도움을 받으며 과제를 풀었습니다. 9월 14일부터는 “여유를 갖되 실수가 많아지지 않도록” 하자는 목표를 세웠습니다. <mark class="ab" data-ab="자기조절력">자기조절력</mark></p>
             <p>고비는 또 왔습니다. 몸이 아파 수업을 빠진 뒤 9월 21일 돌아와 남는 시간마다 지난 내용을 따라갔고, 9월 22일에는 VLAN 오류를 “왜 안 되는지, 어떻게 해결할지”로 나눠 단계별로 다시 봤습니다. 그리고 9월 23일, GNS3 개인 과제를 마무리했습니다. <mark class="ab" data-ab="자기동기력">자기동기력</mark></p>
           </article>
 
-          <article class="chapter" id="scene-3">
+          <article class="chapter" id="scene-3" data-stage="지금">
+            <span class="chapter-node" aria-hidden="true"></span>
+            <p class="chapter-kicker">Chapter 3 · 지금</p>
             <p class="date"><time datetime="2026-10-07">2026년 10월 7일</time> · 더 나아진 지금</p>
             <p>지금 저는 도움을 받던 자리에서 건네는 자리로 옮겨 가고 있습니다. 10월 7일에는 CTF 문제 머신을 직접 만들었습니다. 동료들의 테스트에서 오류가 나왔고, 저는 그것을 감추지 않고 “내일 해결해 보자”고 적었습니다. 같은 날 과제 진행이 느린 동료 옆에서 할 수 있다고 응원했고, 한 동료는 제가 “문제가 생겼을 때 포기하지 않고 천천히 해결해 나간다”고 적어 주었습니다. 하루 전인 10월 6일에는 감정적으로 내린 판단 때문에 실수한 일을 바로 인정하고 사과했습니다. 9월 7일의 저라면 하지 못했을 일입니다.</p>
             <p>기록이 그 변화를 보여 줍니다. 마감 기록 37일 가운데 36일이 ‘실천’ 또는 ‘일부 실천’이고, ‘못 했다’ 없이 이어진 기록은 가장 길게 18일입니다.</p>
@@ -102,12 +123,24 @@
 
           <aside class="abilities" aria-label="세 능력이 드러난 장면">
             <h3>이야기 속 세 능력</h3>
-            <dl>
-              <div><dt>자기조절력</dt><dd><a href="#scene-1">9월 7일</a> 표정을 관리하지 못한 날을 ‘못 했다’고 그대로 적고, <a href="#scene-2">9월 14일</a> “여유를 갖되 실수는 줄이자”로 목표를 바꿨습니다. <a href="#scene-3">10월 6일</a>에는 감정적인 판단을 바로 사과했습니다.</dd></div>
-              <div><dt>대인관계력</dt><dd><a href="#scene-2">9월 9일</a> 동료에게 “본인 과제가 아닌데도 돕는다”는 말을 들었고, <a href="#scene-2">9월 11일</a>에는 도움을 청해 함께 풀었습니다. <a href="#scene-3">10월 7일</a> 진행이 느린 동료를 응원했습니다.</dd></div>
-              <div><dt>자기동기력</dt><dd>결석 뒤 <a href="#scene-2">9월 21일</a> 지난 내용을 따라잡았고, <a href="#scene-2">9월 22~23일</a> 단계별로 트러블슈팅해 GNS3 개인 과제를 끝냈습니다.</dd></div>
-            </dl>
-            <h4>기록에서 승인한 문장</h4>
+            <div class="ability-grid">
+              <article class="ability-card">
+                <span class="ability-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></span>
+                <h4>자기조절력</h4>
+                <p><a href="#scene-1">9월 7일</a> 표정을 관리하지 못한 날을 ‘못 했다’고 그대로 적고, <a href="#scene-2">9월 14일</a> “여유를 갖되 실수는 줄이자”로 목표를 바꿨습니다. <a href="#scene-3">10월 6일</a>에는 감정적인 판단을 바로 사과했습니다.</p>
+              </article>
+              <article class="ability-card">
+                <span class="ability-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M10.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/></svg></span>
+                <h4>대인관계력</h4>
+                <p><a href="#scene-2">9월 9일</a> 동료에게 “본인 과제가 아닌데도 돕는다”는 말을 들었고, <a href="#scene-2">9월 11일</a>에는 도움을 청해 함께 풀었습니다. <a href="#scene-3">10월 7일</a> 진행이 느린 동료를 응원했습니다.</p>
+              </article>
+              <article class="ability-card">
+                <span class="ability-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20 10 9l4 6 2-3 4 8z"/><path d="M14 4h6v6"/><path d="M20 4l-6 6"/></svg></span>
+                <h4>자기동기력</h4>
+                <p>결석 뒤 <a href="#scene-2">9월 21일</a> 지난 내용을 따라잡았고, <a href="#scene-2">9월 22~23일</a> 단계별로 트러블슈팅해 GNS3 개인 과제를 끝냈습니다.</p>
+              </article>
+            </div>
+            <h4 class="approved-title">기록에서 승인한 문장</h4>
             <!-- renew:paragraphs -->
 <ul class="approved"><li><span class="chip">자기조절력</span> 9월 14일, “무엇을 하든 여유를 가지고 조급해하지 않도록 행동했다”고 적었습니다. 9월 7일 이후 제가 가장 먼저 바꾼 습관입니다. <small>근거: 리추얼 기록 2026-09-14 · 강점이 드러난 일화</small></li><li><span class="chip">대인관계력</span> 10월 7일, 과제 진행이 느린 동료 옆에서 할 수 있다고 응원했습니다. 9월 7일에 제가 받았던 도움을 이번에는 제가 건넸습니다. <small>근거: 리추얼 기록 2026-10-07 · 강점이 드러난 일화</small></li><li><span class="chip">자기동기력</span> 9월 23일, “포기하지 않고 계속해서 트러블슈팅을 하다 보니 해결됐다”고 적었습니다. GNS3 개인 과제를 마무리한 날입니다. <small>근거: 리추얼 기록 2026-09-23 · 그 결과·알게 된 점</small></li></ul>
 <!-- /renew:paragraphs -->
@@ -131,6 +164,7 @@
         <!-- renew:stats -->
 <div class="tiles"><div class="tile"><b>9주 / 13주</b><span class="tile-label">기록을 남긴 주</span><span class="tile-note">2026-08-11 ~ 2026-10-08, 지금까지 9주차</span><span class="tile-src">출처: 리추얼 기록</span></div><div class="tile"><b>38일</b><span class="tile-label">리추얼을 연 날</span><span class="tile-note">2026-08-11 ~ 2026-10-08</span><span class="tile-src">출처: 리추얼 기록</span></div><div class="tile"><b>36일 / 37일</b><span class="tile-label">실천 또는 일부 실천</span><span class="tile-note">실천 26 · 일부 10 · 못 했다 1</span><span class="tile-src">출처: 리추얼 기록</span></div><div class="tile"><b>18일</b><span class="tile-label">‘못 했다’ 없이 이어진 최장 기록</span><span class="tile-src">출처: 리추얼 기록</span></div><div class="tile"><b>144건</b><span class="tile-label">동료와 나눈 감사 기록</span><span class="tile-src">출처: 리추얼 기록</span></div><div class="tile"><b>37일 / 38일</b><span class="tile-label">확정된 훈련일 중 출석</span><span class="tile-note">결석 1 · 지각 0 · 확정 전 1 · 출석률 94.9%(재적일 39일 기준) · 결석 가운데 하루는 이야기 2장의 아파서 빠진 날</span><span class="tile-src">출처: 내 출석 기록 (2026-10-08 기준)</span></div><div class="tile"><b>11건 / 11건</b><span class="tile-label">제출 과제 최종 확인 완료</span><span class="tile-note">T01~T11 · 마지막 제출 2026-10-08</span><span class="tile-src">출처: 내 제출 현황</span></div></div>
 <p class="pair">마감 기록 37일 가운데 ‘못 했다’는 1일, <a href="#scene-1">2026-09-07</a>입니다. 이야기의 첫 장면이 그날입니다. 2일 뒤인 2026-09-09에 다시 ‘실천했다’를 적었습니다.</p>
+<figure class="calendar"><figcaption><strong>13주 리추얼 달력</strong><span>칸 하나가 평일 하루입니다. 마감 기록의 ‘강점 행동’을 그대로 칠했습니다.</span></figcaption><div class="cal-scroll"><ol class="cal-grid" aria-label="주차별 평일 기록"><li class="cal-week cal-days" aria-hidden="true"><span class="cal-wk">주</span><ol><li>월</li><li>화</li><li>수</li><li>목</li><li>금</li></ol></li><li class="cal-week"><span class="cal-wk">1</span><ol><li class="cal-cell future" data-tip="8월 10일(월) · 개강 전" title="8월 10일(월) · 개강 전"></li><li class="cal-cell done" data-tip="8월 11일(화) · 실천했다" title="8월 11일(화) · 실천했다"></li><li class="cal-cell done" data-tip="8월 12일(수) · 실천했다" title="8월 12일(수) · 실천했다"></li><li class="cal-cell done" data-tip="8월 13일(목) · 실천했다" title="8월 13일(목) · 실천했다"></li><li class="cal-cell done" data-tip="8월 14일(금) · 실천했다" title="8월 14일(금) · 실천했다"></li></ol></li><li class="cal-week"><span class="cal-wk">2</span><ol><li class="cal-cell none" data-tip="8월 17일(월) · 기록 없음(휴일 포함)" title="8월 17일(월) · 기록 없음(휴일 포함)"></li><li class="cal-cell done" data-tip="8월 18일(화) · 실천했다" title="8월 18일(화) · 실천했다"></li><li class="cal-cell done" data-tip="8월 19일(수) · 실천했다" title="8월 19일(수) · 실천했다"></li><li class="cal-cell done" data-tip="8월 20일(목) · 실천했다" title="8월 20일(목) · 실천했다"></li><li class="cal-cell done" data-tip="8월 21일(금) · 실천했다" title="8월 21일(금) · 실천했다"></li></ol></li><li class="cal-week"><span class="cal-wk">3</span><ol><li class="cal-cell done" data-tip="8월 24일(월) · 실천했다" title="8월 24일(월) · 실천했다"></li><li class="cal-cell done" data-tip="8월 25일(화) · 실천했다" title="8월 25일(화) · 실천했다"></li><li class="cal-cell done" data-tip="8월 26일(수) · 실천했다" title="8월 26일(수) · 실천했다"></li><li class="cal-cell part" data-tip="8월 27일(목) · 일부 실천했다" title="8월 27일(목) · 일부 실천했다"></li><li class="cal-cell part" data-tip="8월 28일(금) · 일부 실천했다" title="8월 28일(금) · 일부 실천했다"></li></ol></li><li class="cal-week"><span class="cal-wk">4</span><ol><li class="cal-cell done" data-tip="8월 31일(월) · 실천했다" title="8월 31일(월) · 실천했다"></li><li class="cal-cell part" data-tip="9월 1일(화) · 일부 실천했다" title="9월 1일(화) · 일부 실천했다"></li><li class="cal-cell part" data-tip="9월 2일(수) · 일부 실천했다" title="9월 2일(수) · 일부 실천했다"></li><li class="cal-cell part" data-tip="9월 3일(목) · 일부 실천했다" title="9월 3일(목) · 일부 실천했다"></li><li class="cal-cell done" data-tip="9월 4일(금) · 실천했다" title="9월 4일(금) · 실천했다"></li></ol></li><li class="cal-week"><span class="cal-wk">5</span><ol><li class="cal-cell miss" data-tip="9월 7일(월) · 못 했다" title="9월 7일(월) · 못 했다"><span aria-hidden="true">✕</span></li><li class="cal-cell part" data-tip="9월 8일(화) · 일부 실천했다" title="9월 8일(화) · 일부 실천했다"></li><li class="cal-cell done" data-tip="9월 9일(수) · 실천했다" title="9월 9일(수) · 실천했다"></li><li class="cal-cell done" data-tip="9월 10일(목) · 실천했다" title="9월 10일(목) · 실천했다"></li><li class="cal-cell part" data-tip="9월 11일(금) · 일부 실천했다" title="9월 11일(금) · 일부 실천했다"></li></ol></li><li class="cal-week"><span class="cal-wk">6</span><ol><li class="cal-cell done" data-tip="9월 14일(월) · 실천했다" title="9월 14일(월) · 실천했다"></li><li class="cal-cell done" data-tip="9월 15일(화) · 실천했다" title="9월 15일(화) · 실천했다"></li><li class="cal-cell part" data-tip="9월 16일(수) · 일부 실천했다" title="9월 16일(수) · 일부 실천했다"></li><li class="cal-cell part" data-tip="9월 17일(목) · 일부 실천했다" title="9월 17일(목) · 일부 실천했다"></li><li class="cal-cell none" data-tip="9월 18일(금) · 기록 없음(휴일 포함)" title="9월 18일(금) · 기록 없음(휴일 포함)"></li></ol></li><li class="cal-week"><span class="cal-wk">7</span><ol><li class="cal-cell done" data-tip="9월 21일(월) · 실천했다" title="9월 21일(월) · 실천했다"></li><li class="cal-cell done" data-tip="9월 22일(화) · 실천했다" title="9월 22일(화) · 실천했다"></li><li class="cal-cell done" data-tip="9월 23일(수) · 실천했다" title="9월 23일(수) · 실천했다"></li><li class="cal-cell none" data-tip="9월 24일(목) · 기록 없음(휴일 포함)" title="9월 24일(목) · 기록 없음(휴일 포함)"></li><li class="cal-cell none" data-tip="9월 25일(금) · 기록 없음(휴일 포함)" title="9월 25일(금) · 기록 없음(휴일 포함)"></li></ol></li><li class="cal-week"><span class="cal-wk">8</span><ol><li class="cal-cell done" data-tip="9월 28일(월) · 실천했다" title="9월 28일(월) · 실천했다"></li><li class="cal-cell done" data-tip="9월 29일(화) · 실천했다" title="9월 29일(화) · 실천했다"></li><li class="cal-cell done" data-tip="9월 30일(수) · 실천했다" title="9월 30일(수) · 실천했다"></li><li class="cal-cell part" data-tip="10월 1일(목) · 일부 실천했다" title="10월 1일(목) · 일부 실천했다"></li><li class="cal-cell done" data-tip="10월 2일(금) · 실천했다" title="10월 2일(금) · 실천했다"></li></ol></li><li class="cal-week"><span class="cal-wk">9</span><ol><li class="cal-cell none" data-tip="10월 5일(월) · 기록 없음(휴일 포함)" title="10월 5일(월) · 기록 없음(휴일 포함)"></li><li class="cal-cell done" data-tip="10월 6일(화) · 실천했다" title="10월 6일(화) · 실천했다"></li><li class="cal-cell done" data-tip="10월 7일(수) · 실천했다" title="10월 7일(수) · 실천했다"></li><li class="cal-cell open" data-tip="10월 8일(목) · 시작 기록만 있음" title="10월 8일(목) · 시작 기록만 있음"></li><li class="cal-cell future" data-tip="10월 9일(금) · 아직 오지 않은 날" title="10월 9일(금) · 아직 오지 않은 날"></li></ol></li><li class="cal-week"><span class="cal-wk">10</span><ol><li class="cal-cell future" data-tip="10월 12일(월) · 아직 오지 않은 날" title="10월 12일(월) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 13일(화) · 아직 오지 않은 날" title="10월 13일(화) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 14일(수) · 아직 오지 않은 날" title="10월 14일(수) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 15일(목) · 아직 오지 않은 날" title="10월 15일(목) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 16일(금) · 아직 오지 않은 날" title="10월 16일(금) · 아직 오지 않은 날"></li></ol></li><li class="cal-week"><span class="cal-wk">11</span><ol><li class="cal-cell future" data-tip="10월 19일(월) · 아직 오지 않은 날" title="10월 19일(월) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 20일(화) · 아직 오지 않은 날" title="10월 20일(화) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 21일(수) · 아직 오지 않은 날" title="10월 21일(수) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 22일(목) · 아직 오지 않은 날" title="10월 22일(목) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 23일(금) · 아직 오지 않은 날" title="10월 23일(금) · 아직 오지 않은 날"></li></ol></li><li class="cal-week"><span class="cal-wk">12</span><ol><li class="cal-cell future" data-tip="10월 26일(월) · 아직 오지 않은 날" title="10월 26일(월) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 27일(화) · 아직 오지 않은 날" title="10월 27일(화) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 28일(수) · 아직 오지 않은 날" title="10월 28일(수) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 29일(목) · 아직 오지 않은 날" title="10월 29일(목) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="10월 30일(금) · 아직 오지 않은 날" title="10월 30일(금) · 아직 오지 않은 날"></li></ol></li><li class="cal-week"><span class="cal-wk">13</span><ol><li class="cal-cell future" data-tip="11월 2일(월) · 아직 오지 않은 날" title="11월 2일(월) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="11월 3일(화) · 아직 오지 않은 날" title="11월 3일(화) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="11월 4일(수) · 아직 오지 않은 날" title="11월 4일(수) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="11월 5일(목) · 아직 오지 않은 날" title="11월 5일(목) · 아직 오지 않은 날"></li><li class="cal-cell future" data-tip="11월 6일(금) · 아직 오지 않은 날" title="11월 6일(금) · 아직 오지 않은 날"></li></ol></li></ol></div><ul class="cal-legend"><li><i class="cal-cell done"></i>실천했다</li><li><i class="cal-cell part"></i>일부 실천했다</li><li><i class="cal-cell miss"><span aria-hidden="true">✕</span></i>못 했다</li><li><i class="cal-cell none"></i>기록 없음·휴일</li><li><i class="cal-cell future"></i>남은 날</li></ul></figure>
 <!-- /renew:stats -->
         <p class="method">센 방법: 출석은 출석 화면의 요약(개강일부터 전체), 제출은 제출 현황 화면에서 확인한 과제를 옮겨 적었습니다. 리추얼 기록은 마감 칸 ‘강점 행동’에 적힌 문구(실천했다 / 일부 실천했다 / 못 했다)를 그대로 셉니다. 심리검사 점수가 아니라 제 자기보고 기록입니다. 숫자는 <a href="https://github.com/vinn81/introMy/tree/main/renew">갱신 장치</a>가 다시 만듭니다.</p>
       </div>
@@ -152,7 +186,12 @@
           <article class="work">
             <p class="tag">논문 · 2026-10-06 최종본</p>
             <h3>다국어 입력 환경에서 동일 LLM 패밀리의 추론 안정성과 오류 유형 비교 분석</h3>
-            <p>Claude Opus 5.5와 Sonnet 5.5를 한국어·영어 대응 60문항(P2-Bench)으로 평가했습니다. 응답 240개 중 236개가 만점인 강한 천장 효과를 확인했고, 평균 점수보다 언어 간 짝 비교와 실패·회복 패턴을 함께 봐야 한다고 결론지었습니다.</p>
+            <ul class="work-stats">
+              <li><b>60</b><span>한·영 대응 문항</span></li>
+              <li><b>240</b><span>분석한 응답</span></li>
+              <li><b>98.3%</b><span>만점 비율 (천장 효과)</span></li>
+            </ul>
+            <p>Claude Opus 5.5와 Sonnet 5.5를 P2-Bench로 평가했습니다. 응답 240개 중 236개가 만점인 강한 천장 효과를 확인했고, 평균 점수보다 언어 간 짝 비교와 실패·회복 패턴을 함께 봐야 한다고 결론지었습니다.</p>
             <p class="links"><a href="works/paper.pdf">논문 PDF 보기</a> · <a href="works/paper.docx">원본 DOCX</a></p>
           </article>
           <article class="work slot">
@@ -643,5 +682,6 @@
   </footer>
 
   <script src="script.js" defer></script>
+  <script src="brand.js" defer></script>
 </body>
 </html>
