@@ -1,5 +1,19 @@
 /* 자기소개 페이지 전용 보강 스타일 — style.css의 토큰과 섹션 패널을 그대로 이어 씁니다. */
 
+/* Hero: 한 줄 소개 */
+.hero-copy .oneliner {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  margin: -6px 0 18px;
+  padding-bottom: 6px;
+  color: #fff;
+  font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  border-bottom: 2px solid rgba(189, 185, 255, 0.55);
+}
+
 /* Hero: 바로 가기 */
 .hero-doors {
   position: relative;
