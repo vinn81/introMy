@@ -173,6 +173,60 @@ def stats_block(r, att, sub, cfg):
     return '<div class="tiles">' + "".join(t) + "</div>\n" + pair
 
 
+WEEKDAYS = "월화수목금"
+CELL = {"실천": ("done", "실천했다"), "일부": ("part", "일부 실천했다"), "못함": ("miss", "못 했다")}
+
+
+def calendar_block(days, cfg):
+    """13주 × 평일 달력. 칸 하나가 하루이고, 마감 기록의 ‘강점 행동’ 상태를 모양과 밝기로 나타냅니다."""
+    start = dt.date.fromisoformat(cfg["course_start"])
+    by_date = {d["date"]: STATUS.get(field(d.get("close"), "강점 행동")) if d.get("close") else "열기만" for d in days}
+    last = dt.date.fromisoformat(days[-1]["date"])
+    cols = ['<li class="cal-week cal-days" aria-hidden="true"><span class="cal-wk">주</span><ol>'
+            + "".join(f"<li>{d}</li>" for d in WEEKDAYS) + "</ol></li>"]
+    for w in range(cfg["total_weeks"]):
+        cells = []
+        for i in range(5):
+            day = start + dt.timedelta(days=w * 7 + i)
+            iso = day.isoformat()
+            label = f"{day.month}월 {day.day}일({WEEKDAYS[i]})"
+            st = by_date.get(iso)
+            first = dt.date.fromisoformat(days[0]["date"])
+            if day < first:
+                cls, tip = "future", f"{label} · 개강 전"
+            elif day > last:
+                cls, tip = "future", f"{label} · 아직 오지 않은 날"
+            elif st in CELL:
+                cls, tip = CELL[st][0], f"{label} · {CELL[st][1]}"
+            elif st == "열기만":
+                cls, tip = "open", f"{label} · 시작 기록만 있음"
+            else:
+                cls, tip = "none", f"{label} · 기록 없음(휴일 포함)"
+            mark = '<span aria-hidden="true">✕</span>' if cls == "miss" else ""
+            cells.append(f'<li class="cal-cell {cls}" data-tip="{esc(tip)}" title="{esc(tip)}">{mark}</li>')
+        cols.append(f'<li class="cal-week"><span class="cal-wk">{w + 1}</span><ol>{"".join(cells)}</ol></li>')
+    legend = ('<ul class="cal-legend">'
+              '<li><i class="cal-cell done"></i>실천했다</li><li><i class="cal-cell part"></i>일부 실천했다</li>'
+              '<li><i class="cal-cell miss"><span aria-hidden="true">✕</span></i>못 했다</li>'
+              '<li><i class="cal-cell none"></i>기록 없음·휴일</li><li><i class="cal-cell future"></i>남은 날</li></ul>')
+    return ('<figure class="calendar"><figcaption><strong>13주 리추얼 달력</strong>'
+            '<span>칸 하나가 평일 하루입니다. 마감 기록의 ‘강점 행동’을 그대로 칠했습니다.</span></figcaption>'
+            '<div class="cal-scroll"><ol class="cal-grid" aria-label="주차별 평일 기록">' + "".join(cols) + "</ol></div>"
+            + legend + "</figure>")
+
+
+def glance_block(r, att, sub):
+    """첫 화면의 ‘한눈에 보기’ 카드."""
+    rows = [(f"{r['실천일'] + r['일부실천일']}<small>/{r['마감기록일']}일</small>", "실천 또는 일부 실천", "리추얼 기록")]
+    if att:
+        rows.append((f"{att['출석']}<small>/{att['확정일']}일</small>", "확정된 훈련일 중 출석", "내 출석 기록"))
+    if sub:
+        rows.append((f"{sub['최종확인완료']}<small>/{sub['제출']}건</small>", "과제 최종 확인 완료", "내 제출 현황"))
+    items = "".join(f'<li><b>{v}</b><span>{esc(l)}</span><em>{esc(src)}</em></li>' for v, l, src in rows)
+    return (f'<aside class="glance" aria-label="한눈에 보기"><p class="glance-title">13주 중 {r["경과주"]}주차 · 한눈에</p>'
+            f'<ul>{items}</ul><a class="glance-link" href="#numbers">기록 자세히 보기</a></aside>')
+
+
 def para_block(approved, cands):
     by_id = {c["id"]: c for c in cands}
     rows = []
@@ -228,18 +282,20 @@ def main():
         md += [f"- `{c['id']}` {c['date']} — {c['quote']}  \n  근거: {c['evidence']} · 키워드: {', '.join(c['keywords'])}"
                for c in cands if c["ability"] == name]
         md.append("")
-    block_stats = stats_block(r, att, sub, cfg)
+    block_stats = stats_block(r, att, sub, cfg) + "\n" + calendar_block(days, cfg)
+    block_glance = glance_block(r, att, sub)
     block_para = para_block(approved, cands)
     digests = {
         "stats.json": write(out / "stats.json", json.dumps(stats, ensure_ascii=False, indent=2, sort_keys=True) + "\n"),
         "candidates.json": write(out / "candidates.json", json.dumps(cands, ensure_ascii=False, indent=2) + "\n"),
         "candidates.md": write(out / "candidates.md", "\n".join(md)),
-        "site-block.html": write(out / "site-block.html", block_stats + "\n" + block_para + "\n"),
+        "site-block.html": write(out / "site-block.html", block_glance + "\n" + block_stats + "\n" + block_para + "\n"),
     }
     if a.site:
         site = Path(a.site)
         page = replace_block(site.read_text(encoding="utf-8"), "stats", block_stats)
         page = replace_block(page, "paragraphs", block_para)
+        page = replace_block(page, "glance", block_glance)
         write(site, page)
         print(f"사이트 갱신: {site}")
     for k, v in digests.items():
