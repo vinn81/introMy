@@ -169,7 +169,7 @@
   }
 
   // 결론을 밝힌 흔적: '답/결론' 표시, 결론 접속어, 등식, 판정 표현(타당·참·틀림·결정 불가 등)
-  var CONCLUSION_HINT = /(final answer|answer|verdict|conclusion|therefore|thus|hence|\bso\b|the result|in short|최종|정답|답[은:：]|결론|따라서|그러므로|그래서|결과적으로|=|타당|부당|\b(in)?valid\b|\b(true|false|correct|incorrect|wrong)\b|참이|거짓|맞습니다|맞다|틀렸|틀린|옳|오류|fallacy|\berror\b|cannot be|불가능|결정할 수|알 수 없|^\s*(yes|no|예|아니오|아니요)\b)/im;
+  var CONCLUSION_HINT = /(final answer|answer|verdict|conclusion|therefore|thus|hence|\bso\b|the result|in short|in summary|summary|최종|정답|정리|요약|답[은:：]|결론|따라서|그러므로|그래서|결과적으로|=|타당|부당|\b(in)?valid\b|\b(true|false|correct|incorrect|wrong)\b|참이|거짓|맞습니다|맞다|틀렸|틀린|옳|오류|fallacy|\berror\b|cannot be|불가능|결정할 수|알 수 없|^\s*(yes|no|예|아니오|아니요)\b)/im;
 
   function analyze(text) {
     var clean = String(text == null ? "" : text).slice(0, 20000);
@@ -181,11 +181,13 @@
       var hit = checks[id](masked, clean);
       if (hit) found.push({ id: id, index: hit.index, evidence: hit.evidence || snippet(clean, hit.index, hit.length) });
     });
+    // 핵심 개념을 셋 이상 다룬 서술형 답(실험 설계 등)도 질문에 답한 글로 본다
+    var tp = topics(clean);
     // 번복한 답은 첫 줄이 아니라 번복 뒤에 굵게 쓴 답이 최종 답이다
     var flip = null;
     found.forEach(function (x) { if (x.id === "flip") flip = x; });
     var fa = flip && flip.index != null ? afterFlip(clean.slice(flip.index)) : "";
-    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), hasConclusion: CONCLUSION_HINT.test(clean) };
+    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), topics: tp, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3 };
   }
 
   // '최종 답/답' 표시 줄 → '결론/평가' 표시 줄 → 숫자가 든 굵은 글씨 순서로 찾는다
@@ -286,6 +288,39 @@
     return { parts: parts, total: total };
   }
 
+  // 서술형 답(실험 설계, 원리 설명)을 맞대기 위한 한·영 공통 핵심 개념
+  var TOPICS = [
+    ["무작위배정", /random(ly)? assign|randomi[sz]|random allocation|무작위 ?배정|무작위 ?할당|무작위로 (두 )?(집단|그룹|배정|나누)/i],
+    ["위약", /placebo|위약/i],
+    ["맹검", /blind|맹검/i],
+    ["이중맹검", /double[- ]blind|이중 ?맹검/i],
+    ["대조군", /control group|comparison group|대조군|통제군|비교군/i],
+    ["선택 편향", /selection bias|allocation bias|선택 편향|선정 편향|배정 편향/i],
+    ["위약·기대 효과", /placebo effect|expectation|expectanc|기대 효과|위약 효과|기대(감|하는|만으로)/i],
+    ["관찰자 편향", /observer bias|experimenter bias|assessor|rater bias|detection bias|ascertainment|관찰자 편향|측정자 편향|평가자 편향|실험자 편향|검사자/i],
+    ["교란 변수", /confound|교란/i],
+    ["표본 크기·검정력", /sample size|statistical power|\bpower\b|표본 ?크기|검정력|참가자 수/i],
+    ["교차 설계", /cross-?over|교차 ?설계/i],
+    ["통계 검정", /t-test|anova|statistical(ly)? (test|signific)|통계(적)? ?(검정|유의)/i],
+    ["독립변수", /independent variable|\biv\b|독립 ?변수/i],
+    ["종속변수", /dependent variable|\bdv\b|종속 ?변수/i],
+    ["통제변수", /control(led)? variables?|controls? =|held constant|kept constant|통제 ?변수|일정하게/i],
+    ["반복 측정", /replicat|repeat|multiple trials|반복/i],
+    ["자연선택", /natural selection|selection pressure|selected for|selects for|자연 ?선택|선택압/i],
+    ["변이는 미리·무작위로 생김", /pre-?existing (variant|mutation|resist)|already exist|random mutation|mutations? (arise|occur) (randomly|spontaneously)|independent(ly)? of need|regardless of need|이미 (존재|있던)|무작위(로|적)? ?(돌연)?변이|변이는[^.]{0,20}무작위|필요와 (무관|상관없)/i],
+    ["상관관계", /correlat|co-?var|association|상관/i],
+    ["인과관계", /causation|causal|인과/i],
+    ["실험적 개입", /intervention|manipulat|mesocosm|개입|조작(하는|해|한)? ?실험|직접 조작/i],
+    ["역인과", /reverse caus|역인과|인과 방향/i],
+    ["온도", /temperature|온도/i],
+    ["효소 변성", /denatur|변성/i]
+  ];
+
+  function topics(text) {
+    var t = plainMath(text);
+    return TOPICS.filter(function (c) { return c[1].test(t); }).map(function (c) { return c[0]; });
+  }
+
   // 두 언어 답을 맞대기 위한 한·영 공통 개념. 앞의 것이 먼저 지워져 "타당하지 않다"가 "타당"으로 다시 잡히지 않는다
   var CONCEPTS = [
     ["invalid", /\b(invalid|not valid|unsound)\b|타당하지 않|부당/gi],
@@ -384,7 +419,21 @@
     var mathsDiffer = relationsDiffer(fa.maths, fb.maths);
     var numsDiffer = fa.nums.length && fb.nums.length && !similarNums(fa.nums, fb.nums) && !shared;
     var same = conflict || mathsDiffer || numsDiffer ? false : (match ? true : null);
-    return { sameAnswer: same, aSignals: a.signals.length, bSignals: b.signals.length };
+    var result = { sameAnswer: same, mode: "answer", aSignals: a.signals.length, bSignals: b.signals.length };
+    // 한 줄 최종 답이 없거나 핵심 개념이 많은 서술형 답은 개념을 얼마나 똑같이 다뤘는지로 본다
+    var ta = a.topics || [], tb = b.topics || [];
+    if (same !== false && Math.min(ta.length, tb.length) >= (same === null ? 3 : 4)) {
+      var both = ta.filter(function (t) { return tb.indexOf(t) >= 0; });
+      result.mode = "topics";
+      result.topics = {
+        both: both,
+        onlyA: ta.filter(function (t) { return tb.indexOf(t) < 0; }),
+        onlyB: tb.filter(function (t) { return ta.indexOf(t) < 0; })
+      };
+      // 서술형은 '틀린 답'이 아니라 다룬 내용이 갈린 것이므로 false 대신 "partial"
+      result.sameAnswer = both.length / (ta.length + tb.length - both.length) >= 0.6 ? true : "partial";
+    }
+    return result;
   }
 
   var api = { RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
