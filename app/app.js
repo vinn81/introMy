@@ -6,6 +6,8 @@
   var EXAMPLES = window.P2_EXAMPLES || [];
   var ITEMS = window.P2_ITEMS || [];
   var MAX_LEN = 20000;
+  // 관련성 확인에서 '다른 질문'으로 쓰는 P2-Bench 60문항(한국어·영어)
+  var DECOYS = ITEMS.map(function (it) { return [it.kr, it.en]; });
 
   var $ = function (id) { return document.getElementById(id); };
   var state = { analysis: null, checked: {}, analysisB: null, reference: null, relevance: null };
@@ -149,7 +151,7 @@
         return;
       }
       state.analysis = P.analyze(text);
-      state.relevance = P.relevance(questionForRelevance(), text);
+      state.relevance = P.relevance(questionForRelevance(), text, DECOYS);
       $("relevance-ok").checked = false;
       state.checked = {};
       state.analysis.signals.forEach(function (s) { state.checked[s.id] = true; });
@@ -208,7 +210,11 @@
     if (offTopic) {
       $("score-total").textContent = "—";
       scoreBox.className = "score";
-      if (rel.status === "unrelated") {
+      if (rel.status === "unrelated" && rel.reason === "other") {
+        var other = rel.other ? rel.other[0] : "";
+        title = "다른 질문에 대한 답으로 보여 점수를 매기지 않았습니다";
+        text = "이 답은 넣은 질문보다 P2-Bench의 다른 문항 “" + (other.length > 60 ? other.slice(0, 60) + "…" : other) + "”과 숫자·수식·핵심 낱말이 훨씬 많이 겹칩니다. 질문과 답을 짝지어 넣었는지 확인하세요.";
+      } else if (rel.status === "unrelated") {
         title = "질문과 관련 없는 답으로 보여 점수를 매기지 않았습니다";
         text = "질문의 숫자·수식·핵심 낱말이 답에 거의 나오지 않습니다. 흔들림이 없다고 100점을 주면 엉뚱한 글도 만점이 되므로 점수를 보류했습니다. 다른 질문의 답을 넣지 않았는지 확인하세요.";
       } else {
@@ -267,7 +273,7 @@
       var textB = readAnswer("answer-b", "compare-note");
       if (textB === null) { $("compare-body").hidden = true; return; }
       state.analysisB = P.analyze(textB);
-      state.relevanceB = P.relevance(questionForRelevance(), textB);
+      state.relevanceB = P.relevance(questionForRelevance(), textB, DECOYS);
       $("final-a").value = state.analysis.finalAnswer || "";
       $("final-b").value = state.analysisB.finalAnswer || "";
       $("meta-a").textContent = describe(state.analysis, state.relevance, $("relevance-ok").checked);
