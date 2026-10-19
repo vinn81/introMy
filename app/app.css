@@ -23,6 +23,8 @@
 
 * { box-sizing: border-box; }
 
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -172,6 +174,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .check { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding: 12px 16px; border-radius: 14px; border: 1px solid var(--line); cursor: pointer; font-size: 0.92rem; }
 .check input { margin-top: 4px; width: 18px; height: 18px; flex: none; accent-color: var(--bad); }
+.check.relevance { margin: 0 0 16px; background: var(--warn-soft); border-color: #f2c879; }
+.check.relevance input { accent-color: var(--accent); }
 .check.wrong:has(input:checked) { background: var(--bad-soft); border-color: #f3b4ad; }
 
 .next { margin: 0; padding-left: 20px; }

@@ -80,8 +80,8 @@
           </div>
 
           <label class="field">
-            <span>질문 <em>(선택)</em></span>
-            <textarea id="question" rows="2" placeholder="AI에게 한 질문을 적어 두면 결과에 함께 보입니다."></textarea>
+            <span>질문 <em>(필수 · 답이 이 질문에 대한 것인지 먼저 확인합니다)</em></span>
+            <textarea id="question" rows="2" placeholder="AI에게 한 질문을 그대로 붙여 넣으세요."></textarea>
           </label>
           <p class="reference" id="reference" hidden></p>
 
@@ -124,8 +124,14 @@
               </div>
             </div>
 
+            <label class="check relevance" id="relevance-box" hidden>
+              <input type="checkbox" id="relevance-ok" />
+              <span><b>이 답은 위 질문에 대한 답이 맞습니다</b> — 직접 확인했다면 체크하세요. 그때부터 흔들림 점수를 매깁니다.</span>
+            </label>
+
             <div class="rubric" id="rubric" aria-label="루브릭 다섯 항목"></div>
 
+            <div id="scored-part">
             <h3 class="sub">흔들림 신호 (논문 7장 오류 분석의 세 유형)</h3>
             <div class="signals" id="signals"></div>
 
@@ -133,6 +139,8 @@
               <input type="checkbox" id="wrong-answer" />
               <span><b>최종 답 자체가 틀렸다</b> — 기준 정답이나 믿을 만한 자료와 다르면 체크하세요. 최종 답 정확성 40점이 0점이 됩니다.</span>
             </label>
+
+            </div>
 
             <h3 class="sub">다음에 할 일</h3>
             <ul class="next" id="next"></ul>
