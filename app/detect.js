@@ -171,6 +171,19 @@
   // 결론을 밝힌 흔적: '답/결론' 표시, 결론 접속어, 등식, 판정 표현(타당·참·틀림·결정 불가 등)
   var CONCLUSION_HINT = /(final answer|answer|verdict|conclusion|therefore|thus|hence|\bso\b|the result|in short|in summary|summary|최종|정답|정리|요약|답[은:：]|결론|따라서|그러므로|그래서|결과적으로|=|타당|부당|\b(in)?valid\b|\b(true|false|correct|incorrect|wrong)\b|참이|거짓|맞습니다|맞다|틀렸|틀린|옳|오류|fallacy|\berror\b|cannot be|불가능|결정할 수|알 수 없|^\s*(yes|no|예|아니오|아니요)\b)/im;
 
+  function conclusionBy(text, tp) {
+    var m = CONCLUSION_HINT.exec(text);
+    if (m) return m[0].trim() === "=" ? "등식(=)으로 답을 냄" : "결론 표시 ‘" + m[0].trim() + "’";
+    if (tp.length >= 3) return "핵심 개념 " + tp.length + "개(" + tp.slice(0, 4).join(", ") + ")를 다룬 서술형 답";
+    return "";
+  }
+
+  function lastSentence(text) {
+    var parts = plainMath(text).replace(/[*#>]/g, "").split(/(?<=[.!?。])\s+|\n+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    var l = parts.length ? parts[parts.length - 1] : "";
+    return l.length > 80 ? l.slice(0, 80) + "…" : l;
+  }
+
   function analyze(text) {
     var clean = String(text == null ? "" : text).slice(0, 20000);
     var found = [];
@@ -187,7 +200,8 @@
     var flip = null;
     found.forEach(function (x) { if (x.id === "flip") flip = x; });
     var fa = flip && flip.index != null ? afterFlip(clean.slice(flip.index)) : "";
-    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), topics: tp, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3 };
+    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), topics: tp, text: clean, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3,
+      conclusionBy: conclusionBy(clean, tp), lastSentence: lastSentence(clean) };
   }
 
   // '최종 답/답' 표시 줄 → '결론/평가' 표시 줄 → 숫자가 든 굵은 글씨 순서로 찾는다
@@ -375,13 +389,14 @@
     return out;
   }
 
+  // 다르면 "x= 1/(t-1) ↔ 1/(t-2)" 같은 설명을, 아니면 ""를 돌려준다
   function relationsDiffer(x, y) {
-    var rx = relations(x), ry = relations(y), differ = false, agree = false;
+    var rx = relations(x), ry = relations(y), differ = "", agree = false;
     Object.keys(rx).forEach(function (k) {
       if (!ry[k]) return;
-      if (overlap(rx[k], ry[k])) agree = true; else differ = true;
+      if (overlap(rx[k], ry[k])) agree = true; else if (!differ) differ = k + " " + rx[k][0] + " ↔ " + ry[k][0];
     });
-    return differ && !agree;
+    return agree ? "" : differ;
   }
 
   // 두 숫자 묶음이 절반 이상 겹치는가(중복 제거 후)
@@ -399,31 +414,72 @@
 
   // 반대 개념(타당↔부당, 참↔거짓, 예↔아니오)이 갈리면 다른 답,
   // 겹치는 숫자·수식·개념이 있으면 같은 답, 둘 다 없으면 판단하지 않는다
+  function keyLabels(k) {
+    var out = [];
+    k.nums.forEach(function (n) { if (out.indexOf("숫자 " + n) < 0) out.push("숫자 " + n); });
+    k.maths.forEach(function (m) { if (out.indexOf("식 " + m) < 0) out.push("식 " + m); });
+    Object.keys(k.tags).forEach(function (t) { out.push("판정 ‘" + (TAG_LABELS[t] || t) + "’"); });
+    if (k.yn) out.push(k.yn === "yes" ? "판정 ‘예’" : "판정 ‘아니오’");
+    return out.slice(0, 8);
+  }
+
+  // 언어와 무관한 단서(두 자리 이상 숫자, 수식, 핵심 개념, 특정 개념)만 모은다 — 한·영 답 전체를 맞댈 때 쓴다
+  function neutralFeatures(text) {
+    var f = features(text), out = {};
+    Object.keys(f).forEach(function (k) {
+      if (k.indexOf("w:") === 0 || /^n:\d$/.test(k)) return;
+      out[k] = f[k];
+    });
+    return out;
+  }
+
+  // a, b: { finalAnswer, lead, topics, text, signals }
+  // 돌려주는 값: sameAnswer(true | false | "partial" | null), mode, why(판정 근거 문장들)
   function compare(a, b) {
     // 갈림(반대 개념·다른 숫자)은 최종 답 칸만 보고, 같음은 첫 문장·결론 문장까지 함께 본다
     var fa = keyOf(a.finalAnswer), fb = keyOf(b.finalAnswer);
     var ka = keyOf((a.finalAnswer || "") + "\n" + (a.lead || ""));
     var kb = keyOf((b.finalAnswer || "") + "\n" + (b.lead || ""));
-    var conflict = OPPOSITE.some(function (o) {
+    var why = [];
+    var conflicts = [];
+    OPPOSITE.forEach(function (o) {
       var aa = fa.tags[o[0]] && !fa.tags[o[1]], an = fa.tags[o[1]] && !fa.tags[o[0]];
       var ba = fb.tags[o[0]] && !fb.tags[o[1]], bn = fb.tags[o[1]] && !fb.tags[o[0]];
-      return (aa && bn) || (an && ba);
+      if (aa && bn) conflicts.push("1단계 답은 ‘" + TAG_LABELS[o[0]] + "’, 다른 언어 답은 ‘" + TAG_LABELS[o[1]] + "’");
+      if (an && ba) conflicts.push("1단계 답은 ‘" + TAG_LABELS[o[1]] + "’, 다른 언어 답은 ‘" + TAG_LABELS[o[0]] + "’");
     });
-    if (fa.yn && fb.yn && fa.yn !== fb.yn) conflict = true;
+    if (fa.yn && fb.yn && fa.yn !== fb.yn) conflicts.push("1단계 답은 ‘" + (fa.yn === "yes" ? "예" : "아니오") + "’, 다른 언어 답은 ‘" + (fb.yn === "yes" ? "예" : "아니오") + "’");
     // "결정할 수 없다"와 단정한 "예"는 다른 답
-    if ((fa.tags.undetermined && !fb.tags.undetermined && fb.yn === "yes") || (fb.tags.undetermined && !fa.tags.undetermined && fa.yn === "yes")) conflict = true;
+    if (fa.tags.undetermined && !fb.tags.undetermined && fb.yn === "yes") conflicts.push("1단계 답은 ‘결정할 수 없음’, 다른 언어 답은 ‘예’로 단정");
+    if (fb.tags.undetermined && !fa.tags.undetermined && fa.yn === "yes") conflicts.push("1단계 답은 ‘예’로 단정, 다른 언어 답은 ‘결정할 수 없음’");
     var tagsA = Object.keys(ka.tags), tagsB = Object.keys(kb.tags);
-    var shared = overlap(ka.maths, kb.maths) || overlap(tagsA, tagsB);
-    var match = shared || similarNums(ka.nums, kb.nums) || (ka.yn && ka.yn === kb.yn);
+    var sharedMaths = ka.maths.filter(function (m, i) { return kb.maths.indexOf(m) >= 0 && ka.maths.indexOf(m) === i; });
+    var sharedTags = tagsA.filter(function (t) { return tagsB.indexOf(t) >= 0; });
+    var shared = sharedMaths.length > 0 || sharedTags.length > 0;
+    var numsSimilar = similarNums(ka.nums, kb.nums);
+    var ynSame = ka.yn && ka.yn === kb.yn;
+    var match = shared || numsSimilar || ynSame;
     // 같은 변수에 다른 값을 준 식(x=1/(t-1) ↔ x=1/(t-2), t≠1 ↔ t≠2)이 있거나, 숫자가 절반도 안 겹치면 다른 답
-    var mathsDiffer = relationsDiffer(fa.maths, fb.maths);
-    var numsDiffer = fa.nums.length && fb.nums.length && !similarNums(fa.nums, fb.nums) && !shared;
-    var same = conflict || mathsDiffer || numsDiffer ? false : (match ? true : null);
-    var result = { sameAnswer: same, mode: "answer", aSignals: a.signals.length, bSignals: b.signals.length };
+    var relDiff = relationsDiffer(fa.maths, fb.maths);
+    if (relDiff) conflicts.push("같은 변수에 다른 값: " + relDiff);
+    if (fa.nums.length && fb.nums.length && !similarNums(fa.nums, fb.nums) && !shared) {
+      conflicts.push("최종 답의 숫자가 다름: " + uniq(fa.nums).join(", ") + " ↔ " + uniq(fb.nums).join(", "));
+    }
+    var same = conflicts.length ? false : (match ? true : null);
+    if (same === false) why = conflicts;
+    if (same === true) {
+      if (sharedMaths.length) why.push("두 답에 같은 식이 있음: " + sharedMaths.slice(0, 3).join(", "));
+      if (sharedTags.length) why.push("두 답의 판정이 같음: " + sharedTags.map(function (t) { return "‘" + (TAG_LABELS[t] || t) + "’"; }).join(", "));
+      if (numsSimilar) why.push("두 답의 숫자가 절반 이상 겹침: " + uniq(ka.nums).filter(function (n) { return kb.nums.indexOf(n) >= 0; }).slice(0, 5).join(", "));
+      if (ynSame) why.push("두 답 모두 ‘" + (ka.yn === "yes" ? "예" : "아니오") + "’로 답함");
+    }
+    var result = { sameAnswer: same, mode: "answer", aSignals: a.signals.length, bSignals: b.signals.length, why: why };
+
     // 한 줄 최종 답이 없거나 핵심 개념이 많은 서술형 답은 개념을 얼마나 똑같이 다뤘는지로 본다
     var ta = a.topics || [], tb = b.topics || [];
     if (same !== false && Math.min(ta.length, tb.length) >= (same === null ? 3 : 4)) {
       var both = ta.filter(function (t) { return tb.indexOf(t) >= 0; });
+      var ratio = both.length / (ta.length + tb.length - both.length);
       result.mode = "topics";
       result.topics = {
         both: both,
@@ -431,13 +487,54 @@
         onlyB: tb.filter(function (t) { return ta.indexOf(t) < 0; })
       };
       // 서술형은 '틀린 답'이 아니라 다룬 내용이 갈린 것이므로 false 대신 "partial"
-      result.sameAnswer = both.length / (ta.length + tb.length - both.length) >= 0.6 ? true : "partial";
+      result.sameAnswer = ratio >= 0.6 ? true : "partial";
+      result.why = ["핵심 개념 " + (ta.length + tb.length - both.length) + "개 중 " + both.length + "개를 두 답이 함께 다룸(" + Math.round(ratio * 100) + "%, 60% 이상이면 같은 내용으로 봄)"];
+      return result;
+    }
+
+    // 결론 줄로 판정이 안 되면 두 답 전체에서 언어와 무관한 단서(숫자·수식·개념)를 맞댄다
+    if (same === null && a.text && b.text) {
+      var na = neutralFeatures(a.text), nb = neutralFeatures(b.text);
+      var la = Object.keys(na), lb = Object.keys(nb);
+      var common = sharedKeys(na, nb);
+      var denom = Math.min(la.length, lb.length);
+      if (denom >= 2) {
+        var r = common.length / denom;
+        result.mode = "whole";
+        result.sameAnswer = r >= 0.5 ? true : "partial";
+        result.why = [
+          "결론 줄에서 맞댈 숫자·판정을 찾지 못해 두 답 전체의 숫자·수식·개념을 맞댐",
+          "단서가 적은 쪽(" + denom + "개) 기준 " + common.length + "개가 겹침(" + Math.round(r * 100) + "%, 50% 이상이면 같은 내용으로 봄)",
+          common.length ? "겹친 단서: " + labels(common, na).join(", ") : "겹친 단서 없음"
+        ];
+        var onlyA = la.filter(function (k) { return common.indexOf(k) < 0; }), onlyB = lb.filter(function (k) { return sharedKeys(nb, na).indexOf(k) < 0; });
+        if (r < 0.5) {
+          if (onlyA.length) result.why.push("1단계 답에만: " + labels(onlyA, na).join(", "));
+          if (onlyB.length) result.why.push("다른 언어 답에만: " + labels(onlyB, nb).join(", "));
+        }
+        return result;
+      }
+    }
+    if (same === null) {
+      result.why = [
+        "1단계 최종 답 ‘" + short(a.finalAnswer) + "’에서 찾은 단서: " + (keyLabels(fa).join(", ") || "없음"),
+        "다른 언어 최종 답 ‘" + short(b.finalAnswer) + "’에서 찾은 단서: " + (keyLabels(fb).join(", ") || "없음"),
+        "두 답 전체에서도 언어와 무관한 단서(두 자리 이상 숫자·수식·핵심 개념)가 각각 2개 이상 있어야 맞댈 수 있는데, " +
+          (a.text && b.text ? "1단계 답 " + Object.keys(neutralFeatures(a.text)).length + "개, 다른 언어 답 " + Object.keys(neutralFeatures(b.text)).length + "개뿐입니다" : "최종 답 칸을 직접 고쳐 전체 비교를 건너뛰었습니다")
+      ];
     }
     return result;
   }
 
+  function uniq(xs) { return xs.filter(function (v, i) { return xs.indexOf(v) === i; }); }
+
+  function short(t) {
+    t = String(t || "").replace(/\s+/g, " ").trim();
+    return t.length > 50 ? t.slice(0, 50) + "…" : (t || "없음");
+  }
+
   // 답이 질문과 관련 있는가: 숫자·수식·핵심 개념·주요 단어가 겹치는지 본다
-  var STOP_KO = /^(있고|있다|있는|같은|같이|이라|이다|입니|합니|하는|하고|하여|하시|하라|대한|대해|에서|으로|다음|경우|전체|모든|어떤|이것|그것|무엇|설명|구하|제시|판단|평가|주어|문제|사용|위해|때문|따라|또는|그리|아니|없는|없다|않는|되는|된다|한다|것이|것은|확인|이상|이하|이때|그때|각각|모두|하나|여러|같다|보다|위의|아래)$/;
+  var STOP_KO = /^(있고|있다|있는|같은|같이|이라|이다|입니|합니|하는|하고|하여|하시|하라|대한|대해|에서|으로|다음|경우|전체|모든|어떤|이것|그것|무엇|설명|구하|제시|판단|평가|주어|문제|사용|위해|때문|따라|또는|그리|아니|없는|없다|않는|되는|된다|한다|것이|것은|확인|이상|이하|이때|그때|각각|모두|하나|여러|같다|보다|위의|아래|생각|분류|때도|해를|시오|하시|하자)$/;
   var STOP_EN = /^(the|and|that|this|with|from|have|then|than|when|what|which|there|their|these|those|each|only|also|does|into|your|will|would|should|could|about|given|following|answer|explain|find|show|state|give|whether|both|must|such|some|more|most|other|check|least|true|false|valid|correct|result|briefly|justify|then|here)$/;
 
   function contentWords(text) {
@@ -446,6 +543,39 @@
     var en = (t.match(/[a-z]{4,}/g) || []).filter(function (w) { return !STOP_EN.test(w); }).map(function (w) { return w.slice(0, 5); });
     var all = ko.concat(en);
     return all.filter(function (w, i) { return all.indexOf(w) === i; });
+  }
+
+  // 낱말 단서(앞 2~5글자)를 사람이 읽을 원래 낱말로 되돌리기 위한 표
+  function wordOriginals(text) {
+    var t = plainMath(text).toLowerCase(), out = {};
+    (t.match(/[가-힣]{2,}/g) || []).forEach(function (w) { if (!out[w.slice(0, 2)]) out[w.slice(0, 2)] = w; });
+    (t.match(/[a-z]{4,}/g) || []).forEach(function (w) { if (!out[w.slice(0, 5)]) out[w.slice(0, 5)] = w; });
+    return out;
+  }
+
+  var TAG_LABELS = {
+    valid: "타당", invalid: "타당하지 않음", "true": "참", "false": "거짓", undetermined: "결정할 수 없음",
+    inconsistent: "모순", wrong: "틀림", empty: "해 없음", necessary: "필요조건", "knave-knight": "기사·거짓말쟁이",
+    "affirming-consequent": "후건 긍정의 오류", "modus-tollens": "후건 부정(대우)", disjunctive: "선언 삼단논법",
+    ignorance: "무지에 호소하는 오류", "post-hoc": "선후·인과 혼동", correlation: "상관관계", confound: "교란 변수",
+    sycophancy: "아첨성 번복", "at-least-one": "적어도 하나", left: "평형이 왼쪽으로", inaccurate: "부정확",
+    "controlled-trial": "무작위·위약 대조", variables: "독립변수"
+  };
+
+  function clueLabel(key, value) {
+    var kind = key.slice(0, 2), v = key.slice(2);
+    if (kind === "n:") return "숫자 " + v;
+    if (kind === "m:" || kind === "f:") return "식 " + v;
+    if (kind === "t:") return "개념 " + v;
+    if (kind === "g:") return "개념 " + (TAG_LABELS[v] || v);
+    return "낱말 ‘" + (typeof value === "string" ? value : v) + "’";
+  }
+
+  // 같은 이름은 한 번만, 최대 6개
+  function labels(keys, f) {
+    var out = [];
+    keys.forEach(function (k) { var l = clueLabel(k, f[k]); if (out.indexOf(l) < 0 && out.length < 6) out.push(l); });
+    return out;
   }
 
   var GENERIC_TAGS = ["valid", "invalid", "true", "false", "wrong", "undetermined", "inconsistent", "empty"];
@@ -475,7 +605,8 @@
     fragments(text).forEach(function (x) { f["f:" + x] = 1; });
     topics(text).forEach(function (t) { f["t:" + t] = 1; });
     Object.keys(k.tags).forEach(function (t) { if (GENERIC_TAGS.indexOf(t) < 0) f["g:" + t] = 1; });
-    contentWords(text).forEach(function (w) { f["w:" + w] = 1; });
+    var originals = wordOriginals(text);
+    contentWords(text).forEach(function (w) { f["w:" + w] = originals[w] || w; });
     return f;
   }
 
@@ -496,11 +627,12 @@
   function idfOf(decoys) {
     if (idfCache.src === decoys) return idfCache;
     var df = {};
-    decoys.forEach(function (d) {
+    var feats = decoys.map(function (d) {
       var f = features(d.join("\n"));
       Object.keys(f).forEach(function (key) { df[key] = (df[key] || 0) + 1; });
+      return d.map(function (dq) { return { f: features(dq), share: hangulShare(dq) }; });
     });
-    idfCache = { src: decoys, idf: df, n: decoys.length };
+    idfCache = { src: decoys, idf: df, n: decoys.length, feats: feats };
     return idfCache;
   }
 
@@ -538,19 +670,35 @@
     var neutralOnly = sameLang.length === 0;
     var own = 0;
     qs.forEach(function (q) { own = Math.max(own, similarity(features(q), af, idf, neutralOnly)); });
-    var joined = qs.join("\n");
-    var best = 0, bestId = null;
-    decoys.forEach(function (d) {
-      if (d.indexOf(qs[0]) >= 0 || qs.some(function (q) { return d.indexOf(q) >= 0; }) || joined === d.join("\n")) return;
-      d.forEach(function (dq) {
-        var sim = similarity(features(dq), af, idf, neutralOnly || Math.abs(hangulShare(dq) - share) >= 0.5);
-        if (sim > best) { best = sim; bestId = d; }
+    var best = 0, bestId = null, bestF = null;
+    decoys.forEach(function (d, i) {
+      if (qs.some(function (q) { return d.indexOf(q) >= 0; })) return;
+      idf.feats[i].forEach(function (x) {
+        var sim = similarity(x.f, af, idf, neutralOnly || Math.abs(x.share - share) >= 0.5);
+        if (sim > best) { best = sim; bestId = d; bestF = x.f; }
       });
     });
-    var result = { score: Math.round(own * 10) / 10, best: Math.round(best * 10) / 10 };
+    // 판정 근거: 질문의 단서 가운데 답에 나온 것과 안 나온 것(무거운 것부터)
+    var qf = {};
+    qs.forEach(function (q) { var f = features(q); Object.keys(f).forEach(function (k) { qf[k] = f[k]; }); });
+    var usable = Object.keys(qf).filter(function (k) { return !(neutralOnly && k.indexOf("w:") === 0); });
+    var hit = sharedKeys(qf, af).filter(function (k) { return usable.indexOf(k) >= 0; });
+    var byWeight = function (x, y) { return weight(y, idf) - weight(x, idf); };
+    var result = {
+      score: Math.round(own * 10) / 10, best: Math.round(best * 10) / 10, neutralOnly: neutralOnly,
+      found: labels(hit.sort(byWeight), qf),
+      missing: labels(usable.filter(function (k) { return hit.indexOf(k) < 0; }).sort(byWeight), qf),
+      cluesInQuestion: usable.length
+    };
+    if (bestF) result.otherFound = labels(sharedKeys(bestF, af).sort(byWeight), bestF);
     // 비슷한 문항끼리는 점수가 붙어 나오므로, 다른 문항이 분명히(1.3배 넘게) 더 잘 맞을 때만 '다른 질문의 답'으로 본다
     if (own >= RELEVANCE_FLOOR && best <= own * RELEVANCE_MARGIN) { result.status = "related"; return result; }
-    if (neutralOnly) { result.status = "unknown"; return result; }
+    // 언어가 달라 숫자·수식·개념만 볼 수 있을 때: 질문에 그런 단서가 2개 이상인데 답에 하나도 없으면 관련 없음으로 판정
+    if (neutralOnly) {
+      if (usable.length >= 2 && hit.length === 0) { result.status = "unrelated"; result.reason = "weak"; return result; }
+      result.status = "unknown";
+      return result;
+    }
     if (own >= RELEVANCE_FLOOR) { result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result; }
     result.status = "unrelated";
     result.reason = "weak";

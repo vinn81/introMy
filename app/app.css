@@ -209,3 +209,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .bar { grid-template-columns: 96px 1fr 56px; font-size: 0.85rem; }
   .card { padding: 16px; }
 }
+
+/* 판정 근거 */
+.why { margin-top: 10px; font-size: 0.88rem; }
+.why summary { cursor: pointer; font-weight: 750; color: var(--accent-deep); }
+.why ul { margin: 6px 0 0; padding-left: 18px; color: var(--text); }
+.why li { margin-bottom: 4px; }
+.pair-verdict .why { font-weight: 400; }
