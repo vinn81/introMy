@@ -244,16 +244,34 @@
 
   function renderPair() {
     // 사용자가 최종 답 칸을 고쳤으면 그 칸만 보고, 그대로면 답의 첫 문장도 함께 본다
-    var a = { finalAnswer: $("final-a").value, lead: $("final-a").value === state.analysis.finalAnswer ? state.analysis.lead : "", signals: state.analysis.signals };
-    var b = { finalAnswer: $("final-b").value, lead: $("final-b").value === state.analysisB.finalAnswer ? state.analysisB.lead : "", signals: state.analysisB.signals };
+    // 최종 답 칸을 고치면 서술형 개념 비교 대신 고친 칸끼리만 비교한다
+    var untouched = $("final-a").value === state.analysis.finalAnswer && $("final-b").value === state.analysisB.finalAnswer;
+    var a = { finalAnswer: $("final-a").value, lead: untouched ? state.analysis.lead : "", topics: untouched ? state.analysis.topics : [], signals: state.analysis.signals };
+    var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], signals: state.analysisB.signals };
     var c = P.compare(a, b);
-    var cls, head, body;
-    if (c.sameAnswer === false) {
+    var cls, head, body, extra = "";
+    if (c.mode === "topics") {
+      var t = c.topics;
+      var chips = function (label, list) {
+        return list.length ? "<p><b>" + label + "</b> " + list.map(escapeHtml).join(" · ") + "</p>" : "";
+      };
+      extra = chips("두 답 모두:", t.both) + chips("1단계 답에만:", t.onlyA) + chips("다른 언어 답에만:", t.onlyB);
+      var shaky = c.aSignals + c.bSignals > 0;
+      if (c.sameAnswer === true) {
+        cls = shaky ? "warn" : "ok";
+        head = "서술형 답: 두 언어가 같은 핵심 개념을 다뤘습니다" + (shaky ? "만 흔들림 신호가 있습니다." : ".");
+        body = shaky ? "개념은 같으니 흔들림 신호가 없는 쪽 설명을 쓰세요." : "한 줄 정답이 없는 문항이라 핵심 개념이 얼마나 겹치는지로 비교했습니다. 언어를 바꿔도 같은 내용을 설명했습니다.";
+      } else {
+        cls = "warn";
+        head = "서술형 답: 핵심 개념이 일부만 겹칩니다.";
+        body = "같은 질문인데 언어에 따라 다룬 내용이 달랐습니다. 한쪽에만 있는 개념은 다른 쪽 답에서 빠진 부분일 수 있으니, 두 답을 합쳐 보거나 빠진 개념을 AI에게 다시 물어보세요.";
+      }
+    } else if (c.sameAnswer === false) {
       cls = "bad"; head = "두 답의 최종 답이 다릅니다.";
       body = "언어만 바꿨는데 답이 달라졌다면 둘 다 그대로 믿지 마세요. 기준 자료로 확인하거나 AI에게 두 답의 차이를 설명하게 하세요.";
     } else if (c.sameAnswer === null) {
       cls = "unknown"; head = "최종 답을 자동으로 맞대기 어렵습니다.";
-      body = "실험 설계나 긴 설명처럼 답이 한 줄로 정리되지 않으면 자동으로 맞대지 못합니다. 위 두 칸에 각 답의 결론을 짧게(예: 23, 타당하다, invalid, 결정할 수 없다) 적으면 바로 다시 비교합니다. 흔들림 신호: 1단계 답 " + c.aSignals + "개, 다른 언어 답 " + c.bSignals + "개.";
+      body = "한 줄로 정리되는 결론도, 비교할 만한 핵심 개념도 찾지 못했습니다. 위 두 칸에 각 답의 결론을 짧게(예: 23, 타당하다, invalid, 결정할 수 없다) 적으면 바로 다시 비교합니다. 흔들림 신호: 1단계 답 " + c.aSignals + "개, 다른 언어 답 " + c.bSignals + "개.";
     } else if (c.aSignals === 0 && c.bSignals === 0) {
       cls = "ok"; head = "두 언어 모두 같은 답, 흔들림 없음.";
       body = "논문에서 Opus가 60쌍 모두 보인 모양입니다. 이 답은 언어를 바꿔도 안정적입니다.";
@@ -266,7 +284,7 @@
       body = "논문에서 Sonnet이 보인 4쌍과 같은 모양입니다(한국어 쪽 만점, 영어 쪽만 감점). 흔들리지 않은 " + (c.aSignals > 0 ? "다른 언어 답" : "1단계 답") + "의 풀이를 쓰세요.";
     }
     $("pair-verdict").className = "pair-verdict " + cls;
-    $("pair-verdict").innerHTML = escapeHtml(head) + "<p>" + escapeHtml(body) + "</p>";
+    $("pair-verdict").innerHTML = escapeHtml(head) + "<p>" + escapeHtml(body) + "</p>" + extra;
   }
 
   // ---------- 연결 ----------
