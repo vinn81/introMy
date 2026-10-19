@@ -8,7 +8,7 @@
   var MAX_LEN = 20000;
 
   var $ = function (id) { return document.getElementById(id); };
-  var state = { analysis: null, checked: {}, analysisB: null, reference: null };
+  var state = { analysis: null, checked: {}, analysisB: null, reference: null, relevance: null };
 
   function setNote(id, text, isError) {
     var el = $(id);
@@ -120,17 +120,37 @@
   }
 
   // ---------- 2단계: 점검 ----------
+  // P2-Bench 문항이면 한국어·영어 질문을 함께 써서, 다른 언어로 물은 답도 관련성을 확인할 수 있게 한다
+  function questionForRelevance() {
+    var q = ($("question").value || "").trim();
+    for (var i = 0; i < ITEMS.length; i++) {
+      if (ITEMS[i].kr === q || ITEMS[i].en === q) return [ITEMS[i].kr, ITEMS[i].en];
+    }
+    return [q];
+  }
+
+  function hideResult() {
+    state.analysis = null;
+    $("result-empty").hidden = false;
+    $("result-body").hidden = true;
+    $("compare-body").hidden = true;
+  }
+
   function run() {
     try {
+      if (!($("question").value || "").trim()) {
+        setNote("input-note", "질문을 넣어 주세요. 답이 그 질문에 대한 것인지 먼저 확인한 뒤 점수를 매깁니다.", true);
+        hideResult();
+        return;
+      }
       var text = readAnswer("answer", "input-note");
       if (text === null) {
-        state.analysis = null;
-        $("result-empty").hidden = false;
-        $("result-body").hidden = true;
-        $("compare-body").hidden = true;
+        hideResult();
         return;
       }
       state.analysis = P.analyze(text);
+      state.relevance = P.relevance(questionForRelevance(), text);
+      $("relevance-ok").checked = false;
       state.checked = {};
       state.analysis.signals.forEach(function (s) { state.checked[s.id] = true; });
       $("wrong-answer").checked = false;
@@ -179,9 +199,23 @@
     }).join("");
 
     var title, text;
-    var noConclusion = !a.hasConclusion && ids.length === 0 && !wrong;
-    $("rubric").hidden = noConclusion;
-    if (noConclusion) {
+    var rel = state.relevance || { status: "related" };
+    var offTopic = rel.status !== "related" && !$("relevance-ok").checked;
+    var noConclusion = !offTopic && !a.hasConclusion && ids.length === 0 && !wrong;
+    $("relevance-box").hidden = rel.status === "related";
+    $("rubric").hidden = noConclusion || offTopic;
+    $("scored-part").hidden = offTopic;
+    if (offTopic) {
+      $("score-total").textContent = "—";
+      scoreBox.className = "score";
+      if (rel.status === "unrelated") {
+        title = "질문과 관련 없는 답으로 보여 점수를 매기지 않았습니다";
+        text = "질문의 숫자·수식·핵심 낱말이 답에 거의 나오지 않습니다. 흔들림이 없다고 100점을 주면 엉뚱한 글도 만점이 되므로 점수를 보류했습니다. 다른 질문의 답을 넣지 않았는지 확인하세요.";
+      } else {
+        title = "질문과 답의 언어가 달라 관련성을 확인하지 못했습니다";
+        text = "질문을 답과 같은 언어로 넣으면 다시 확인합니다. P2-Bench 문항을 골랐다면 한·영 질문을 함께 봅니다.";
+      }
+    } else if (noConclusion) {
       $("score-total").textContent = "—";
       scoreBox.className = "score";
       title = "결론을 찾지 못해 점수를 매기지 않았습니다";
@@ -200,6 +234,7 @@
     $("verdict-text").textContent = text;
 
     var next = [];
+    if (offTopic) next.push("질문 칸에 AI에게 실제로 한 질문을, 답 칸에 그 질문의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
     if (wrong) next.push("기준 정답이나 교재·공식 자료로 답을 다시 확인하세요.");
     ids.forEach(function (id) { next.push(P.SIGNALS[id].next); });
     if (state.reference && !wrong) next.push("기준 정답(" + state.reference + ")과 최종 답이 같은지 직접 보세요. 다르면 위의 ‘최종 답 자체가 틀렸다’를 체크하세요.");
@@ -208,7 +243,9 @@
   }
 
   // ---------- 3단계: 비교 ----------
-  function describe(an) {
+  function describe(an, rel, confirmed) {
+    if (rel && rel.status !== "related" && !confirmed) return rel.status === "unrelated" ? "질문과 관련 없어 보임 · 점수 보류" : "질문과 언어가 달라 관련성 미확인";
+    if (!an.hasConclusion && !an.signals.length) return "결론을 찾지 못함 · 점수 보류";
     if (!an.signals.length) return "흔들림 신호 없음 · 100점";
     var s = P.score(an.signals.map(function (x) { return x.id; }), false);
     return "신호 " + an.signals.length + "개(" + an.signals.map(function (x) { return P.SIGNALS[x.id].title; }).join(", ") + ") · " + s.total + "점";
@@ -230,10 +267,11 @@
       var textB = readAnswer("answer-b", "compare-note");
       if (textB === null) { $("compare-body").hidden = true; return; }
       state.analysisB = P.analyze(textB);
+      state.relevanceB = P.relevance(questionForRelevance(), textB);
       $("final-a").value = state.analysis.finalAnswer || "";
       $("final-b").value = state.analysisB.finalAnswer || "";
-      $("meta-a").textContent = describe(state.analysis);
-      $("meta-b").textContent = describe(state.analysisB);
+      $("meta-a").textContent = describe(state.analysis, state.relevance, $("relevance-ok").checked);
+      $("meta-b").textContent = describe(state.analysisB, state.relevanceB, false);
       $("compare-body").hidden = false;
       renderPair();
       if (!silent) $("compare-body").scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -250,7 +288,13 @@
     var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], signals: state.analysisB.signals };
     var c = P.compare(a, b);
     var cls, head, body, extra = "";
-    if (c.mode === "topics") {
+    var aOff = state.relevance && state.relevance.status !== "related" && !$("relevance-ok").checked;
+    var bOff = state.relevanceB && state.relevanceB.status === "unrelated";
+    if (aOff || bOff) {
+      cls = "unknown";
+      head = (aOff ? "1단계 답" : "다른 언어 답") + "이 질문과 관련 없어 보여 비교하지 않았습니다.";
+      body = "두 답 모두 같은 질문에 대한 답이어야 비교할 수 있습니다. " + (aOff ? "2단계의 확인 칸을 체크했거나 질문을 고친 뒤 다시 비교하세요." : "다른 언어 답 칸에 같은 질문을 언어만 바꿔 물은 답을 넣어 주세요.");
+    } else if (c.mode === "topics") {
       var t = c.topics;
       var chips = function (label, list) {
         return list.length ? "<p><b>" + label + "</b> " + list.map(escapeHtml).join(" · ") + "</p>" : "";
@@ -294,7 +338,7 @@
     $("item-select").value = "";
     toggleCopy(false);
     showReference(null);
-    state = { analysis: null, checked: {}, analysisB: null, reference: null };
+    state = { analysis: null, checked: {}, analysisB: null, reference: null, relevance: null, relevanceB: null };
     $("result-empty").hidden = false;
     $("result-body").hidden = true;
     $("compare-body").hidden = true;
@@ -318,6 +362,14 @@
     $("final-a").addEventListener("input", function () { if (state.analysisB) renderPair(); });
     $("final-b").addEventListener("input", function () { if (state.analysisB) renderPair(); });
     $("wrong-answer").addEventListener("change", function () { if (state.analysis) renderResult(); });
+    $("relevance-ok").addEventListener("change", function () {
+      if (!state.analysis) return;
+      renderResult();
+      if (state.analysisB) {
+        $("meta-a").textContent = describe(state.analysis, state.relevance, $("relevance-ok").checked);
+        renderPair();
+      }
+    });
     $("signals").addEventListener("change", function (e) {
       var id = e.target && e.target.getAttribute("data-signal");
       if (!id) return;

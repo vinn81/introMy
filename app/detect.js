@@ -436,7 +436,68 @@
     return result;
   }
 
-  var api = { RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
+  // 답이 질문과 관련 있는가: 숫자·수식·핵심 개념·주요 단어가 겹치는지 본다
+  var STOP_KO = /^(있고|있다|있는|같은|같이|이라|이다|입니|합니|하는|하고|하여|하시|하라|대한|대해|에서|으로|다음|경우|전체|모든|어떤|이것|그것|무엇|설명|구하|제시|판단|평가|주어|문제|사용|위해|때문|따라|또는|그리|아니|없는|없다|않는|되는|된다|한다|것이|것은)$/;
+  var STOP_EN = /^(the|and|that|this|with|from|have|then|than|when|what|which|there|their|these|those|each|only|also|does|into|your|will|would|should|could|about|given|following|answer|explain|find|show|state|give|whether|both|must|such|some|more|most|other)$/;
+
+  function contentWords(text) {
+    var t = plainMath(text).toLowerCase();
+    var ko = (t.match(/[가-힣]{2,}/g) || []).map(function (w) { return w.slice(0, 2); }).filter(function (w) { return !STOP_KO.test(w); });
+    var en = (t.match(/[a-z]{4,}/g) || []).filter(function (w) { return !STOP_EN.test(w); }).map(function (w) { return w.slice(0, 5); });
+    var all = ko.concat(en);
+    return all.filter(function (w, i) { return all.indexOf(w) === i; });
+  }
+
+  var GENERIC_TAGS = ["valid", "invalid", "true", "false", "wrong", "undetermined", "inconsistent", "empty"];
+
+  // 수식 토막: 연산자가 든 짧은 식(k(k+1), 2h₂+o₂, mod) — 괄호 모양은 통일
+  function fragments(text) {
+    var t = plainMath(text).toLowerCase().replace(/\s*([+\-*/^=−×])\s*/g, "$1");
+    var out = [];
+    (t.match(/[a-z0-9+\-*/^=²³−×√()\[\]{}]+/g) || []).forEach(function (tok) {
+      var f = tok.replace(/[()\[\]{}]/g, "");
+      if (f.length >= 3 && /[a-z]/.test(f) && /[a-z0-9][+\-*/^²³−×][a-z0-9]/.test(f) && !/^[a-z]+-[a-z]+$/.test(f)) out.push(f);
+    });
+    return out;
+  }
+
+  function hangulShare(text) {
+    var h = (text.match(/[가-힣]/g) || []).length, l = (text.match(/[a-z]/gi) || []).length;
+    return h + l ? h / (h + l) : 0;
+  }
+
+  // 질문을 여러 언어로 받으면(배열) 하나라도 관련 있으면 관련, 같은 언어 질문이 관련 없다고 하면 관련 없음
+  function relevance(question, answer) {
+    if (Array.isArray(question)) {
+      var rs = question.map(function (q) { return relevanceOne(q, answer); });
+      for (var i = 0; i < rs.length; i++) if (rs[i].status === "related") return rs[i];
+      for (i = 0; i < rs.length; i++) if (rs[i].status === "unrelated") return rs[i];
+      return rs[0] || { status: "noquestion" };
+    }
+    return relevanceOne(question, answer);
+  }
+
+  function relevanceOne(question, answer) {
+    var q = String(question || "").trim();
+    if (q.length < 4) return { status: "noquestion" };
+    var kq = keyOf(q), ka = keyOf(answer);
+    var fq = fragments(q), fa = fragments(answer);
+    var sharedNums = kq.nums.filter(function (n, i) { return kq.nums.indexOf(n) === i && ka.nums.indexOf(n) >= 0; });
+    var bigNums = sharedNums.filter(function (n) { return n.replace(".", "").length >= 3; });
+    var smallNums = sharedNums.filter(function (n) { return n.replace(".", "").length < 3; });
+    var specific = Object.keys(kq.tags).filter(function (t) { return GENERIC_TAGS.indexOf(t) < 0 && ka.tags[t]; });
+    var fragHit = fq.some(function (f) { return fa.some(function (g) { return g.indexOf(f) >= 0 || f.indexOf(g) >= 0 && g.length >= 4; }); });
+    var neutral = bigNums.length + (overlap(kq.maths, ka.maths) || fragHit ? 1 : 0) + specific.length +
+      (overlap(topics(q), topics(answer)) ? 1 : 0) + (smallNums.length >= 3 ? 1 : 0);
+    var wq = contentWords(q), wa = contentWords(answer);
+    var shared = wq.filter(function (w) { return wa.indexOf(w) >= 0; });
+    var sameScript = Math.abs(hangulShare(q) - hangulShare(answer)) < 0.5;
+    var wordsOk = (shared.length >= 3 && shared.length >= wq.length * 0.25) || (wq.length <= 4 && shared.length >= 2);
+    if (neutral >= 1 || wordsOk) return { status: "related", shared: shared };
+    return { status: sameScript ? "unrelated" : "unknown" };
+  }
+
+  var api = { relevance: relevance, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.P2Check = api;
 })(typeof window !== "undefined" ? window : this);
