@@ -80,7 +80,7 @@
     var lines = sentences(original);
     if (lines.length >= 3) {
       var first = yesNo(lines[0].replace(/\*/g, ""));
-      var lastBold = original.match(/\*\*[^*]{1,120}\*\*/g);
+      var lastBold = original.match(/\*\*[^*\n]{1,120}\*\*/g);
       var last = lastBold ? yesNo(lastBold[lastBold.length - 1].replace(/\*/g, "")) : null;
       if (first && last && first !== last) {
         return { evidence: "첫 답: " + lines[0].replace(/\*/g, "") + " → 마지막 답: " + lastBold[lastBold.length - 1].replace(/\*/g, "") };
@@ -142,36 +142,46 @@
     var flip = null;
     found.forEach(function (x) { if (x.id === "flip") flip = x; });
     var fa = flip && flip.index != null ? afterFlip(clean.slice(flip.index)) : "";
-    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean) };
+    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean) };
   }
 
   // '최종 답/답' 표시 줄 → '결론/평가' 표시 줄 → 숫자가 든 굵은 글씨 순서로 찾는다
-  var ANSWER_LABEL = /^[\s>*#-]*\**\s*(final answers?|answer|최종 답|최종 답변|답)\s*\**\s*[:：]\s*\**\s*/i;
-  var CONCLUSION_LABEL = /^[\s>*#-]*\**\s*(verdict|conclusion|최종 평가|최종 결론|결론)\s*\**\s*[:：]\s*\**\s*/i;
+  // 콜론이 붙은 표시("답: …")이거나, 표시만 있는 제목 줄("## 최종 답")
+  var ANSWER_LABEL = /^[\s>*#-]*\**\s*(final answers?|answer|최종 답|최종 답변|답)\s*\**\s*([:：]\s*\**\s*|$)/i;
+  var CONCLUSION_LABEL = /^[\s>*#-]*\**\s*(verdict|conclusion|최종 평가|최종 결론|결론)\s*\**\s*([:：.]\s*\**\s*|$)/i;
 
   function labeled(lines, re) {
     for (var i = lines.length - 1; i >= 0; i--) {
       var m = re.exec(lines[i]);
       if (!m) continue;
       var rest = lines[i].slice(m[0].length).replace(/\*/g, "").trim();
+      // 표시 줄이 비어 있으면 다음 줄이 답이다
+      for (var j = i + 1; rest.length <= 1 && j < lines.length && j <= i + 2; j++) rest = lines[j].replace(/[*#]/g, "").replace(/^[\s>-]+/, "").trim();
       if (rest.length > 1) return rest.slice(0, 160);
     }
     return "";
   }
 
   function afterFlip(text) {
-    var bolds = (text.match(/\*\*([^*]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); })
+    var bolds = (text.match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); })
       .filter(function (b) { return !/[:：]$/.test(b); });
     return bolds.join(" · ").slice(0, 160);
   }
 
   function finalAnswer(text) {
-    var lines = text.split(/\n+/);
+    var lines = text.split(/\n+/).filter(function (l) { return l.trim() && !/^[\s|:-]+$/.test(l); });
     var a = labeled(lines, ANSWER_LABEL) || labeled(lines, CONCLUSION_LABEL);
     if (a) return a;
-    var bolds = (text.match(/\*\*([^*]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
-    for (var i = 0; i < bolds.length; i++) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i])) return bolds[i];
+    var bolds = (text.match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
+    for (var i = bolds.length - 1; i >= 0; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i])) return bolds[i];
     return lines[0] ? lines[0].replace(/[*#]/g, "").trim().slice(0, 160) : "";
+  }
+
+  // 답의 첫 문장(제목·번호 목차 줄은 건너뜀)
+  function lead(text) {
+    var lines = text.split(/\n+/).map(function (l) { return l.replace(/[*#>]/g, "").trim(); })
+      .filter(function (l) { return l && !/^\d+[.)]\s*\S{0,20}$/.test(l) && !/^[|:-\s]+$/.test(l); });
+    return lines.length ? lines[0].slice(0, 200) : "";
   }
 
   function score(signalIds, wrongAnswer) {
@@ -188,23 +198,70 @@
     return { parts: parts, total: total };
   }
 
-  // 핵심 수치(답의 숫자·예/아니오)만 뽑아 두 언어 답을 비교
+  // 두 언어 답을 맞대기 위한 한·영 공통 개념. 앞의 것이 먼저 지워져 "타당하지 않다"가 "타당"으로 다시 잡히지 않는다
+  var CONCEPTS = [
+    ["invalid", /\b(invalid|not valid|unsound)\b|타당하지 않|부당/gi],
+    ["valid", /\bvalid\b|타당/gi],
+    ["false", /\b(false|not true)\b|거짓|참이 아니/gi],
+    ["true", /\btrue\b|참(이다|입니다|이며|이고|\b|$)/gi],
+    ["undetermined", /cannot (be )?(uniquely )?(determined|established|concluded|justif)|can't be determined|not (logically )?(established|determined)|insufficient|not enough information|cannot (conclude|establish|justify|be called)|cannot establish|결정할 수 없|알 수 없|정할 수 없|확정(되지 않|할 수 없)|결론(내|을 내)릴 수 없|말할 수 없|도출할 수 없|단정할 수 없/gi],
+    ["inconsistent", /inconsistent|contradict|unsatisfiable|cannot (all )?be true|모순|일관되지 않|동시에 참일 수 없/gi],
+    ["wrong", /\b(wrong|incorrect|unreliable|unjustified|not supported|not a valid)\b|틀렸|틀린|신뢰할 수 없|근거 없|잘못/gi],
+    ["empty", /no real number|empty set|∅|존재하지 않/gi],
+    ["necessary", /\bnecessary\b|필요조건/gi],
+    ["knave-knight", /knave|knight|거짓말쟁이|기사/gi],
+    ["affirming-consequent", /affirming the consequent|후건 ?긍정/gi],
+    ["modus-tollens", /modus tollens|후건 ?부정/gi],
+    ["disjunctive", /disjunctive syllogism|선언적 삼단|선언 소거/gi],
+    ["ignorance", /ignoran|무지에 호소/gi],
+    ["post-hoc", /post hoc|이후(이므로|에 일어)/gi],
+    ["correlation", /correlation|co-?var|association|상관관계/gi],
+    ["at-least-one", /at least one|적어도 한/gi],
+    ["left", /\bleft\b|왼쪽|역반응/gi],
+    ["inaccurate", /inaccurate|부정확/gi],
+    ["controlled-trial", /double-blind|placebo|randomi[sz]|이중맹검|위약|무작위/gi],
+    ["variables", /independent variable|\biv\b|독립변수/gi],
+    ["confound", /confound|교란/gi],
+    ["sycophancy", /sycophan|아첨/gi]
+  ];
+  var OPPOSITE = [["valid", "invalid"], ["true", "false"]];
+
   function keyOf(answer) {
     var a = (answer || "").toLowerCase();
-    var nums = (a.match(/-?\d+(?:\.\d+)?/g) || []).join(",");
-    return { nums: nums, yn: yesNo(a) };
+    var nums = (a.match(/\d+(?:\.\d+)?/g) || []).map(function (n) { return String(parseFloat(n)); });
+    // 수식: 공백을 빼고 기호가 섞인 토막(¬P∨Q, n², E=mc²)
+    var maths = (a.replace(/\s*([∨∧→⇒=+−×^])\s*/g, "$1").replace(/¬\s+/g, "¬").match(/[a-z0-9¬∨∧→⇒²³₀-₉∅=+−×()^]*[¬∨∧→⇒²³₀-₉=^][a-z0-9¬∨∧→⇒²³₀-₉∅=+−×()^]*/g) || [])
+      .filter(function (m) { return m.length >= 2; });
+    var tags = {};
+    var rest = a;
+    CONCEPTS.forEach(function (c) {
+      var re = new RegExp(c[1].source, "gi");
+      if (re.test(rest)) { tags[c[0]] = true; rest = rest.replace(new RegExp(c[1].source, "gi"), " "); }
+    });
+    return { nums: nums, maths: maths, tags: tags, yn: yesNo(a) };
   }
 
-  // 숫자가 하나라도 겹치거나 예/아니오가 같으면 같은 답으로 본다
+  function overlap(x, y) {
+    return x.some(function (v) { return y.indexOf(v) >= 0; });
+  }
+
+  // 반대 개념(타당↔부당, 참↔거짓, 예↔아니오)이 갈리면 다른 답,
+  // 겹치는 숫자·수식·개념이 있으면 같은 답, 둘 다 없으면 판단하지 않는다
   function compare(a, b) {
-    var ka = keyOf(a.finalAnswer), kb = keyOf(b.finalAnswer);
-    var sameNums = null;
-    if (ka.nums && kb.nums) {
-      var setB = kb.nums.split(",");
-      sameNums = ka.nums.split(",").some(function (n) { return setB.indexOf(n) >= 0; });
-    }
-    var sameYn = ka.yn && kb.yn ? ka.yn === kb.yn : null;
-    var same = sameNums === false || sameYn === false ? false : (sameNums || sameYn ? true : null);
+    var ka = keyOf((a.finalAnswer || "") + "\n" + (a.lead || ""));
+    var kb = keyOf((b.finalAnswer || "") + "\n" + (b.lead || ""));
+    var conflict = OPPOSITE.some(function (o) {
+      var aa = ka.tags[o[0]] && !ka.tags[o[1]], an = ka.tags[o[1]] && !ka.tags[o[0]];
+      var ba = kb.tags[o[0]] && !kb.tags[o[1]], bn = kb.tags[o[1]] && !kb.tags[o[0]];
+      return (aa && bn) || (an && ba);
+    });
+    if (ka.yn && kb.yn && ka.yn !== kb.yn) conflict = true;
+    // "결정할 수 없다"와 단정한 "예"는 다른 답
+    if ((ka.tags.undetermined && !kb.tags.undetermined && kb.yn === "yes") || (kb.tags.undetermined && !ka.tags.undetermined && ka.yn === "yes")) conflict = true;
+    var tagsA = Object.keys(ka.tags), tagsB = Object.keys(kb.tags);
+    var match = overlap(ka.nums, kb.nums) || overlap(ka.maths, kb.maths) || overlap(tagsA, tagsB) || (ka.yn && ka.yn === kb.yn);
+    var numsDiffer = ka.nums.length && kb.nums.length && !overlap(ka.nums, kb.nums) && !overlap(tagsA, tagsB);
+    var same = conflict || numsDiffer ? false : (match ? true : null);
     return { sameAnswer: same, aSignals: a.signals.length, bSignals: b.signals.length };
   }
 

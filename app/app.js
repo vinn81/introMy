@@ -222,8 +222,9 @@
   }
 
   function renderPair() {
-    var a = { finalAnswer: $("final-a").value, signals: state.analysis.signals };
-    var b = { finalAnswer: $("final-b").value, signals: state.analysisB.signals };
+    // 사용자가 최종 답 칸을 고쳤으면 그 칸만 보고, 그대로면 답의 첫 문장도 함께 본다
+    var a = { finalAnswer: $("final-a").value, lead: $("final-a").value === state.analysis.finalAnswer ? state.analysis.lead : "", signals: state.analysis.signals };
+    var b = { finalAnswer: $("final-b").value, lead: $("final-b").value === state.analysisB.finalAnswer ? state.analysisB.lead : "", signals: state.analysisB.signals };
     var c = P.compare(a, b);
     var cls, head, body;
     if (c.sameAnswer === false) {
@@ -231,7 +232,7 @@
       body = "언어만 바꿨는데 답이 달라졌다면 둘 다 그대로 믿지 마세요. 기준 자료로 확인하거나 AI에게 두 답의 차이를 설명하게 하세요.";
     } else if (c.sameAnswer === null) {
       cls = "unknown"; head = "최종 답을 자동으로 맞대기 어렵습니다.";
-      body = "자동 비교는 숫자와 예/아니오만 봅니다. 위 두 칸의 최종 답을 같은 표현으로 고치면 다시 비교합니다. 흔들림: 1단계 답 " + c.aSignals + "개, 다른 언어 답 " + c.bSignals + "개.";
+      body = "실험 설계나 긴 설명처럼 답이 한 줄로 정리되지 않으면 자동으로 맞대지 못합니다. 위 두 칸에 각 답의 결론을 짧게(예: 23, 타당하다, invalid, 결정할 수 없다) 적으면 바로 다시 비교합니다. 흔들림 신호: 1단계 답 " + c.aSignals + "개, 다른 언어 답 " + c.bSignals + "개.";
     } else if (c.aSignals === 0 && c.bSignals === 0) {
       cls = "ok"; head = "두 언어 모두 같은 답, 흔들림 없음.";
       body = "논문에서 Opus가 60쌍 모두 보인 모양입니다. 이 답은 언어를 바꿔도 안정적입니다.";
