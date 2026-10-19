@@ -22,14 +22,19 @@
     });
   }
 
+  var INPUT_MESSAGES = {
+    empty: "답이 비어 있습니다. AI 답을 붙여 넣거나 논문 예시를 불러오세요.",
+    short: "답이 너무 짧아 흔들림을 볼 수 없습니다. 풀이까지 포함한 답 전체를 넣어 주세요.",
+    noletters: "글자보다 기호·숫자가 대부분이라 답으로 읽을 수 없습니다. AI가 쓴 문장 답을 넣어 주세요.",
+    repeated: "같은 글자나 문장이 되풀이된 입력이라 점검하지 않았습니다. AI 답 원문을 넣어 주세요.",
+    gibberish: "읽을 수 있는 문장이 아닌 것 같아 점검하지 않았습니다. AI 답 원문을 넣어 주세요."
+  };
+
   function readAnswer(id, noteId) {
     var text = $(id).value || "";
-    if (!text.trim()) {
-      setNote(noteId, "답이 비어 있습니다. AI 답을 붙여 넣거나 논문 예시를 불러오세요.", true);
-      return null;
-    }
-    if (text.trim().length < 15) {
-      setNote(noteId, "답이 너무 짧아 흔들림을 볼 수 없습니다. 풀이까지 포함한 답 전체를 넣어 주세요.", true);
+    var check = P.checkInput(text);
+    if (!check.ok) {
+      setNote(noteId, INPUT_MESSAGES[check.reason] || INPUT_MESSAGES.gibberish, true);
       return null;
     }
     if (text.length > MAX_LEN) {
@@ -118,7 +123,13 @@
   function run() {
     try {
       var text = readAnswer("answer", "input-note");
-      if (text === null) return;
+      if (text === null) {
+        state.analysis = null;
+        $("result-empty").hidden = false;
+        $("result-body").hidden = true;
+        $("compare-body").hidden = true;
+        return;
+      }
       state.analysis = P.analyze(text);
       state.checked = {};
       state.analysis.signals.forEach(function (s) { state.checked[s.id] = true; });
@@ -168,7 +179,14 @@
     }).join("");
 
     var title, text;
-    if (wrong) {
+    var noConclusion = !a.hasConclusion && ids.length === 0 && !wrong;
+    $("rubric").hidden = noConclusion;
+    if (noConclusion) {
+      $("score-total").textContent = "—";
+      scoreBox.className = "score";
+      title = "결론을 찾지 못해 점수를 매기지 않았습니다";
+      text = "‘따라서’, ‘답:’, ‘~이다’처럼 결론을 밝힌 문장이 없습니다. 이 앱은 질문에 답한 글을 점검합니다. AI 답 전체를 넣었는지 확인하세요.";
+    } else if (wrong) {
       title = "최종 답이 틀렸습니다";
       text = "흔들림을 따지기 전에 답 자체를 쓰면 안 됩니다. 기준 자료로 정답을 확인하세요.";
     } else if (ids.length === 0) {
@@ -204,7 +222,10 @@
           return;
         }
         run();
-        if (!state.analysis) return;
+        if (!state.analysis) {
+          setNote("compare-note", "1단계 답을 점검할 수 없습니다. 1단계 칸의 안내를 확인하세요.", true);
+          return;
+        }
       }
       var textB = readAnswer("answer-b", "compare-note");
       if (textB === null) { $("compare-body").hidden = true; return; }
