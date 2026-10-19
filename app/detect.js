@@ -437,8 +437,8 @@
   }
 
   // 답이 질문과 관련 있는가: 숫자·수식·핵심 개념·주요 단어가 겹치는지 본다
-  var STOP_KO = /^(있고|있다|있는|같은|같이|이라|이다|입니|합니|하는|하고|하여|하시|하라|대한|대해|에서|으로|다음|경우|전체|모든|어떤|이것|그것|무엇|설명|구하|제시|판단|평가|주어|문제|사용|위해|때문|따라|또는|그리|아니|없는|없다|않는|되는|된다|한다|것이|것은)$/;
-  var STOP_EN = /^(the|and|that|this|with|from|have|then|than|when|what|which|there|their|these|those|each|only|also|does|into|your|will|would|should|could|about|given|following|answer|explain|find|show|state|give|whether|both|must|such|some|more|most|other)$/;
+  var STOP_KO = /^(있고|있다|있는|같은|같이|이라|이다|입니|합니|하는|하고|하여|하시|하라|대한|대해|에서|으로|다음|경우|전체|모든|어떤|이것|그것|무엇|설명|구하|제시|판단|평가|주어|문제|사용|위해|때문|따라|또는|그리|아니|없는|없다|않는|되는|된다|한다|것이|것은|확인|이상|이하|이때|그때|각각|모두|하나|여러|같다|보다|위의|아래)$/;
+  var STOP_EN = /^(the|and|that|this|with|from|have|then|than|when|what|which|there|their|these|those|each|only|also|does|into|your|will|would|should|could|about|given|following|answer|explain|find|show|state|give|whether|both|must|such|some|more|most|other|check|least|true|false|valid|correct|result|briefly|justify|then|here)$/;
 
   function contentWords(text) {
     var t = plainMath(text).toLowerCase();
@@ -452,7 +452,8 @@
 
   // 수식 토막: 연산자가 든 짧은 식(k(k+1), 2h₂+o₂, mod) — 괄호 모양은 통일
   function fragments(text) {
-    var t = plainMath(text).toLowerCase().replace(/\s*([+\-*/^=−×])\s*/g, "$1");
+    var t = plainMath(text).toLowerCase().replace(/_/g, "").replace(/[₀-₉]/g, function (c) { return String(c.charCodeAt(0) - 8320); })
+      .replace(/ₙ/g, "n").replace(/[⁰-⁹]/g, "").replace(/\s*([+\-*/^=−×])\s*/g, "$1");
     var out = [];
     (t.match(/[a-z0-9+\-*/^=²³−×√()\[\]{}]+/g) || []).forEach(function (tok) {
       var f = tok.replace(/[()\[\]{}]/g, "");
@@ -466,35 +467,94 @@
     return h + l ? h / (h + l) : 0;
   }
 
-  // 질문을 여러 언어로 받으면(배열) 하나라도 관련 있으면 관련, 같은 언어 질문이 관련 없다고 하면 관련 없음
-  function relevance(question, answer) {
-    if (Array.isArray(question)) {
-      var rs = question.map(function (q) { return relevanceOne(q, answer); });
-      for (var i = 0; i < rs.length; i++) if (rs[i].status === "related") return rs[i];
-      for (i = 0; i < rs.length; i++) if (rs[i].status === "unrelated") return rs[i];
-      return rs[0] || { status: "noquestion" };
-    }
-    return relevanceOne(question, answer);
+  // 질문·답에서 관련성 단서를 뽑는다. 숫자·수식·핵심 개념은 언어와 무관(neutral), 낱말은 같은 언어끼리만 비교된다
+  function features(text) {
+    var k = keyOf(text), f = {};
+    k.nums.forEach(function (n) { f["n:" + n] = 1; });
+    k.maths.forEach(function (m) { f["m:" + m] = 1; });
+    fragments(text).forEach(function (x) { f["f:" + x] = 1; });
+    topics(text).forEach(function (t) { f["t:" + t] = 1; });
+    Object.keys(k.tags).forEach(function (t) { if (GENERIC_TAGS.indexOf(t) < 0) f["g:" + t] = 1; });
+    contentWords(text).forEach(function (w) { f["w:" + w] = 1; });
+    return f;
   }
 
-  function relevanceOne(question, answer) {
-    var q = String(question || "").trim();
-    if (q.length < 4) return { status: "noquestion" };
-    var kq = keyOf(q), ka = keyOf(answer);
-    var fq = fragments(q), fa = fragments(answer);
-    var sharedNums = kq.nums.filter(function (n, i) { return kq.nums.indexOf(n) === i && ka.nums.indexOf(n) >= 0; });
-    var bigNums = sharedNums.filter(function (n) { return n.replace(".", "").length >= 3; });
-    var smallNums = sharedNums.filter(function (n) { return n.replace(".", "").length < 3; });
-    var specific = Object.keys(kq.tags).filter(function (t) { return GENERIC_TAGS.indexOf(t) < 0 && ka.tags[t]; });
-    var fragHit = fq.some(function (f) { return fa.some(function (g) { return g.indexOf(f) >= 0 || f.indexOf(g) >= 0 && g.length >= 4; }); });
-    var neutral = bigNums.length + (overlap(kq.maths, ka.maths) || fragHit ? 1 : 0) + specific.length +
-      (overlap(topics(q), topics(answer)) ? 1 : 0) + (smallNums.length >= 3 ? 1 : 0);
-    var wq = contentWords(q), wa = contentWords(answer);
-    var shared = wq.filter(function (w) { return wa.indexOf(w) >= 0; });
-    var sameScript = Math.abs(hangulShare(q) - hangulShare(answer)) < 0.5;
-    var wordsOk = (shared.length >= 3 && shared.length >= wq.length * 0.25) || (wq.length <= 4 && shared.length >= 2);
-    if (neutral >= 1 || wordsOk) return { status: "related", shared: shared };
-    return { status: sameScript ? "unrelated" : "unknown" };
+  // 수식 토막은 서로 포함만 해도 겹친 것으로 본다(1/kk+1 ⊂ 1/kk+1=1/k-1/k+1)
+  function sharedKeys(fq, fa) {
+    var akeys = Object.keys(fa);
+    return Object.keys(fq).filter(function (key) {
+      if (fa[key]) return true;
+      if (key.indexOf("f:") !== 0) return false;
+      var x = key.slice(2);
+      return akeys.some(function (g) { return g.indexOf("f:") === 0 && (g.indexOf(x) >= 0 || (x.indexOf(g.slice(2)) >= 0 && g.length >= 6)); });
+    });
+  }
+
+  var idfCache = { src: null, idf: null, n: 0 };
+
+  // 희귀도: 비교용 질문 묶음(P2-Bench 60문항) 가운데 그 단서가 나오는 문항이 적을수록 무겁다
+  function idfOf(decoys) {
+    if (idfCache.src === decoys) return idfCache;
+    var df = {};
+    decoys.forEach(function (d) {
+      var f = features(d.join("\n"));
+      Object.keys(f).forEach(function (key) { df[key] = (df[key] || 0) + 1; });
+    });
+    idfCache = { src: decoys, idf: df, n: decoys.length };
+    return idfCache;
+  }
+
+  // 한 자리 숫자는 어디에나 나오므로 반만, 수식 토막은 그 질문에만 있는 경우가 많아 1.5배로 친다
+  function weight(key, idf) {
+    var df = idf.idf[key] || 0;
+    var w = Math.log((idf.n + 1) / (df + 1)) + 0.2;
+    if (/^n:\d$/.test(key)) w *= 0.5;
+    if (key.indexOf("f:") === 0) w *= 1.5;
+    return w;
+  }
+
+  function similarity(qf, af, idf, neutralOnly) {
+    var total = 0;
+    sharedKeys(qf, af).forEach(function (key) {
+      if (neutralOnly && key.indexOf("w:") === 0) return;
+      total += weight(key, idf);
+    });
+    return total;
+  }
+
+  var RELEVANCE_FLOOR = 2.5;
+  var RELEVANCE_MARGIN = 1.3;
+
+  // question: 질문 문자열 또는 [한국어, 영어] 배열, decoys: 비교용 다른 질문들([[kr, en], …])
+  function relevance(question, answer, decoys) {
+    var qs = (Array.isArray(question) ? question : [question]).map(function (q) { return String(q || "").trim(); }).filter(function (q) { return q.length >= 4; });
+    if (!qs.length) return { status: "noquestion" };
+    decoys = decoys || [];
+    var idf = idfOf(decoys);
+    var af = features(answer);
+    var share = hangulShare(answer);
+    // 답과 같은 언어인 질문이 하나도 없으면 언어와 무관한 단서만 쓴다
+    var sameLang = qs.filter(function (q) { return Math.abs(hangulShare(q) - share) < 0.5; });
+    var neutralOnly = sameLang.length === 0;
+    var own = 0;
+    qs.forEach(function (q) { own = Math.max(own, similarity(features(q), af, idf, neutralOnly)); });
+    var joined = qs.join("\n");
+    var best = 0, bestId = null;
+    decoys.forEach(function (d) {
+      if (d.indexOf(qs[0]) >= 0 || qs.some(function (q) { return d.indexOf(q) >= 0; }) || joined === d.join("\n")) return;
+      d.forEach(function (dq) {
+        var sim = similarity(features(dq), af, idf, neutralOnly || Math.abs(hangulShare(dq) - share) >= 0.5);
+        if (sim > best) { best = sim; bestId = d; }
+      });
+    });
+    var result = { score: Math.round(own * 10) / 10, best: Math.round(best * 10) / 10 };
+    // 비슷한 문항끼리는 점수가 붙어 나오므로, 다른 문항이 분명히(1.3배 넘게) 더 잘 맞을 때만 '다른 질문의 답'으로 본다
+    if (own >= RELEVANCE_FLOOR && best <= own * RELEVANCE_MARGIN) { result.status = "related"; return result; }
+    if (neutralOnly) { result.status = "unknown"; return result; }
+    if (own >= RELEVANCE_FLOOR) { result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result; }
+    result.status = "unrelated";
+    result.reason = "weak";
+    return result;
   }
 
   var api = { relevance: relevance, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
