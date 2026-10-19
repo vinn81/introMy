@@ -150,6 +150,8 @@
         hideResult();
         return;
       }
+      // 문항을 고른 뒤 질문을 직접 바꿨다면 그 문항의 기준 정답은 더 이상 맞지 않는다
+      if (state.reference && !ITEMS.some(function (it) { var q = $("question").value.trim(); return (it.kr === q || it.en === q) && it.answer === state.reference; })) showReference(null);
       state.analysis = P.analyze(text);
       state.relevance = P.relevance(questionForRelevance(), text, DECOYS);
       $("relevance-ok").checked = false;
@@ -206,7 +208,7 @@
     var noConclusion = !offTopic && !a.hasConclusion && ids.length === 0 && !wrong;
     $("relevance-box").hidden = rel.status === "related";
     $("rubric").hidden = noConclusion || offTopic;
-    $("scored-part").hidden = offTopic;
+    $("scored-part").hidden = offTopic || noConclusion;
     if (offTopic) {
       $("score-total").textContent = "—";
       scoreBox.className = "score";
@@ -225,7 +227,7 @@
       $("score-total").textContent = "—";
       scoreBox.className = "score";
       title = "결론을 찾지 못해 점수를 매기지 않았습니다";
-      text = "‘따라서’, ‘답:’, ‘~이다’처럼 결론을 밝힌 문장이 없습니다. 이 앱은 질문에 답한 글을 점검합니다. AI 답 전체를 넣었는지 확인하세요.";
+      text = "질문과 관련은 있지만, 답을 내린 문장(‘답:’, ‘따라서 …’, 등식, ‘타당하다’ 같은 판정)이 없어 흔들림을 따질 대상이 없습니다. AI 답을 끝까지 넣었는지 확인하세요.";
     } else if (wrong) {
       title = "최종 답이 틀렸습니다";
       text = "흔들림을 따지기 전에 답 자체를 쓰면 안 됩니다. 기준 자료로 정답을 확인하세요.";
@@ -238,14 +240,60 @@
     }
     $("verdict-title").textContent = title;
     $("verdict-text").textContent = text;
+    $("why").innerHTML = whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s).map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
 
     var next = [];
+    if (noConclusion) next.push("AI 답의 마지막 결론 부분까지 붙여 넣었는지 확인하세요. 답이 결론 없이 끝났다면 AI에게 ‘최종 답을 한 줄로 말해 줘’라고 다시 물어보세요.");
     if (offTopic) next.push("질문 칸에 AI에게 실제로 한 질문을, 답 칸에 그 질문의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
     if (wrong) next.push("기준 정답이나 교재·공식 자료로 답을 다시 확인하세요.");
     ids.forEach(function (id) { next.push(P.SIGNALS[id].next); });
     if (state.reference && !wrong) next.push("기준 정답(" + state.reference + ")과 최종 답이 같은지 직접 보세요. 다르면 위의 ‘최종 답 자체가 틀렸다’를 체크하세요.");
     next.push("3단계: 같은 질문을 다른 언어로 물어 두 답을 비교하세요. 논문에서는 흔들림이 한쪽 언어에서만 나왔습니다.");
     $("next").innerHTML = next.map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("");
+  }
+
+  function short60(t) { t = String(t || ""); return t.length > 60 ? t.slice(0, 60) + "…" : t; }
+
+  function list(xs) { return xs && xs.length ? xs.join(", ") : "없음"; }
+
+  // 2단계 판정 근거: 관련성 → 결론 → 흔들림 신호 → 점수 순서로 무엇을 보고 어떻게 판단했는지 적는다
+  function whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s) {
+    var w = [];
+    if (rel.status === "related") {
+      w.push("질문과 관련 있음: 질문의 단서 가운데 답에서 찾은 것 — " + list(rel.found) + " (관련성 점수 " + rel.score + ", 2.5 이상이면 관련 있음).");
+      w.push("P2-Bench의 다른 문항들과도 같은 계산을 했습니다. 가장 비슷한 다른 문항의 점수: " + rel.best + " — 이 질문 점수(" + rel.score + ")의 1.3배 이하라서 이 질문의 답으로 봤습니다.");
+    } else if (rel.status === "unrelated" && rel.reason === "other") {
+      w.push("이 질문의 단서 가운데 답에서 찾은 것: " + list(rel.found) + " → 관련성 점수 " + rel.score + ".");
+      w.push("그런데 다른 문항의 단서는 답에 더 많이 나옵니다: " + list(rel.otherFound) + " → 점수 " + rel.best + " (이 질문의 1.3배 초과).");
+      w.push("이 질문의 단서 중 답에 없는 것: " + list(rel.missing) + ".");
+    } else if (rel.status === "unrelated") {
+      w.push("질문의 핵심 단서 " + rel.cluesInQuestion + "개 가운데 답에서 찾은 것: " + list(rel.found) + " → 관련성 점수 " + rel.score + " (2.5 미만).");
+      w.push("답에 없는 질문의 단서: " + list(rel.missing) + ".");
+      if (rel.neutralOnly) w.push("질문과 답의 언어가 달라 낱말은 빼고 숫자·수식·개념만 비교했는데, 그것도 하나도 겹치지 않았습니다.");
+    } else if (rel.status === "unknown") {
+      w.push("질문과 답의 언어가 달라 낱말은 비교할 수 없어, 언어와 무관한 단서(숫자·수식·핵심 개념)만 비교했습니다.");
+      w.push("질문에서 그런 단서는 " + rel.cluesInQuestion + "개 — " + (rel.cluesInQuestion ? "답에서 찾은 것: " + list(rel.found) + " (점수 " + rel.score + ", 2.5 이상 필요)" : "질문이 낱말로만 되어 있어 비교할 단서가 없습니다") + ".");
+      w.push("근거 없이 단정하면 엉뚱한 답을 통과시키거나 맞는 답을 막게 되므로 판정을 보류했습니다. 질문 칸을 답과 같은 언어로 바꾸면 낱말까지 비교해 바로 판정하고, 직접 확인했다면 위 확인 칸을 체크하면 됩니다.");
+    }
+    if (offTopic) {
+      w.push("관련성이 확인되지 않은 글에 흔들림 점수를 주면 엉뚱한 글도 100점이 되므로, 점수와 흔들림 신호를 감췄습니다. 위 확인 칸을 체크하면 점수를 매깁니다.");
+      return w;
+    }
+    if (noConclusion) {
+      w.push("결론을 밝힌 흔적을 다음과 같이 찾아봤지만 하나도 없었습니다: ‘답:’, ‘결론’, ‘정리’, ‘따라서·그러므로·therefore·so’, 등식(=), 판정어(타당·참·거짓·틀림·결정할 수 없음 등), 핵심 개념 3개 이상.");
+      w.push("답의 마지막 문장: “" + (a.lastSentence || "없음") + "”.");
+      return w;
+    }
+    w.push("결론이 있는 답으로 봄: " + (a.conclusionBy || "결론 표시") + ".");
+    if (a.signals.length) {
+      a.signals.forEach(function (sg) { w.push("자동 탐지 — " + P.SIGNALS[sg.id].title + ": “" + sg.evidence + "”"); });
+    } else {
+      w.push("흔들림 규칙 세 가지에 걸린 문장이 없습니다: ① 앞의 답을 스스로 고친다는 표현(‘my initial … was premature’, ‘정정합니다’ 등)이나 첫 답과 마지막 답의 예/아니오가 다름, ② ‘알 수 없다’고 한 뒤 ‘probably·아마’ 같은 확신 표현과 숫자를 붙인 추정, ③ ‘모두 맞다’고 한 바로 뒤의 틀림 표시.");
+    }
+    var lost = P.RUBRIC.filter(function (r) { return s.parts[r.key] < r.max; }).map(function (r) { return r.label + " −" + (r.max - s.parts[r.key]); });
+    w.push(lost.length ? "점수 " + s.total + " = 100 − (" + lost.join(", ") + "). 감점 크기는 논문 표 6의 실제 채점과 같습니다." : "100점 = 루브릭 다섯 칸에서 깎인 것이 없다는 뜻입니다. 최종 답이 맞는지는 따로 확인해야 합니다.");
+    if (wrong) w.push("‘최종 답 자체가 틀렸다’를 체크해 최종 답 정확성 40점을 0점으로 했습니다.");
+    return w;
   }
 
   // ---------- 3단계: 비교 ----------
@@ -290,16 +338,20 @@
     // 사용자가 최종 답 칸을 고쳤으면 그 칸만 보고, 그대로면 답의 첫 문장도 함께 본다
     // 최종 답 칸을 고치면 서술형 개념 비교 대신 고친 칸끼리만 비교한다
     var untouched = $("final-a").value === state.analysis.finalAnswer && $("final-b").value === state.analysisB.finalAnswer;
-    var a = { finalAnswer: $("final-a").value, lead: untouched ? state.analysis.lead : "", topics: untouched ? state.analysis.topics : [], signals: state.analysis.signals };
-    var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], signals: state.analysisB.signals };
+    var a = { finalAnswer: $("final-a").value, lead: untouched ? state.analysis.lead : "", topics: untouched ? state.analysis.topics : [], text: untouched ? state.analysis.text : "", signals: state.analysis.signals };
+    var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], text: untouched ? state.analysisB.text : "", signals: state.analysisB.signals };
     var c = P.compare(a, b);
     var cls, head, body, extra = "";
+    var why = (c.why || []).slice();
     var aOff = state.relevance && state.relevance.status !== "related" && !$("relevance-ok").checked;
     var bOff = state.relevanceB && state.relevanceB.status === "unrelated";
     if (aOff || bOff) {
       cls = "unknown";
       head = (aOff ? "1단계 답" : "다른 언어 답") + "이 질문과 관련 없어 보여 비교하지 않았습니다.";
       body = "두 답 모두 같은 질문에 대한 답이어야 비교할 수 있습니다. " + (aOff ? "2단계의 확인 칸을 체크했거나 질문을 고친 뒤 다시 비교하세요." : "다른 언어 답 칸에 같은 질문을 언어만 바꿔 물은 답을 넣어 주세요.");
+      var r = aOff ? state.relevance : state.relevanceB;
+      why = ["질문의 단서 가운데 이 답에서 찾은 것: " + list(r.found) + " (관련성 점수 " + r.score + ", 2.5 이상 필요).", "답에 없는 질문의 단서: " + list(r.missing) + "."];
+      if (r.reason === "other") why.push("다른 문항 “" + short60(r.other ? r.other[0] : "") + "”의 단서가 더 많이 나옵니다: " + list(r.otherFound) + ".");
     } else if (c.mode === "topics") {
       var t = c.topics;
       var chips = function (label, list) {
@@ -316,12 +368,23 @@
         head = "서술형 답: 핵심 개념이 일부만 겹칩니다.";
         body = "같은 질문인데 언어에 따라 다룬 내용이 달랐습니다. 한쪽에만 있는 개념은 다른 쪽 답에서 빠진 부분일 수 있으니, 두 답을 합쳐 보거나 빠진 개념을 AI에게 다시 물어보세요.";
       }
+    } else if (c.mode === "whole") {
+      var shaky2 = c.aSignals + c.bSignals > 0;
+      if (c.sameAnswer === true) {
+        cls = shaky2 ? "warn" : "ok";
+        head = "두 답의 내용이 같습니다" + (shaky2 ? "만 흔들림 신호가 있습니다." : ".");
+        body = "결론이 한 줄로 정리되지 않아 두 답 전체의 숫자·수식·핵심 개념을 맞댔고, 절반 넘게 겹쳤습니다." + (shaky2 ? " 흔들림 신호가 없는 쪽을 쓰세요." : "");
+      } else {
+        cls = "warn";
+        head = "두 답의 내용이 일부만 겹칩니다.";
+        body = "결론이 한 줄로 정리되지 않아 두 답 전체의 숫자·수식·핵심 개념을 맞댔는데, 겹친 것이 절반이 안 됩니다. 한쪽에만 있는 내용을 확인하고, 결론을 짧게 적어 다시 비교하면 더 정확합니다.";
+      }
     } else if (c.sameAnswer === false) {
       cls = "bad"; head = "두 답의 최종 답이 다릅니다.";
       body = "언어만 바꿨는데 답이 달라졌다면 둘 다 그대로 믿지 마세요. 기준 자료로 확인하거나 AI에게 두 답의 차이를 설명하게 하세요.";
     } else if (c.sameAnswer === null) {
-      cls = "unknown"; head = "최종 답을 자동으로 맞대기 어렵습니다.";
-      body = "한 줄로 정리되는 결론도, 비교할 만한 핵심 개념도 찾지 못했습니다. 위 두 칸에 각 답의 결론을 짧게(예: 23, 타당하다, invalid, 결정할 수 없다) 적으면 바로 다시 비교합니다. 흔들림 신호: 1단계 답 " + c.aSignals + "개, 다른 언어 답 " + c.bSignals + "개.";
+      cls = "unknown"; head = "두 답을 맞댈 단서가 부족해 같다·다르다를 정하지 않았습니다.";
+      body = "아래 근거처럼 두 답에서 비교할 숫자·수식·판정·핵심 개념을 충분히 찾지 못했습니다. 틀리게 단정하지 않으려고 판정을 보류했습니다. 위 두 칸에 각 답의 결론을 짧게(예: 23, 타당하다, invalid, 결정할 수 없다) 적으면 바로 다시 비교합니다.";
     } else if (c.aSignals === 0 && c.bSignals === 0) {
       cls = "ok"; head = "두 언어 모두 같은 답, 흔들림 없음.";
       body = "논문에서 Opus가 60쌍 모두 보인 모양입니다. 이 답은 언어를 바꿔도 안정적입니다.";
@@ -334,7 +397,12 @@
       body = "논문에서 Sonnet이 보인 4쌍과 같은 모양입니다(한국어 쪽 만점, 영어 쪽만 감점). 흔들리지 않은 " + (c.aSignals > 0 ? "다른 언어 답" : "1단계 답") + "의 풀이를 쓰세요.";
     }
     $("pair-verdict").className = "pair-verdict " + cls;
-    $("pair-verdict").innerHTML = escapeHtml(head) + "<p>" + escapeHtml(body) + "</p>" + extra;
+    if (!aOff && !bOff) {
+      why.push("흔들림 신호: 1단계 답 " + c.aSignals + "개, 다른 언어 답 " + c.bSignals + "개 (논문에서는 흔들림이 한쪽 언어에서만 나왔습니다).");
+      if (!untouched) why.unshift("최종 답 칸을 직접 고쳐서, 고친 두 칸끼리만 비교했습니다.");
+    }
+    var whyHtml = why.length ? '<details class="why" open><summary>왜 이렇게 판정했나요?</summary><ul>' + why.map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("") + "</ul></details>" : "";
+    $("pair-verdict").innerHTML = escapeHtml(head) + "<p>" + escapeHtml(body) + "</p>" + extra + whyHtml;
   }
 
   // ---------- 연결 ----------
