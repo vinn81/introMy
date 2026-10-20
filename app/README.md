@@ -103,7 +103,9 @@ ChatGPT처럼 굵은 글씨 없이 LaTeX(`$$…$$`, `\frac`, `\neq`, `\boxed`)�
 - `index.html` — 화면
 - `app.css` — 스타일
 - `app.js` — 화면 동작(입력 검사, 결과·비교 표시)
-- `detect.js` — 신호 탐지와 루브릭 계산(논문 규칙)
+- `detect.js` — 판정 규칙의 진입점(브라우저·Node 공통). 규칙은 `detect/`에 기능별로 나뉘어 있습니다.
+  - `detect/text.js` 글 다루기 · `clues.js` 단서 · `signals.js` 흔들림 신호와 루브릭 · `final.js` 결론 찾기 · `compare.js` 두 답 비교 · `reference.js` 기준 정답 대조 · `relevance.js` 관련성
+- `RULES.md` — 규칙마다의 근거와 측정 결과(규칙을 바꿀 때 먼저 읽기)
 - `data.js` — P2-Bench v1.0 공개 문항 60개와 논문 본실험 응답 예시 10개
 
 ## 데이터와 비밀값
