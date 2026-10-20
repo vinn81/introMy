@@ -14,7 +14,7 @@
   var state = { analysis: null, checked: {}, analysisB: null, reference: null, relevance: null, refCheck: null };
   // 새로고침해도 입력이 남도록 이 탭에만 임시 보관한다(탭을 닫거나 '모두 지우기'를 누르면 지워짐)
   var STORE_KEY = "p2check-input";
-  var STORED = ["question", "answer", "answer-b"];
+  var STORED = ["answer", "answer-b"];
 
   function setNote(id, text, isError) {
     var el = $(id);
@@ -74,57 +74,60 @@
     });
   }
 
-  function showReference(answer) {
-    state.reference = answer || null;
-    $("reference").hidden = !answer;
-    $("reference").textContent = answer ? "P2-Bench 기준 정답: " + answer : "";
+  function currentItem() {
+    var v = $("item-select").value;
+    return v === "" ? null : ITEMS[Number(v)] || null;
+  }
+
+  // 고른 문항의 한·영 질문과 기준 정답을 보여 준다(질문은 고칠 수 없다)
+  function showItem(it) {
+    state.reference = it ? it.answer : null;
+    $("question-view").hidden = !it;
+    $("question-kr").textContent = it ? it.kr : "";
+    $("question-en").textContent = it ? it.en : "";
+    $("reference").textContent = it ? "P2-Bench 기준 정답: " + it.answer : "";
   }
 
   function loadExample() {
     var ex = EXAMPLES[Number($("example-select").value)];
     if (!ex) return;
-    $("item-select").value = "";
-    toggleCopy(false);
-    $("question").value = ex.questionEN;
+    var idx = ITEMS.findIndex(function (it) { return it.en === ex.questionEN; });
+    $("item-select").value = idx < 0 ? "" : String(idx);
+    showItem(currentItem());
     $("answer").value = ex.en.text;
     $("answer-b").value = ex.kr.text;
-    showReference(ex.answer);
     saveInput();
     run();
     // run()이 안내 칸을 비우므로 불러온 뒤에 적는다
     if (state.analysis) setNote("input-note", "논문 " + ex.en.run + " 응답을 불러왔습니다. 논문 채점: " + ex.en.score + "점. 3단계에는 같은 문항의 한국어 답(" + ex.kr.score + "점)을 넣어 두었습니다.");
   }
 
-  function toggleCopy(on) {
-    $("copy-kr").disabled = !on;
-    $("copy-en").disabled = !on;
-  }
-
   function pickItem() {
-    var it = ITEMS[Number($("item-select").value)];
-    if (!it || $("item-select").value === "") { toggleCopy(false); return; }
+    var it = currentItem();
     $("example-select").value = "";
-    toggleCopy(true);
-    $("question").value = it.kr;
+    showItem(it);
     $("answer").value = "";
     $("answer-b").value = "";
-    showReference(it.answer);
     hideResult();
     setNote("compare-note", "");
     saveInput();
-    setNote("input-note", "질문을 복사해 내 AI에게 물은 뒤, 받은 답을 아래 칸에 붙여 넣으세요. 3단계에서 쓸 수 있게 다른 언어로도 물어 두면 좋습니다.");
+    setNote("input-note", it ? "질문을 복사해 내 AI에게 물은 뒤, 받은 답을 아래 칸에 붙여 넣으세요. 3단계에서 쓸 수 있게 다른 언어로도 물어 두면 좋습니다." : "");
   }
 
   function copyItem(lang) {
-    var it = ITEMS[Number($("item-select").value)];
+    var it = currentItem();
     if (!it) return;
     var text = lang === "kr" ? it.kr : it.en;
-    var done = function () { setNote("input-note", (lang === "kr" ? "한국어" : "영어") + " 질문을 복사했습니다. 내 AI에게 붙여 넣어 물어보세요."); };
+    var name = lang === "kr" ? "한국어" : "영어";
+    var done = function () { setNote("input-note", name + " 질문을 복사했습니다. 내 AI에게 붙여 넣어 물어보세요."); };
+    // 복사가 막히면 질문 글을 선택해 두고 직접 복사하게 한다
     var fail = function () {
-      $("question").value = text;
-      $("question").select();
-      saveInput();
-      setNote("input-note", "브라우저가 복사를 막아, 질문 칸을 " + (lang === "kr" ? "한국어" : "영어") + " 질문으로 바꾸고 선택해 두었습니다. Ctrl+C(⌘C)로 복사하세요.");
+      var range = document.createRange();
+      range.selectNodeContents($(lang === "kr" ? "question-kr" : "question-en"));
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      setNote("input-note", "브라우저가 복사를 막아 " + name + " 질문을 선택해 두었습니다. Ctrl+C(⌘C)로 복사하세요.");
     };
     // 클립보드 API를 못 쓰는 곳(file://, 권한 거부)에서는 숨긴 칸을 만들어 복사한다
     var legacy = function () {
@@ -147,20 +150,10 @@
   }
 
   // ---------- 2단계: 점검 ----------
-  // P2-Bench 문항이면 한국어·영어 질문을 함께 써서, 다른 언어로 물은 답도 관련성을 확인할 수 있게 한다
+  // 한국어·영어 질문을 함께 써서, 어느 언어로 물은 답이든 관련성을 확인한다
   function questionForRelevance() {
-    var q = ($("question").value || "").trim();
-    for (var i = 0; i < ITEMS.length; i++) {
-      if (ITEMS[i].kr === q || ITEMS[i].en === q) return [ITEMS[i].kr, ITEMS[i].en];
-    }
-    return [q];
-  }
-
-  // 질문 칸이 P2-Bench 문항 그대로면 그 문항의 명제 규칙(P2_CLAIMS)을 쓴다
-  function claimFor() {
-    var q = ($("question").value || "").trim();
-    for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].kr === q || ITEMS[i].en === q) return CLAIMS[ITEMS[i].id] || null;
-    return null;
+    var it = currentItem();
+    return it ? [it.kr, it.en] : [];
   }
 
   function hideResult() {
@@ -187,7 +180,7 @@
 
   function saveInput() {
     try {
-      var data = {};
+      var data = { item: $("item-select").value };
       STORED.forEach(function (id) { data[id] = $(id).value; });
       sessionStorage.setItem(STORE_KEY, JSON.stringify(data));
     } catch (e) { /* 저장이 막힌 브라우저에서는 그냥 넘어간다 */ }
@@ -196,10 +189,10 @@
   function restoreInput() {
     try {
       var data = JSON.parse(sessionStorage.getItem(STORE_KEY) || "null");
-      if (!data || !STORED.some(function (id) { return data[id]; })) return;
+      if (!data || !(data.item || STORED.some(function (id) { return data[id]; }))) return;
+      if (data.item && ITEMS[Number(data.item)]) $("item-select").value = data.item;
+      showItem(currentItem());
       STORED.forEach(function (id) { if (typeof data[id] === "string") $(id).value = data[id]; });
-      var q = $("question").value.trim();
-      ITEMS.forEach(function (it) { if (it.kr === q || it.en === q) showReference(it.answer); });
       setNote("input-note", "이 탭에서 넣었던 입력을 되살렸습니다. 점검하기를 누르면 다시 점검합니다.");
     } catch (e) { /* 저장된 값이 없거나 읽을 수 없으면 빈 칸으로 시작 */ }
   }
@@ -210,15 +203,11 @@
 
   function run() {
     try {
-      var question = ($("question").value || "").trim();
-      if (!question) {
-        setNote("input-note", "질문을 넣어 주세요. 답이 그 질문에 대한 것인지 먼저 확인한 뒤 점수를 매깁니다.", true);
+      var item = currentItem();
+      if (!item) {
+        setNote("input-note", "먼저 위에서 P2-Bench 문항을 고르세요. 이 앱은 논문의 60문항에 대한 답만 점검합니다.", true);
         hideResult();
-        return;
-      }
-      if (question.replace(/\s+/g, "").length < 4) {
-        setNote("input-note", "질문이 너무 짧아 답과 맞대 볼 수 없습니다. AI에게 한 질문을 그대로 넣어 주세요.", true);
-        hideResult();
+        $("item-select").focus();
         return;
       }
       var text = readAnswer("answer", "input-note");
@@ -226,12 +215,10 @@
         hideResult();
         return;
       }
-      // 문항을 고른 뒤 질문을 직접 바꿨다면 그 문항의 기준 정답은 더 이상 맞지 않는다
-      if (state.reference && !ITEMS.some(function (it) { var q = $("question").value.trim(); return (it.kr === q || it.en === q) && it.answer === state.reference; })) showReference(null);
       state.analysis = P.analyze(text);
       state.relevance = P.relevance(questionForRelevance(), text, DECOYS);
-      // 기준 정답이 있으면(P2-Bench 문항) 최종 답을 자동으로 맞댄다
-      state.refCheck = state.reference ? P.matchReference(state.analysis, state.reference, claimFor()) : null;
+      // 최종 답을 기준 정답과 자동으로 맞댄다(명제의 부정이 정답인 문항은 P2_CLAIMS 규칙도 쓴다)
+      state.refCheck = P.matchReference(state.analysis, item.answer, CLAIMS[item.id] || null);
       var ref = state.refCheck;
       // 질문 단서가 적게 겹쳐도 최종 답이 기준 정답과 숫자·식으로 맞으면 이 질문의 답이다
       if (ref && ref.status === "match" && ref.strong && state.relevance.status !== "related" && state.relevance.reason !== "other") {
@@ -306,13 +293,13 @@
       if (rel.status === "unrelated" && rel.reason === "other") {
         var other = rel.other ? rel.other[0] : "";
         title = "다른 질문에 대한 답으로 보여 점수를 매기지 않았습니다";
-        text = "이 답은 넣은 질문보다 P2-Bench의 다른 문항 “" + (other.length > 60 ? other.slice(0, 60) + "…" : other) + "”과 숫자·수식·핵심 낱말이 훨씬 많이 겹칩니다. 질문과 답을 짝지어 넣었는지 확인하세요.";
+        text = "이 답은 고른 문항보다 P2-Bench의 다른 문항 “" + (other.length > 60 ? other.slice(0, 60) + "…" : other) + "”과 숫자·수식·핵심 낱말이 훨씬 많이 겹칩니다. AI에게 물은 문항을 골랐는지 확인하세요.";
       } else if (rel.status === "unrelated") {
         title = "질문과 관련 없는 답으로 보여 점수를 매기지 않았습니다";
-        text = "질문의 숫자·수식·핵심 낱말이 답에 거의 나오지 않습니다. 흔들림이 없다고 100점을 주면 엉뚱한 글도 만점이 되므로 점수를 보류했습니다. 다른 질문의 답을 넣지 않았는지 확인하세요.";
+        text = "고른 문항의 숫자·수식·핵심 낱말이 답에 거의 나오지 않습니다. 흔들림이 없다고 100점을 주면 엉뚱한 글도 만점이 되므로 점수를 보류했습니다. 다른 문항의 답을 넣지 않았는지 확인하세요.";
       } else {
-        title = "질문과 답의 언어가 달라 관련성을 확인하지 못했습니다";
-        text = "질문을 답과 같은 언어로 넣으면 다시 확인합니다. P2-Bench 문항을 골랐다면 한·영 질문을 함께 봅니다.";
+        title = "답의 언어로는 관련성을 확인하지 못했습니다";
+        text = "이 앱은 한국어·영어 답을 점검합니다. 숫자·수식·개념 단서만으로는 판단할 수 없어 점수를 보류했습니다. 고른 문항의 답이 맞다면 아래 확인 칸을 체크하세요.";
       }
     } else if (noConclusion) {
       $("score-total").textContent = "—";
@@ -340,7 +327,7 @@
 
     var next = [];
     if (noConclusion) next.push("AI 답의 마지막 결론 부분까지 붙여 넣었는지 확인하세요. 답이 결론 없이 끝났다면 AI에게 ‘최종 답을 한 줄로 말해 줘’라고 다시 물어보세요.");
-    if (offTopic) next.push("질문 칸에 AI에게 실제로 한 질문을, 답 칸에 그 질문의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
+    if (offTopic) next.push("AI에게 실제로 물은 문항을 골랐는지, 답 칸에 그 문항의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
     if (wrong) next.push("기준 정답이나 교재·공식 자료로 답을 다시 확인하세요.");
     ids.forEach(function (id) { next.push(P.SIGNALS[id].next); });
     if (state.reference && !wrong && !(state.refCheck && state.refCheck.status === "match")) next.push("기준 정답(" + state.reference + ")과 최종 답이 같은지 직접 보세요. 다르면 위의 ‘최종 답 자체가 틀렸다’를 체크하세요.");
@@ -357,9 +344,6 @@
     var w = [];
     if (rel.status === "related" && rel.byReference) {
       w.push("질문의 단서는 답에 적게 나왔지만(관련성 점수 " + rel.score + "), 최종 답이 P2-Bench 기준 정답과 같아 이 질문의 답으로 봤습니다: " + state.refCheck.why.join(", ") + ".");
-    } else if (rel.status === "related" && (rel.wordsOnly || rel.customOverride)) {
-      w.push("질문과 관련 있음: 질문의 단서 가운데 답에서 찾은 것 — " + list(rel.found) + " (관련성 점수 " + rel.score + ", 2.5 이상이면 관련 있음).");
-      w.push("P2-Bench의 다른 문항과 더 많이 겹쳤지만(점수 " + rel.best + "), 넣은 질문이 P2-Bench 문항이 아니라 직접 쓴 질문이고 그 질문의 단서가 충분히 나와 이 질문의 답으로 봤습니다.");
     } else if (rel.status === "related") {
       w.push("질문과 관련 있음: 질문의 단서 가운데 답에서 찾은 것 — " + list(rel.found) + " (관련성 점수 " + rel.score + ", 2.5 이상이면 관련 있음).");
       w.push("P2-Bench의 다른 문항들과도 같은 계산을 했습니다. 가장 비슷한 다른 문항의 점수: " + rel.best + " — 이 질문 점수(" + rel.score + ")의 1.3배 이하라서 이 질문의 답으로 봤습니다.");
@@ -370,11 +354,11 @@
     } else if (rel.status === "unrelated") {
       w.push("질문의 핵심 단서 " + rel.cluesInQuestion + "개 가운데 답에서 찾은 것: " + list(rel.found) + " → 관련성 점수 " + rel.score + " (2.5 미만).");
       w.push("답에 없는 질문의 단서: " + list(rel.missing) + ".");
-      if (rel.neutralOnly) w.push("질문과 답의 언어가 달라 낱말은 빼고 숫자·수식·개념만 비교했는데, 그것도 하나도 겹치지 않았습니다.");
+      if (rel.neutralOnly) w.push("답이 한국어도 영어도 아니어서 낱말은 빼고 숫자·수식·개념만 비교했는데, 그것도 하나도 겹치지 않았습니다.");
     } else if (rel.status === "unknown") {
-      w.push("질문과 답의 언어가 달라 낱말은 비교할 수 없어, 언어와 무관한 단서(숫자·수식·핵심 개념)만 비교했습니다.");
+      w.push("답이 한국어도 영어도 아니어서 낱말은 비교할 수 없어, 언어와 무관한 단서(숫자·수식·핵심 개념)만 비교했습니다.");
       w.push("질문에서 그런 단서는 " + rel.cluesInQuestion + "개 — " + (rel.cluesInQuestion ? "답에서 찾은 것: " + list(rel.found) + " (점수 " + rel.score + ", 2.5 이상 필요)" : "질문이 낱말로만 되어 있어 비교할 단서가 없습니다") + ".");
-      w.push("근거 없이 단정하면 엉뚱한 답을 통과시키거나 맞는 답을 막게 되므로 판정을 보류했습니다. 질문 칸을 답과 같은 언어로 바꾸면 낱말까지 비교해 바로 판정하고, 직접 확인했다면 위 확인 칸을 체크하면 됩니다.");
+      w.push("근거 없이 단정하면 엉뚱한 답을 통과시키거나 맞는 답을 막게 되므로 판정을 보류했습니다. 한국어나 영어로 받은 답을 넣거나, 직접 확인했다면 위 확인 칸을 체크하면 됩니다.");
     }
     if (offTopic) {
       w.push("관련성이 확인되지 않은 글에 흔들림 점수를 주면 엉뚱한 글도 100점이 되므로, 점수와 흔들림 신호를 감췄습니다. 위 확인 칸을 체크하면 점수를 매깁니다.");
@@ -469,7 +453,7 @@
     if (aOff || bOff) {
       cls = "unknown";
       head = (aOff ? "1단계 답" : "다른 언어 답") + "이 질문과 관련 없어 보여 비교하지 않았습니다.";
-      body = "두 답 모두 같은 질문에 대한 답이어야 비교할 수 있습니다. " + (aOff ? "2단계의 확인 칸을 체크했거나 질문을 고친 뒤 다시 비교하세요." : "다른 언어 답 칸에 같은 질문을 언어만 바꿔 물은 답을 넣어 주세요.");
+      body = "두 답 모두 같은 질문에 대한 답이어야 비교할 수 있습니다. " + (aOff ? "1단계에서 문항을 맞게 골랐는지 확인하거나, 2단계의 확인 칸을 체크한 뒤 다시 비교하세요." : "다른 언어 답 칸에 같은 질문을 언어만 바꿔 물은 답을 넣어 주세요.");
       var r = aOff ? state.relevance : state.relevanceB;
       why = ["질문의 단서 가운데 이 답에서 찾은 것: " + list(r.found) + " (관련성 점수 " + r.score + ", 2.5 이상 필요).", "답에 없는 질문의 단서: " + list(r.missing) + "."];
       if (r.reason === "other") why.push("다른 문항 “" + short60(r.other ? r.other[0] : "") + "”의 단서가 더 많이 나옵니다: " + list(r.otherFound) + ".");
@@ -534,11 +518,10 @@
 
   // ---------- 연결 ----------
   function clearAll() {
-    ["question", "answer", "answer-b", "final-a", "final-b"].forEach(function (id) { $(id).value = ""; });
+    ["answer", "answer-b", "final-a", "final-b"].forEach(function (id) { $(id).value = ""; });
     $("example-select").value = "";
     $("item-select").value = "";
-    toggleCopy(false);
-    showReference(null);
+    showItem(null);
     state = { analysis: null, checked: {}, analysisB: null, reference: null, relevance: null, relevanceB: null, refCheck: null };
     hideResult();
     try { sessionStorage.removeItem(STORE_KEY); } catch (e) { /* 저장이 막힌 브라우저 */ }
@@ -582,15 +565,13 @@
       renderResult();
       refreshPair();
     });
-    ["question", "answer"].forEach(function (id) {
-      $(id).addEventListener("input", function () { saveInput(); markStale(1); });
-    });
+    $("answer").addEventListener("input", function () { saveInput(); markStale(1); });
     $("answer-b").addEventListener("input", function () { saveInput(); markStale(3); });
     // Ctrl+Enter(⌘+Enter)로 바로 점검·비교
     var shortcut = function (fn) {
       return function (e) { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); fn(); } };
     };
-    ["question", "answer"].forEach(function (id) { $(id).addEventListener("keydown", shortcut(run)); });
+    $("answer").addEventListener("keydown", shortcut(run));
     ["answer-b", "final-a", "final-b"].forEach(function (id) { $(id).addEventListener("keydown", shortcut(function () { compare(false); })); });
     restoreInput();
   }

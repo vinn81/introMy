@@ -41,7 +41,7 @@
         <p class="lesson">그래서 이 앱은 <b>점수 대신 흔들림의 모양</b>을 보고, <b>같은 질문을 다른 언어로 물은 답과 짝지어</b> 확인하게 합니다.</p>
 
         <ol class="steps" aria-label="할 일 세 가지">
-          <li><a href="#step-1"><span>1</span>AI 답 붙여 넣기</a></li>
+          <li><a href="#step-1"><span>1</span>문항 고르고 AI 답 붙여 넣기</a></li>
           <li><a href="#step-2"><span>2</span>흔들림 신호와 점수 확인</a></li>
           <li><a href="#step-3"><span>3</span>다른 언어 답과 비교</a></li>
         </ol>
@@ -54,36 +54,36 @@
         <div class="step-head">
           <span class="num">1</span>
           <div>
-            <h2 id="s1-title">AI 답을 붙여 넣으세요</h2>
-            <p>내가 받은 AI 답을 그대로 넣거나, 처음이라면 논문에 실린 실제 답을 불러와 보세요.</p>
+            <h2 id="s1-title">문항을 고르고 AI 답을 붙여 넣으세요</h2>
+            <p>P2-Bench 60문항 중 하나를 골라 내 AI에게 그대로 묻고, 받은 답을 넣으세요. 기준 정답과 오류 유형이 정해진 문항이라 답이 맞는지까지 함께 봅니다.</p>
           </div>
         </div>
 
         <div class="card">
-          <div class="loaders">
-            <label class="field">
-              <span>논문 예시 불러오기</span>
-              <select id="example-select">
-                <option value="">— 예시를 고르세요 —</option>
-              </select>
-            </label>
-            <label class="field">
-              <span>또는 P2-Bench 문항으로 내 AI에게 직접 물어보기</span>
-              <span class="inline">
-                <select id="item-select">
-                  <option value="">— 60문항 중 고르기 —</option>
-                </select>
-                <button type="button" class="ghost" id="copy-kr" disabled>한국어 복사</button>
-                <button type="button" class="ghost" id="copy-en" disabled>영어 복사</button>
-              </span>
-            </label>
-          </div>
-
           <label class="field">
-            <span>질문 <em>(필수 · 답이 이 질문에 대한 것인지 먼저 확인합니다)</em></span>
-            <textarea id="question" rows="4" placeholder="AI에게 한 질문을 그대로 붙여 넣으세요."></textarea>
+            <span>P2-Bench 문항 고르기 <em>(필수 · 이 앱은 논문의 60문항에 대한 답만 점검합니다)</em></span>
+            <select id="item-select" required>
+              <option value="">— 60문항 중 고르기 —</option>
+            </select>
           </label>
-          <p class="reference" id="reference" hidden></p>
+          <p class="example-line">
+            <label for="example-select">처음이라면 논문 예시 불러오기</label>
+            <select id="example-select">
+              <option value="">— 예시를 고르세요 —</option>
+            </select>
+          </p>
+
+          <div class="question-view" id="question-view" hidden>
+            <div class="q-lang">
+              <p class="q-label">한국어 질문 <button type="button" class="ghost small-btn" id="copy-kr">복사</button></p>
+              <p class="q-text" id="question-kr"></p>
+            </div>
+            <div class="q-lang">
+              <p class="q-label">영어 질문 <button type="button" class="ghost small-btn" id="copy-en">복사</button></p>
+              <p class="q-text" id="question-en" lang="en"></p>
+            </div>
+            <p class="reference" id="reference"></p>
+          </div>
 
           <label class="field">
             <span>AI 답 <em>(필수)</em></span>

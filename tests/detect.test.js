@@ -53,19 +53,9 @@ test("기준 정답과 다른 최종 답은 mismatch, 맞는 짧은 답은 stron
   assert.equal(ok.strong, true);
 });
 
-test("직접 쓴 짧은 질문과 맞는 답은 관련 있음으로 본다", () => {
-  const cases = [
-    ["2+2는 얼마인가?", "2+2를 계산하면 4입니다. 따라서 답은 4입니다."],
-    ["방정식 3x + 5 = 20을 풀어라.", "3x = 15이므로 x = 5입니다."],
-    ["15 × 12는 얼마인가?", "15 × 12 = 180입니다."],
-    ["What is the capital of France?", "The capital of France is Paris."],
-    ["이 논증은 타당한가? 모든 사람은 죽는다. 소크라테스는 사람이다. 따라서 소크라테스는 죽는다.", "네, 타당합니다. 전제가 참이면 결론도 반드시 참입니다."]
-  ];
-  cases.forEach(([q, a]) => assert.equal(P.relevance(q, a, DECOYS).status, "related", q));
-});
-
-test("질문과 상관없는 글은 여전히 관련 없음", () => {
-  assert.equal(P.relevance("2+2는 얼마인가?", "오늘 점심은 김치찌개를 먹었는데 정말 맛있었고 날씨도 좋았습니다.", DECOYS).status, "unrelated");
+test("고른 문항과 상관없는 글은 관련 없음", () => {
+  const m01 = ITEMS.find((it) => it.id === "M01");
+  assert.equal(P.relevance([m01.kr, m01.en], "오늘 점심은 김치찌개를 먹었는데 정말 맛있었고 날씨도 좋았습니다.", DECOYS).status, "unrelated");
 });
 
 test("짧은 단답도 결론이 있는 답으로 본다", () => {
@@ -95,16 +85,17 @@ test("흔들림 신호 오탐 사례", () => {
   assert.deepEqual(ids("We cannot determine the exact value without more data. Probably the most important factor is step 2 of the process."), []);
 });
 
-test("문항 속 AI의 틀린 답 30개: 답으로 읽고, 질문과 관련 있다고 보며, 모두 기준 정답과 다르다고 잡는다", () => {
+test("문항 속 AI의 틀린 답 30개: 답으로 읽고, 그 문항과 관련 있다고 보며, 문항의 기준 정답과 다르다고 모두 잡는다", () => {
   const WRONG = require("./wrong-answers.js");
-  const count = { match: 0, mismatch: 0, unknown: 0 };
   WRONG.forEach((w) => {
-    assert.equal(P.checkInput(w.wrong).ok, true, w.id + " " + w.lang + " 입력");
-    assert.equal(P.relevance(w.question, w.wrong, DECOYS).status, "related", w.id + " " + w.lang + " 관련성");
-    count[P.matchReference(P.analyze(w.wrong), w.reference, window.P2_CLAIMS[w.id]).status]++;
+    const it = ITEMS.find((x) => x.id === w.id);
+    const label = w.id + " " + w.lang;
+    assert.equal(P.checkInput(w.wrong).ok, true, label + " 입력");
+    assert.equal(P.relevance([it.kr, it.en], w.wrong, DECOYS).status, "related", label + " 관련성");
+    // 앱과 같이 문항의 기준 정답(data.js)으로, 그리고 문항 속 원래 질문의 정답으로도 맞댄다
+    assert.equal(P.matchReference(P.analyze(w.wrong), it.answer, window.P2_CLAIMS[w.id]).status, "mismatch", label + " 문항 기준 정답");
+    assert.equal(P.matchReference(P.analyze(w.wrong), w.reference, window.P2_CLAIMS[w.id]).status, "mismatch", label + " 원래 질문 정답");
   });
-  assert.equal(count.match, 0, "틀린 답을 기준 정답과 같다고 본 경우");
-  assert.equal(count.mismatch, WRONG.length, "잡은 틀린 답 " + count.mismatch);
 });
 
 test("약한 추정(probably) 뒤에 바로 불확실하다고 밝히면 과잉추론 신호가 아니다", () => {
@@ -121,4 +112,13 @@ test("명제 규칙: 부정·오류 표시가 있는 문장이나 인용은 단�
   assert.notEqual(st("원래 결론 “따라서 정사각형이다”는 틀렸고, 올바른 결론은 정사각형이 아니라는 것이다.", "E06"), "mismatch");
   assert.notEqual(st("P(X = 1/2) = 0이며, 이것이 X = 1/2가 불가능한 사건이라는 뜻은 아닙니다.", "M13"), "mismatch");
   assert.equal(st("P(X = 1/2) = 0이므로 X = 1/2는 불가능한 사건이다.", "M13"), "mismatch");
+});
+
+test("정답 값 대조: 최종 문장에 값이 없어도 답 전체에서 찾고, 반올림·분수 표기는 같은 값", () => {
+  const e12 = ITEMS.find((it) => it.id === "E12");
+  const st = (t) => P.matchReference(P.analyze(t), e12.answer, null).status;
+  assert.equal(st("민감도가 99%이므로 실제 질병일 확률도 99%입니다. 따라서 이 AI의 답은 맞습니다."), "mismatch");
+  assert.equal(st("양성일 때 실제 질병일 확률은 약 16.7%입니다."), "match");
+  assert.equal(st("계산하면 1/6 정도입니다. 따라서 AI 답은 틀렸습니다."), "match");
+  assert.notEqual(st("베이즈 정리로 계산하면 실제 질병일 확률은 약 17%입니다. 따라서 AI의 99%는 틀렸습니다."), "mismatch");
 });

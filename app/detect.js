@@ -375,7 +375,7 @@
     ["valid", /\bvalid\b|타당/gi],
     ["false", /\b(false|not true)\b|거짓|참이 아니/gi],
     ["true", /\btrue\b|참(이다|입니다|이며|이고|\b|$)/gi],
-    ["undetermined", /cannot (be )?(uniquely )?(determined|established|concluded|justif)|can't be determined|not (logically )?(established|determined)|insufficient|not enough information|cannot (conclude|establish|justify|be called)|cannot establish|결정할 수 없|알 수 없|정할 수 없|확정(되지 않|할 수 없)|결론(내|을 내)릴 수 없|말할 수 없|도출할 수 없|단정할 수 없/gi],
+    ["undetermined", /underdetermin|cannot (be )?(uniquely )?(determined|established|concluded|justif)|can't be determined|not (logically )?(established|determined)|insufficient|not enough information|cannot (conclude|establish|justify|be called)|cannot establish|결정할 수 없|알 수 없|정할 수 없|확정(되지 않|할 수 없)|결론(내|을 내)릴 수 없|말할 수 없|도출할 수 없|단정할 수 없/gi],
     ["inconsistent", /inconsistent|contradict|unsatisfiable|cannot (all )?be true|모순|일관되지 않|일관성이 없|동시에 참일 수 없/gi],
     ["consistent", /\bconsistent\b|일관(된다|됩니다|적이다|적입니다|성이 있)/gi],
     ["wrong", /\b(wrong|incorrect|unreliable|unjustified|not supported|not a valid)\b|틀렸|틀린|신뢰할 수 없|근거 없|잘못/gi],
@@ -448,8 +448,10 @@
   function numEq(x, y) {
     if (x === y) return true;
     var dx = decimals(x), dy = decimals(y), d = Math.min(dx, dy);
-    if (d < 1 || dx === dy) return false;
+    if (dx === dy) return false;
     var precise = dx > dy ? x : y, rough = dx > dy ? y : x;
+    // 10 이상의 정수로 반올림한 값(약 17% ≈ 16.7%)도 같다고 본다. 작은 정수(0.5 ↔ 1)는 맞대지 않는다
+    if (d < 1) return parseFloat(rough) >= 10 && Math.round(parseFloat(precise)) === parseFloat(rough);
     return parseFloat(parseFloat(precise).toFixed(d)) === parseFloat(rough);
   }
   function hasNum(list, v) { return list.some(function (w) { return numEq(v, w); }); }
@@ -604,12 +606,15 @@
     if (!an || !reference) return { status: "unknown", why: [] };
     var claimed = claimCheck(an, claim);
     if (claimed) return { status: "mismatch", why: [claimed] };
-    var ref = { finalAnswer: String(reference), lead: "", topics: [], text: "", signals: [] };
-    var c = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, ref);
-    var fa = keyOf((an.finalAnswer || "") + "\n" + (an.lead || "")), fr = keyOf(reference);
+    // 기준 정답 속 "not 99%"처럼 부정된 값은 정답이 아니므로 뺀다
+    var refText = String(reference).replace(/\b(not|rather than)\s+[^,;.]*?\d[^,;.]*/gi, " ");
+    // 첫 마디에 숫자가 있으면 그것이 정답 값이다("The correct answer is 408; 340+68=408 because …"의 뒤는 해설)
+    var head = refText.split(/[;；.。]\s/)[0];
+    var refMain = keyOf(head).nums.length ? head : refText;
+    var c = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, { finalAnswer: refMain, lead: "", topics: [], text: "", signals: [] });
+    var fa = keyOf((an.finalAnswer || "") + "\n" + (an.lead || "")), fr = keyOf(refText);
     // 기준 정답이 '결정할 수 없음·해 없음·모순'인데, 답은 어디서도 그렇게 말하지 않고 값이나 '일관됨'을 단정하면 다른 답
-    var refHead = keyOf(String(reference).split(/[;；.。]\s/)[0]);
-    var refNo = ["undetermined", "empty", "inconsistent"].filter(function (t) { return refHead.tags[t]; });
+    var refNo = ["undetermined", "empty", "inconsistent"].filter(function (t) { return fr.tags[t]; });
     if (refNo.length) {
       var whole = keyOf(an.text || ((an.finalAnswer || "") + "\n" + (an.lead || "")));
       var admits = ["undetermined", "empty", "inconsistent", "wrong"].some(function (t) { return whole.tags[t]; });
@@ -622,7 +627,6 @@
     // 기준 정답은 해설 문장이 붙어 있어("…; the valid form is …") 판정어는 첫 마디로만 맞댄다
     var numberConflict = c.sameAnswer === false && c.why.some(function (w) { return /^(최종 답의 숫자가 다름|같은 변수에 다른 값)/.test(w); });
     if (c.sameAnswer === false && !numberConflict) {
-      var head = String(reference).split(/[;；.。]\s/)[0];
       var c2 = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, { finalAnswer: head, lead: "", topics: [], text: "", signals: [] });
       if (c2.sameAnswer !== false) return { status: "unknown", why: [] };
     }
@@ -632,7 +636,22 @@
       if (refNums.length && refNums.every(function (n) { return hasNum(body, n); })) return { status: "unknown", why: [] };
       return { status: "mismatch", why: c.why };
     }
+    // 정답 값: 기준 정답 첫 마디의 두 자리 이상 숫자·소수와 그 환산값(16.7% → 0.167)
+    var mainKey = keyOf(refMain);
+    var isBig = function (n) { return n.length >= 2 || n.indexOf(".") >= 0; };
+    var mainBig = uniq(mainKey.nums).filter(isBig), mainVals = mainBig.concat(mainKey.alt);
+    var hasMain = function (list) { return mainVals.some(function (n) { return hasNum(list, n); }); };
+    var finalKey = keyOf(an.finalAnswer || ""), finalBig = uniq(finalKey.nums).filter(isBig);
+    var bodyKey = keyOf(an.text || ""), bodyNums = bodyKey.nums.concat(bodyKey.alt);
+    // 최종 문장에 값이 없으면("따라서 이 AI의 답은 맞습니다") 답 전체에서 정답 값을 찾는다
+    if (c.sameAnswer !== false && mainBig.length && !finalBig.length && !hasMain(bodyNums)) {
+      return { status: "mismatch", why: ["답 어디에도 기준 정답의 값 " + mainBig.join(", ") + "이 없음"] };
+    }
     if (c.sameAnswer !== true) return { status: "unknown", why: [] };
+    // 판정어(틀렸다 등)가 같아도 정답 값이 최종 답에 없고 다른 값만 있으면 다른 답(408 ↔ 388)
+    if (mainBig.length && finalBig.length && !hasMain(finalBig) && !hasMain(bodyNums)) {
+      return { status: "mismatch", why: ["최종 답의 값 " + finalBig.join(", ") + "이 기준 정답의 값 " + mainBig.join(", ") + "과 다름"] };
+    }
     // 강한 일치: 기준 정답의 두 자리 이상 숫자·소수가 모두 최종 답에 있거나, 세 글자 이상 같은 식이 있을 때.
     // 개념어(교란 변수·상관관계)만 같은 것은 비슷한 다른 문항에도 흔해 강한 근거로 보지 않는다
     var big = uniq(fr.nums).filter(function (n) { return n.length >= 2 || n.indexOf(".") >= 0; });
@@ -798,7 +817,7 @@
   var RELEVANCE_FLOOR = 2.5;
   var RELEVANCE_MARGIN = 1.3;
 
-  // question: 질문 문자열 또는 [한국어, 영어] 배열, decoys: 비교용 다른 질문들([[kr, en], …])
+  // question: P2-Bench 문항의 [한국어, 영어] 질문(앱은 60문항에 대한 답만 점검한다), decoys: 비교용 60문항([[kr, en], …])
   function relevance(question, answer, decoys) {
     var qs = (Array.isArray(question) ? question : [question]).map(function (q) { return String(q || "").trim(); }).filter(function (q) { return q.length >= 4; });
     if (!qs.length) return { status: "noquestion" };
@@ -840,15 +859,7 @@
       result.status = "unknown";
       return result;
     }
-    if (own >= RELEVANCE_FLOOR) {
-      // 직접 쓴 질문(P2-Bench 문항이 아님)은 다른 문항과 낱말만 더 겹친다고 남의 답으로 보지 않는다.
-      // 그 문항에만 있는 숫자·수식·개념까지 답에 나와야 '다른 질문의 답'으로 본다
-      var bench = decoys.some(function (d) { return qs.some(function (q) { return d.indexOf(q) >= 0; }); });
-      var strongOther = bestF ? sharedKeys(bestF, af).filter(function (k) { return k.indexOf("w:") !== 0 && !qf[k]; }) : [];
-      // 직접 쓴 질문이고 단서가 충분히 겹치면 그 질문의 답으로 본다(다른 문항 비교는 P2-Bench 문항끼리 헷갈리는 것을 막는 용도)
-      if (!bench) { result.status = "related"; result.wordsOnly = !strongOther.length; result.customOverride = !!strongOther.length; return result; }
-      result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result;
-    }
+    if (own >= RELEVANCE_FLOOR) { result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result; }
     result.status = "unrelated";
     result.reason = "weak";
     return result;
