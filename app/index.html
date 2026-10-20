@@ -83,6 +83,16 @@
               <p class="q-text" id="question-en" lang="en"></p>
             </div>
             <p class="reference" id="reference"></p>
+            <div class="pitfall">
+              <p class="q-label">이 문항에서 AI가 흔히 하는 실수 <span class="src">P2-Bench 데이터셋</span></p>
+              <p class="pitfall-type" id="pitfall-type"></p>
+              <p class="pitfall-orig" id="pitfall-orig" lang="en"></p>
+              <details>
+                <summary>기준 정답 해설 (데이터셋 원문)</summary>
+                <p id="pitfall-explain" lang="en"></p>
+                <p class="pitfall-target">평가하는 능력: <span id="pitfall-target" lang="en"></span></p>
+              </details>
+            </div>
           </div>
 
           <label class="field">
@@ -147,10 +157,23 @@
               <span><b>최종 답 자체가 틀렸다</b><span class="auto" id="wrong-auto" hidden>기준 정답과 다름 · 자동 체크</span> — 기준 정답이나 믿을 만한 자료와 다르면 체크하세요. 최종 답 정확성 40점이 0점이 됩니다.</span>
             </label>
 
+            <h3 class="sub">답 원문에서 본 곳</h3>
+            <p class="legend"><mark class="m-final">최종 답으로 읽은 곳</mark> <mark class="m-signal">흔들림 신호가 걸린 곳</mark></p>
+            <div class="annotated" id="annotated" tabindex="0" aria-label="답 원문(최종 답과 흔들림 신호 위치 표시)"></div>
+            <p class="note" id="annotated-note"></p>
             </div>
 
             <h3 class="sub">다음에 할 일</h3>
             <ul class="next" id="next"></ul>
+
+            <div class="actions copy-result">
+              <button type="button" class="ghost" id="copy-result">점검 결과 복사</button>
+              <span class="note" id="copy-note" role="status" aria-live="polite"></span>
+            </div>
+            <label class="field result-text" id="result-text-box" hidden>
+              <span>점검 결과 (복사가 막혀 여기에 넣어 두었습니다. 전체 선택 후 복사하세요)</span>
+              <textarea id="result-text" rows="10" readonly></textarea>
+            </label>
           </div>
         </div>
       </div>

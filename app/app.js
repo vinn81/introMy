@@ -6,6 +6,7 @@
   var EXAMPLES = window.P2_EXAMPLES || [];
   var ITEMS = window.P2_ITEMS || [];
   var CLAIMS = window.P2_CLAIMS || {};
+  var ERROR_KO = window.P2_ERROR_KO || {};
   var MAX_LEN = 20000;
   // 관련성 확인에서 '다른 질문'으로 쓰는 P2-Bench 60문항(한국어·영어)
   var DECOYS = ITEMS.map(function (it) { return [it.kr, it.en]; });
@@ -79,13 +80,26 @@
     return v === "" ? null : ITEMS[Number(v)] || null;
   }
 
-  // 고른 문항의 한·영 질문과 기준 정답을 보여 준다(질문은 고칠 수 없다)
+  // 논문의 오류 코드(3.3절). 데이터셋의 예상 오류 유형에 섞여 있다
+  var ERROR_CODES = { CALC: "계산 오류", PREM: "전제 오류", HALL: "환각", UNC: "정보 충분성 판단 실패", COND: "조건 해석 오류", LOG: "논리 오류", OVER: "과잉추론", SELF: "자기수정 오류" };
+
+  function errorTypeText(t) {
+    return String(t || "").split(/;\s*/).map(function (part) {
+      return part.replace(/\b(CALC|PREM|HALL|UNC|COND|LOG|OVER|SELF)\b/g, function (c) { return ERROR_CODES[c] + "(" + c + ")"; });
+    }).join(" · ");
+  }
+
+  // 고른 문항의 한·영 질문, 기준 정답, 데이터셋의 예상 오류 유형과 해설을 보여 준다(질문은 고칠 수 없다)
   function showItem(it) {
     state.reference = it ? it.answer : null;
     $("question-view").hidden = !it;
     $("question-kr").textContent = it ? it.kr : "";
     $("question-en").textContent = it ? it.en : "";
     $("reference").textContent = it ? "P2-Bench 기준 정답: " + it.answer : "";
+    $("pitfall-type").textContent = it ? errorTypeText(ERROR_KO[it.id] || it.errorType) : "";
+    $("pitfall-orig").textContent = it ? "데이터셋 원문: " + it.errorType : "";
+    $("pitfall-explain").textContent = it ? it.explanation || "" : "";
+    $("pitfall-target").textContent = it ? it.target || "" : "";
   }
 
   function loadExample() {
@@ -117,18 +131,21 @@
   function copyItem(lang) {
     var it = currentItem();
     if (!it) return;
-    var text = lang === "kr" ? it.kr : it.en;
     var name = lang === "kr" ? "한국어" : "영어";
-    var done = function () { setNote("input-note", name + " 질문을 복사했습니다. 내 AI에게 붙여 넣어 물어보세요."); };
-    // 복사가 막히면 질문 글을 선택해 두고 직접 복사하게 한다
-    var fail = function () {
+    copyText(lang === "kr" ? it.kr : it.en, function () {
+      setNote("input-note", name + " 질문을 복사했습니다. 내 AI에게 붙여 넣어 물어보세요.");
+    }, function () {
+      // 복사가 막히면 질문 글을 선택해 두고 직접 복사하게 한다
       var range = document.createRange();
       range.selectNodeContents($(lang === "kr" ? "question-kr" : "question-en"));
       var sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
       setNote("input-note", "브라우저가 복사를 막아 " + name + " 질문을 선택해 두었습니다. Ctrl+C(⌘C)로 복사하세요.");
-    };
+    });
+  }
+
+  function copyText(text, done, fail) {
     // 클립보드 API를 못 쓰는 곳(file://, 권한 거부)에서는 숨긴 칸을 만들어 복사한다
     var legacy = function () {
       var ta = document.createElement("textarea");
@@ -158,6 +175,8 @@
 
   function hideResult() {
     $("result-live").textContent = "";
+    $("result-text-box").hidden = true;
+    setNote("copy-note", "");
     state.analysis = null;
     state.analysisB = null;
     $("result-empty").hidden = false;
@@ -235,6 +254,7 @@
       renderResult();
       $("result-empty").hidden = true;
       $("result-body").hidden = false;
+      scrollAnnotated();
       if ($("answer-b").value.trim()) compare(true);
       else { $("compare-body").hidden = true; setNote("compare-note", ""); }
       if (document.activeElement && document.activeElement.id === "run") {
@@ -262,6 +282,98 @@
         (hit ? "<blockquote>" + escapeHtml(hit.evidence) + "</blockquote>" : "") +
         "</span></label></div>";
     }).join("");
+  }
+
+  // 최종 답 칸의 글은 굵은 글씨 표시(**)를 걷어낸 것이라, 원문에서는 표시를 건너뛰며 찾는다(마지막으로 나온 곳)
+  function findLast(text, piece, from) {
+    var p = String(piece).replace(/\s+/g, " ").trim().slice(0, 200);
+    if (p.length < 2) return null;
+    var src = p.split("").map(function (ch) { return ch === " " ? "\\s+" : ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("[*_`]*");
+    var re = new RegExp(src, "g"), m, last = null;
+    re.lastIndex = from || 0;
+    while ((m = re.exec(text))) { last = { start: m.index, end: m.index + m[0].length }; if (!m[0].length) re.lastIndex++; }
+    return last;
+  }
+
+  // 답 원문에 최종 답으로 읽은 곳과 켜진 흔들림 신호가 걸린 곳을 표시한다
+  function renderAnnotated() {
+    var a = state.analysis, text = a.text || "", marks = [], notes = [];
+    var segs = String(a.finalAnswer || "").split(/ · | \/ /).filter(function (x) { return x.trim().length >= 2; });
+    var first = segs.length ? findLast(text, segs[0]) : null;
+    if (first) {
+      marks.push({ start: first.start, end: first.end, cls: "m-final" });
+      var pos = first.end;
+      segs.slice(1).forEach(function (seg) {
+        var re = findLast(text.slice(pos, pos + 2000), seg);
+        if (re) { marks.push({ start: pos + re.start, end: pos + re.end, cls: "m-final" }); pos += re.end; }
+      });
+    } else if (a.finalAnswer) {
+      notes.push("최종 답으로 읽은 글(" + short60(a.finalAnswer) + ")은 수식 표기를 바꿔 읽은 것이라 원문에서 위치를 표시하지 못했습니다.");
+    }
+    var noPos = [];
+    a.signals.forEach(function (sg) {
+      if (!state.checked[sg.id]) return;
+      if (sg.index == null || !sg.length) { noPos.push(P.SIGNALS[sg.id].title); return; }
+      marks.push({ start: sg.index, end: sg.index + sg.length, cls: "m-signal" });
+    });
+    if (noPos.length) notes.push("‘" + noPos.join(", ") + "’은 첫 답과 마지막 답을 맞대 찾은 신호라 한 곳을 표시하지 않았습니다(위 근거 참고).");
+    // 겹치는 표시는 앞의 것을 남긴다
+    marks.sort(function (x, y) { return x.start - y.start; });
+    var html = "", at = 0;
+    marks.forEach(function (m) {
+      if (m.start < at) return;
+      html += escapeHtml(text.slice(at, m.start)) + '<mark class="' + m.cls + '">' + escapeHtml(text.slice(m.start, m.end)) + "</mark>";
+      at = m.end;
+    });
+    $("annotated").innerHTML = html + escapeHtml(text.slice(at));
+    $("annotated-note").textContent = notes.join(" ");
+    scrollAnnotated();
+  }
+
+  // 긴 답이면 흔들림 신호(없으면 최종 답)가 보이게 원문 칸을 굴려 둔다(결과가 화면에 보인 뒤에만 위치를 잴 수 있다)
+  function scrollAnnotated() {
+    var box = $("annotated");
+    var target = box.querySelector("mark.m-signal") || box.querySelector("mark.m-final");
+    box.scrollTop = target ? Math.max(0, target.offsetTop - 40) : 0;
+  }
+
+  // 과제·보고서에 붙일 수 있게 점검 결과를 글로 묶는다
+  function resultText() {
+    var it = currentItem(), ids = checkedIds(), s = P.score(ids, $("wrong-answer").checked);
+    var score = $("score-total").textContent, scored = !$("scored-part").hidden;
+    var lines = ["[답 흔들림 점검기 · P2-Bench " + it.id + " · " + it.category + "]",
+      "질문: " + it.kr, "기준 정답: " + it.answer,
+      "점수: " + (score === "—" ? "보류" : score + " / 100") + " — " + $("verdict-title").textContent,
+      $("verdict-text").textContent];
+    if (scored) {
+      lines.push("흔들림 신호: " + (ids.length ? ids.map(function (id) { return P.SIGNALS[id].title; }).join(", ") : "없음"));
+      lines.push("루브릭: " + P.RUBRIC.map(function (r) { return r.label + " " + s.parts[r.key] + "/" + r.max; }).join(", "));
+    }
+    lines.push("판정 근거:");
+    [].forEach.call(document.querySelectorAll("#why li"), function (li) { lines.push("- " + li.textContent); });
+    if (!$("compare-body").hidden && !$("compare-body").classList.contains("stale")) {
+      lines.push("다른 언어 답과 비교: " + $("pair-verdict").firstChild.textContent + " (1단계 답: " + $("meta-a").textContent + " / 다른 언어 답: " + $("meta-b").textContent + ")");
+    }
+    lines.push("점검 도구: https://intro-my-nine.vercel.app/app/ (논문 P2-Bench의 100점 루브릭과 오류 유형으로 점검)");
+    return lines.join("\n");
+  }
+
+  function copyResult() {
+    if (!state.analysis) return;
+    if ($("result").classList.contains("stale")) {
+      setNote("copy-note", "입력이 바뀌었습니다. 점검하기를 다시 누른 뒤 복사하세요.", true);
+      return;
+    }
+    var text = resultText();
+    $("result-text-box").hidden = true;
+    copyText(text, function () {
+      setNote("copy-note", "점검 결과를 복사했습니다. 과제나 보고서에 붙여 넣을 수 있습니다.");
+    }, function () {
+      $("result-text").value = text;
+      $("result-text-box").hidden = false;
+      $("result-text").select();
+      setNote("copy-note", "브라우저가 복사를 막아 아래 칸에 결과를 넣어 두었습니다.");
+    });
   }
 
   function renderResult() {
@@ -330,9 +442,12 @@
     if (offTopic) next.push("AI에게 실제로 물은 문항을 골랐는지, 답 칸에 그 문항의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
     if (wrong) next.push("기준 정답이나 교재·공식 자료로 답을 다시 확인하세요.");
     ids.forEach(function (id) { next.push(P.SIGNALS[id].next); });
+    var item = currentItem();
+    if (item && item.errorType && !offTopic) next.push("이 문항에서 AI가 흔히 하는 실수(" + errorTypeText(ERROR_KO[item.id] || item.errorType) + ")를 답이 하지 않았는지 위 원문에서 직접 보세요.");
     if (state.reference && !wrong && !(state.refCheck && state.refCheck.status === "match")) next.push("기준 정답(" + state.reference + ")과 최종 답이 같은지 직접 보세요. 다르면 위의 ‘최종 답 자체가 틀렸다’를 체크하세요.");
     next.push("3단계: 같은 질문을 다른 언어로 물어 두 답을 비교하세요. 논문에서는 흔들림이 한쪽 언어에서만 나왔습니다.");
     $("next").innerHTML = next.map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("");
+    renderAnnotated();
   }
 
   function short60(t) { t = String(t || ""); return t.length > 60 ? t.slice(0, 60) + "…" : t; }
@@ -543,6 +658,7 @@
     $("copy-en").addEventListener("click", function () { copyItem("en"); });
     $("run").addEventListener("click", run);
     $("clear").addEventListener("click", clearAll);
+    $("copy-result").addEventListener("click", copyResult);
     $("compare").addEventListener("click", function () { compare(false); });
     $("final-a").addEventListener("input", function () { if (state.analysisB) renderPair(); });
     $("final-b").addEventListener("input", function () { if (state.analysisB) renderPair(); });

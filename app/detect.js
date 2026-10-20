@@ -222,7 +222,8 @@
     var checks = { flip: detectFlip, overinfer: detectOverinfer, contradiction: detectContradiction };
     Object.keys(checks).forEach(function (id) {
       var hit = checks[id](masked, clean);
-      if (hit) found.push({ id: id, index: hit.index, evidence: hit.evidence || snippet(clean, hit.index, hit.length) });
+      // index·length는 원문에서 걸린 곳(화면에서 표시). 첫 답·마지막 답 비교로 찾은 번복은 위치가 없다
+      if (hit) found.push({ id: id, index: hit.index, length: hit.length, evidence: hit.evidence || snippet(clean, hit.index, hit.length) });
     });
     // 핵심 개념을 셋 이상 다룬 서술형 답(실험 설계 등)도 질문에 답한 글로 본다
     var tp = topics(clean);

@@ -126,6 +126,26 @@ h1 { margin: 0 0 12px; font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -0.04e
 .q-text { margin: 0; white-space: pre-wrap; }
 .small-btn { min-height: 32px; padding: 4px 12px; font-size: 0.8rem; }
 .question-view .reference { margin: 12px 0 0; }
+.pitfall { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-strong); }
+.pitfall .src { white-space: nowrap; padding: 1px 8px; border: 1px solid var(--line-strong); border-radius: 99px; background: #fff; font-size: 0.72rem; font-weight: 700; }
+.pitfall-type { margin: 0; font-weight: 700; }
+.pitfall-orig { margin: 2px 0 6px; font-size: 0.82rem; color: var(--muted); }
+.pitfall details { font-size: 0.9rem; }
+.pitfall summary { cursor: pointer; color: var(--accent-deep); font-weight: 700; }
+.pitfall details p { margin: 6px 0 0; }
+.pitfall-target { color: var(--muted); }
+
+/* 답 원문에 최종 답과 흔들림 신호 위치를 표시 */
+.legend { margin: 0 0 8px; font-size: 0.85rem; }
+.legend mark { padding: 1px 6px; border-radius: 6px; }
+.annotated {
+  position: relative; max-height: 22rem; overflow: auto; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px;
+  background: #fff; font-size: 0.9rem; white-space: pre-wrap;
+}
+mark.m-final { background: var(--ok-soft); color: #0b4f49; box-shadow: inset 0 -2px 0 var(--ok); }
+mark.m-signal { background: var(--warn-soft); color: #6b3f00; box-shadow: inset 0 -2px 0 var(--warn); }
+.copy-result { margin-top: 16px; }
+.result-text { margin-top: 10px; }
 
 .field { display: block; margin-bottom: 12px; }
 .field > span { display: block; margin-bottom: 6px; font-size: 0.88rem; font-weight: 750; }
