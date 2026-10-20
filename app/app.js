@@ -156,6 +156,7 @@
   }
 
   function hideResult() {
+    $("result-live").textContent = "";
     state.analysis = null;
     state.analysisB = null;
     $("result-empty").hidden = false;
@@ -325,6 +326,8 @@
     }
     $("verdict-title").textContent = title;
     $("verdict-text").textContent = text;
+    var shown = $("score-total").textContent;
+    $("result-live").textContent = "2단계 결과: " + (shown === "—" ? "점수 보류" : shown + "점") + ". " + title;
     $("why").innerHTML = whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s).map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
 
     var next = [];
@@ -346,9 +349,9 @@
     var w = [];
     if (rel.status === "related" && rel.byReference) {
       w.push("질문의 단서는 답에 적게 나왔지만(관련성 점수 " + rel.score + "), 최종 답이 P2-Bench 기준 정답과 같아 이 질문의 답으로 봤습니다: " + state.refCheck.why.join(", ") + ".");
-    } else if (rel.status === "related" && rel.wordsOnly) {
+    } else if (rel.status === "related" && (rel.wordsOnly || rel.customOverride)) {
       w.push("질문과 관련 있음: 질문의 단서 가운데 답에서 찾은 것 — " + list(rel.found) + " (관련성 점수 " + rel.score + ", 2.5 이상이면 관련 있음).");
-      w.push("P2-Bench의 다른 문항과 낱말이 더 많이 겹쳤지만(점수 " + rel.best + "), 그 문항에만 있는 숫자·수식·개념은 답에 없고 넣은 질문이 P2-Bench 문항도 아니라서 이 질문의 답으로 봤습니다.");
+      w.push("P2-Bench의 다른 문항과 더 많이 겹쳤지만(점수 " + rel.best + "), 넣은 질문이 P2-Bench 문항이 아니라 직접 쓴 질문이고 그 질문의 단서가 충분히 나와 이 질문의 답으로 봤습니다.");
     } else if (rel.status === "related") {
       w.push("질문과 관련 있음: 질문의 단서 가운데 답에서 찾은 것 — " + list(rel.found) + " (관련성 점수 " + rel.score + ", 2.5 이상이면 관련 있음).");
       w.push("P2-Bench의 다른 문항들과도 같은 계산을 했습니다. 가장 비슷한 다른 문항의 점수: " + rel.best + " — 이 질문 점수(" + rel.score + ")의 1.3배 이하라서 이 질문의 답으로 봤습니다.");
@@ -540,6 +543,8 @@
       document.body.insertAdjacentHTML("afterbegin", '<p style="padding:12px;background:#fdecea">detect.js를 불러오지 못했습니다. 폴더 안의 파일이 모두 있는지 확인하세요.</p>');
       return;
     }
+    // 실행 묶음(ZIP)을 파일로 열었으면 함께 든 paper.pdf를 연다(인터넷 없이도 논문을 볼 수 있게)
+    if (location.protocol === "file:") document.querySelector(".paper-link").href = "paper.pdf";
     fillSelects();
     $("example-select").addEventListener("change", loadExample);
     $("item-select").addEventListener("change", pickItem);

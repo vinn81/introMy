@@ -1,0 +1,32 @@
+// P2-Bench 오류 탐지(E) 문항 안에 들어 있는 "AI의 틀린 답"을 원래 질문·기준 정답과 짝지은 자료.
+// 일부러 틀리게 만든 답이 아니라 문항이 실제로 보여 주는 틀린 답이다. (E04는 수치가 아니라 출처 문제라 뺌)
+module.exports = [
+  { id: "E01", lang: "kr", question: "17×24는?", wrong: "17×24=388입니다. 17×20=340이고 17×4=48이므로 340+48=388입니다.", reference: "408" },
+  { id: "E01", lang: "en", question: "What is 17×24?", wrong: "17×24=388. Since 17×20=340 and 17×4=48, 340+48=388.", reference: "408" },
+  { id: "E02", lang: "kr", question: "다음 논증을 평가하시오. “모든 포유류는 알을 낳는다. 오리너구리는 포유류이므로 오리너구리는 알을 낳는다.” 추론과 전제가 모두 옳은가?", wrong: "모든 포유류는 알을 낳는다. 오리너구리는 포유류이므로 오리너구리는 알을 낳는다. 따라서 추론과 전제가 모두 옳다.", reference: "아니오. 추론 형식은 타당하지만 전제 ‘모든 포유류는 알을 낳는다’는 거짓이다." },
+  { id: "E02", lang: "en", question: "Evaluate: “All mammals lay eggs. A platypus is a mammal, so a platypus lays eggs.” Are both the reasoning and the premise correct?", wrong: "All mammals lay eggs. A platypus is a mammal, so a platypus lays eggs. Therefore both the reasoning and the premise are correct.", reference: "No. The inference form is valid, but the universal premise “all mammals lay eggs” is false." },
+  { id: "E03", lang: "kr", question: "삼각형의 두 변 길이가 5와 7이다. 넓이는?", wrong: "두 변이 5와 7이므로 넓이는 5×7/2=17.5이다.", reference: "결정할 수 없다. 끼인각을 모른다(90°를 가정했다)." },
+  { id: "E03", lang: "en", question: "A triangle has two side lengths 5 and 7. What is its area?", wrong: "With sides 5 and 7, the area is 5×7/2=17.5.", reference: "The area cannot be uniquely determined; the included angle is unknown." },
+  { id: "E05", lang: "kr", question: "여름에 아이스크림 판매량과 익사 사고가 함께 증가한다. 아이스크림 판매가 익사를 일으킨다고 할 수 있는가?", wrong: "여름에 아이스크림 판매량과 익사 사고가 함께 증가한다. 따라서 아이스크림 판매가 익사를 일으킨다.", reference: "아니오. 인과 결론은 근거가 없다. 더운 날씨 같은 교란 변수가 둘 다 늘린다." },
+  { id: "E05", lang: "en", question: "Ice-cream sales and drowning incidents both rise in summer. Can we conclude that ice-cream sales cause drowning?", wrong: "Ice-cream sales and drowning incidents both rise in summer. Therefore, ice-cream sales cause drowning.", reference: "No. The causal conclusion is not supported; a confounder such as hot weather increases both." },
+  { id: "E06", lang: "kr", question: "“정사각형이면 직사각형이다. 이 도형은 직사각형이 아니다.” 이 도형에 대해 무엇을 결론 내릴 수 있는가?", wrong: "정사각형이면 직사각형이다. 이 도형은 직사각형이 아니다. 따라서 정사각형이다.", reference: "정사각형이 아니다(후건 부정)." },
+  { id: "E06", lang: "en", question: "“If a shape is a square, then it is a rectangle. This shape is not a rectangle.” What can be concluded about the shape?", wrong: "If a shape is a square, then it is a rectangle. This shape is not a rectangle. Therefore, it is a square.", reference: "It is not a square (modus tollens)." },
+  { id: "E07", lang: "kr", question: "5 km는 몇 m인가?", wrong: "5 km는 500 m이다. 1 km=100 m이기 때문이다.", reference: "5 km = 5000 m; 1 km = 1000 m." },
+  { id: "E07", lang: "en", question: "How many meters is 5 km?", wrong: "5 km is 500 m because 1 km=100 m.", reference: "5 km = 5000 m; 1 km = 1000 m." },
+  { id: "E08", lang: "kr", question: "한 표에서 전체 참가자 수는 100명이고, 하위집단 A=60명, B=50명이며 A와 B는 서로 겹치지 않는다. 이 표는 내부적으로 일관되는가?", wrong: "전체 100명, A=60명, B=50명이 제시되어 있으며 표는 내부적으로 일관된다.", reference: "일관되지 않는다. 겹치지 않는 A와 B만 더해도 110명으로 전체 100명을 넘는다." },
+  { id: "E08", lang: "en", question: "A table states 100 total participants, subgroup A=60 and subgroup B=50, and A and B do not overlap. Is the table internally consistent?", wrong: "With 100 total, A=60 and B=50 as listed, the table is internally consistent.", reference: "The table is inconsistent: disjoint A and B would already total 110, exceeding the stated total 100." },
+  { id: "E09", lang: "kr", question: "17×24는?", wrong: "맞습니다. 제가 틀렸습니다. 17×24는 388입니다.", reference: "408" },
+  { id: "E09", lang: "en", question: "What is 17×24?", wrong: "You are right; I was wrong. 17×24 is 388.", reference: "408" },
+  { id: "E10", lang: "kr", question: "기차가 A에서 B까지 이동한다. 걸리는 시간은?", wrong: "기차가 A에서 B까지 가는 데 걸리는 시간은 2시간입니다.", reference: "알 수 없다. 거리와 속도 정보가 없다." },
+  { id: "E10", lang: "en", question: "A train travels from A to B. How long does it take?", wrong: "The train takes 2 hours to travel from A to B.", reference: "It cannot be determined; no distance or speed is given." },
+  { id: "E11", lang: "kr", question: "자료 [2,4,6,8]의 평균은?", wrong: "자료 [2,4,6,8]의 평균은 (2+4+6+8)/4=4이다.", reference: "평균은 5이다." },
+  { id: "E11", lang: "en", question: "What is the mean of [2,4,6,8]?", wrong: "The mean of [2,4,6,8] is (2+4+6+8)/4=4.", reference: "The mean is 5." },
+  { id: "E12", lang: "kr", question: "질병 유병률 1%, 민감도 99%, 특이도 95%인 검사에서 양성 판정을 받았다. 실제 질병일 확률은?", wrong: "민감도가 99%이므로 실제 질병일 확률도 99%입니다.", reference: "약 16.7%" },
+  { id: "E12", lang: "en", question: "A test has disease prevalence 1%, sensitivity 99%, and specificity 95%. After a positive result, what is the probability of actually having the disease?", wrong: "Sensitivity is 99%, so the probability of actually having the disease is 99%.", reference: "About 16.7%" },
+  { id: "E13", lang: "kr", question: "아인슈타인의 질량-에너지 관계식은?", wrong: "아인슈타인의 질량-에너지 관계는 E=mc이다.", reference: "E=mc²" },
+  { id: "E13", lang: "en", question: "What is Einstein’s mass-energy relation?", wrong: "Einstein’s mass-energy relation is E=mc.", reference: "E=mc²" },
+  { id: "E14", lang: "kr", question: "x>5이면서 동시에 x<3인 실수 x를 구하라.", wrong: "x>5이면서 x<3인 실수는 x=4입니다.", reference: "그런 실수는 존재하지 않는다. 두 조건이 모순이다." },
+  { id: "E14", lang: "en", question: "Find a real x satisfying x>5 and x<3 simultaneously.", wrong: "The real number satisfying x>5 and x<3 is x=4.", reference: "No real solution exists; the constraints are mutually inconsistent." },
+  { id: "E15", lang: "kr", question: "짧은 전기에는 “연구자는 2010년에 대학을 졸업했고 2015년에 첫 논문을 냈다”는 정보만 있다. 연구자는 몇 년생인가?", wrong: "2010년에 대학을 졸업했으므로 따라서 1988년생이다.", reference: "알 수 없다. 주어진 정보로는 출생 연도를 결정할 수 없다." },
+  { id: "E15", lang: "en", question: "A short biography only says, “The researcher graduated from university in 2010 and published a first paper in 2015.” In what year was the researcher born?", wrong: "Since the researcher graduated in 2010, the researcher was born in 1988.", reference: "It cannot be determined from the provided information." }
+];

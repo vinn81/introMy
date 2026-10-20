@@ -24,7 +24,7 @@ test("240개 모두 입력 거름망을 통과하고 결론이 있는 답으로 
   });
 });
 
-test("감점 4건은 논문 점수와 같게, 만점 236건 중 오탐은 1건(P2M-01-052)뿐", { skip }, () => {
+test("감점 4건은 논문 점수와 같게, 만점 236건은 오탐 없이 100점", { skip }, () => {
   const fp = [];
   ANSWERS.forEach((a) => {
     const an = P.analyze(a.text);
@@ -32,7 +32,7 @@ test("감점 4건은 논문 점수와 같게, 만점 236건 중 오탐은 1건(P
     if (a.score < 100) assert.equal(s, a.score, a.run);
     else if (an.signals.length) fp.push(a.run);
   });
-  assert.deepEqual(fp, ["P2M-01-052"]);
+  assert.deepEqual(fp, []);
 });
 
 test("자기 질문과 짝지으면 237개 이상 관련 있음", { skip }, () => {
@@ -48,6 +48,21 @@ test("다른 59문항 질문과 짝지으면 0.5% 이하만 관련 있음으로 
   ANSWERS.forEach((a) => {
     ITEMS.forEach((o) => {
       if (o.id !== a.qid && P.relevance([o.kr, o.en], a.text, DECOYS).status === "related") passed++;
+    });
+  });
+  assert.ok(passed / (240 * 59) <= 0.005, "passed " + passed);
+});
+
+test("앱 기준(기준 정답 일치로 관련성을 올리는 것 포함)으로도 다른 문항 질문과의 잘못된 통과가 0.5% 이하", { skip }, () => {
+  let passed = 0;
+  ANSWERS.forEach((a) => {
+    const an = P.analyze(a.text);
+    ITEMS.forEach((o) => {
+      if (o.id === a.qid) return;
+      const r = P.relevance([o.kr, o.en], a.text, DECOYS);
+      const ref = P.matchReference(an, o.answer);
+      // app.js run()과 같은 규칙: 'other'가 아니면 기준 정답과의 강한 일치로 관련 있음이 된다
+      if (r.status === "related" || (r.reason !== "other" && ref.status === "match" && ref.strong)) passed++;
     });
   });
   assert.ok(passed / (240 * 59) <= 0.005, "passed " + passed);

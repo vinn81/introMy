@@ -102,6 +102,9 @@
   // 2) 과잉추론: '정보 부족/결정 불가'를 말한 뒤 확신 섞인 추정을 덧붙인다
   var INSUFFICIENT = /(insufficient|not enough information|cannot be (uniquely )?determined|can(?:no|')t determine|undetermin|알 수 없|결정할 수 없|확정할 수 없|판단할 수 없|정보가 부족|정보 부족)/i;
   var CONFIDENT_GUESS = /(almost certainly|most likely|very likely|probably|presumably|in all likelihood|거의 확실|틀림없이|아마도?|십중팔구)/i;
+  // 강한 확신 표현은 그대로 신호, 약한 표현(probably·아마)은 바로 뒤에서 불확실하다고 밝히면 신호가 아니다(논문 P2M-01-052는 만점)
+  var STRONG_GUESS = /(almost certainly|most likely|very likely|in all likelihood|거의 확실|틀림없이|십중팔구)/i;
+  var HEDGE = /(not a certainty|likelihood, not|only an? (guess|estimate|assumption)|not certain|uncertain|추측일 뿐|추정일 뿐|가정일 뿐|확실하지 않|불확실)/i;
 
   function detectOverinfer(text) {
     var m = INSUFFICIENT.exec(text);
@@ -114,7 +117,13 @@
       // ("step 2", "case 1" 같은 순서 번호는 추정이 아니다)
       var sentEnd = text.slice(g.index).search(/[.!?。\n]/);
       var sent = text.slice(g.index, g.index + (sentEnd < 0 ? 200 : sentEnd));
-      if (/\d{2,}/.test(sent.replace(/\b(step|case|part|item|line|단계|번째)\s*\d+/gi, ""))) return { index: g.index, length: sent.length };
+      if (!/\d{2,}/.test(sent.replace(/\b(step|case|part|item|line|단계|번째)\s*\d+/gi, ""))) continue;
+      if (!STRONG_GUESS.test(g[0])) {
+        var rest = text.slice(g.index + (sentEnd < 0 ? 200 : sentEnd));
+        var next = rest.replace(/^[.!?。\s]+/, "").split(/(?<=[.!?。])\s+|\n+/)[0] || "";
+        if (HEDGE.test(sent) || HEDGE.test(next)) continue;
+      }
+      return { index: g.index, length: sent.length };
     }
     return null;
   }
@@ -149,7 +158,9 @@
     var nonSpace = t.replace(/\s+/g, "");
     var letters = (nonSpace.match(/[a-z가-힣ㄱ-ㅎㅏ-ㅣ]/gi) || []).length;
     // 수식이 많은 답도 글자가 4분의 1은 넘는다(논문 답 240개 중 최저 0.39)
-    if (letters / nonSpace.length < 0.25) return { ok: false, reason: "noletters" };
+    // 짧은 계산 답("17×24=388. Since 17×20=340 …")은 글자보다 숫자가 많아도 등식이 있으면 답으로 읽는다
+    var equation = /\d\s*[=×x*+\/−-]\s*\d[\s\S]*=|\d\s*=\s*\d/.test(t) && letters >= 3;
+    if (letters / nonSpace.length < 0.25 && !equation) return { ok: false, reason: "noletters" };
     var oneChar = words.filter(function (w) { return w.length === 1; }).length;
     if (words.length >= 8 && oneChar / words.length > 0.6) return { ok: false, reason: "gibberish" };
     // 같은 글자가 길게 이어지거나(ㅋㅋㅋ…, aaaa…), 같은 토막을 되풀이한 글
@@ -362,9 +373,10 @@
     ["false", /\b(false|not true)\b|거짓|참이 아니/gi],
     ["true", /\btrue\b|참(이다|입니다|이며|이고|\b|$)/gi],
     ["undetermined", /cannot (be )?(uniquely )?(determined|established|concluded|justif)|can't be determined|not (logically )?(established|determined)|insufficient|not enough information|cannot (conclude|establish|justify|be called)|cannot establish|결정할 수 없|알 수 없|정할 수 없|확정(되지 않|할 수 없)|결론(내|을 내)릴 수 없|말할 수 없|도출할 수 없|단정할 수 없/gi],
-    ["inconsistent", /inconsistent|contradict|unsatisfiable|cannot (all )?be true|모순|일관되지 않|동시에 참일 수 없/gi],
+    ["inconsistent", /inconsistent|contradict|unsatisfiable|cannot (all )?be true|모순|일관되지 않|일관성이 없|동시에 참일 수 없/gi],
+    ["consistent", /\bconsistent\b|일관(된다|됩니다|적이다|적입니다|성이 있)/gi],
     ["wrong", /\b(wrong|incorrect|unreliable|unjustified|not supported|not a valid)\b|틀렸|틀린|신뢰할 수 없|근거 없|잘못/gi],
-    ["empty", /no real number|empty set|∅|존재하지 않/gi],
+    ["empty", /no real (number|solution)|no (such|real) x|no solution|empty set|∅|존재하지 않|해가 없/gi],
     ["necessary", /\bnecessary\b|필요조건/gi],
     ["knave-knight", /knave|knight|거짓말쟁이|기사/gi],
     ["affirming-consequent", /affirming the consequent|후건 ?긍정/gi],
@@ -381,7 +393,7 @@
     ["confound", /confound|교란/gi],
     ["sycophancy", /sycophan|아첨/gi]
   ];
-  var OPPOSITE = [["valid", "invalid"], ["true", "false"]];
+  var OPPOSITE = [["valid", "invalid"], ["true", "false"], ["consistent", "inconsistent"]];
 
   function keyOf(answer) {
     var a = plainMath(answer || "").toLowerCase().replace(/−/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1");
@@ -574,6 +586,18 @@
     var ref = { finalAnswer: String(reference), lead: "", topics: [], text: "", signals: [] };
     var c = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, ref);
     var fa = keyOf((an.finalAnswer || "") + "\n" + (an.lead || "")), fr = keyOf(reference);
+    // 기준 정답이 '결정할 수 없음·해 없음·모순'인데, 답은 어디서도 그렇게 말하지 않고 값이나 '일관됨'을 단정하면 다른 답
+    var refHead = keyOf(String(reference).split(/[;；.。]\s/)[0]);
+    var refNo = ["undetermined", "empty", "inconsistent"].filter(function (t) { return refHead.tags[t]; });
+    if (refNo.length) {
+      var whole = keyOf(an.text || ((an.finalAnswer || "") + "\n" + (an.lead || "")));
+      var admits = ["undetermined", "empty", "inconsistent", "wrong"].some(function (t) { return whole.tags[t]; });
+      var claim = keyOf(an.finalAnswer || "");
+      var claimed = claim.maths.length ? "식 " + claim.maths[0] : claim.nums.length ? "값 " + claim.nums.join(", ") : claim.tags.consistent ? "‘일관됨’" : "";
+      if (!admits && claimed) {
+        return { status: "mismatch", why: ["기준 정답은 ‘" + refNo.map(function (t) { return TAG_LABELS[t]; }).join("·") + "’인데, 이 답은 그런 말 없이 " + claimed + "을 단정함"] };
+      }
+    }
     // 기준 정답은 해설 문장이 붙어 있어("…; the valid form is …") 판정어는 첫 마디로만 맞댄다
     var numberConflict = c.sameAnswer === false && c.why.some(function (w) { return /^(최종 답의 숫자가 다름|같은 변수에 다른 값)/.test(w); });
     if (c.sameAnswer === false && !numberConflict) {
@@ -588,9 +612,16 @@
       return { status: "mismatch", why: c.why };
     }
     if (c.sameAnswer !== true) return { status: "unknown", why: [] };
-    var strong = similarNums(fa.nums.filter(function (n) { return n.length >= 2; }), fr.nums.filter(function (n) { return n.length >= 2; })) ||
-      overlap(fa.maths, fr.maths) ||
-      Object.keys(fa.tags).some(function (t) { return fr.tags[t] && GENERIC_TAGS.indexOf(t) < 0; });
+    // 강한 일치: 기준 정답의 두 자리 이상 숫자·소수가 모두 최종 답에 있거나, 세 글자 이상 같은 식이 있을 때.
+    // 개념어(교란 변수·상관관계)만 같은 것은 비슷한 다른 문항에도 흔해 강한 근거로 보지 않는다
+    var big = uniq(fr.nums).filter(function (n) { return n.length >= 2 || n.indexOf(".") >= 0; });
+    var finNums = fa.nums.concat(fa.alt);
+    var finBig = uniq(fa.nums).filter(function (n) { return n.length >= 2 || n.indexOf(".") >= 0; });
+    var strong = (big.length > 0 && big.every(function (n) { return hasNum(finNums, n); }) &&
+        finBig.filter(function (n) { return hasNum(big, n); }).length * 2 >= finBig.length) ||
+      fa.maths.some(function (m) { return m.length >= 3 && fr.maths.indexOf(m) >= 0; });
+    // 최종 답이 '틀림·해 없음·결정 불가'를 말하는데 기준 정답은 아니면, 같은 식은 남의 틀린 답을 인용한 것이다
+    if (["wrong", "empty", "undetermined", "inconsistent"].some(function (t) { return fa.tags[t] && !fr.tags[t]; })) strong = false;
     return { status: "match", strong: strong, why: c.why };
   }
 
@@ -623,7 +654,7 @@
 
   var TAG_LABELS = {
     valid: "타당", invalid: "타당하지 않음", "true": "참", "false": "거짓", undetermined: "결정할 수 없음",
-    inconsistent: "모순", wrong: "틀림", empty: "해 없음", necessary: "필요조건", "knave-knight": "기사·거짓말쟁이",
+    inconsistent: "모순", consistent: "일관됨", wrong: "틀림", empty: "해 없음", necessary: "필요조건", "knave-knight": "기사·거짓말쟁이",
     "affirming-consequent": "후건 긍정의 오류", "modus-tollens": "후건 부정(대우)", disjunctive: "선언 삼단논법",
     ignorance: "무지에 호소하는 오류", "post-hoc": "선후·인과 혼동", correlation: "상관관계", confound: "교란 변수",
     sycophancy: "아첨성 번복", "at-least-one": "적어도 하나", left: "평형이 왼쪽으로", inaccurate: "부정확",
@@ -646,7 +677,7 @@
     return out;
   }
 
-  var GENERIC_TAGS = ["valid", "invalid", "true", "false", "wrong", "undetermined", "inconsistent", "empty"];
+  var GENERIC_TAGS = ["valid", "invalid", "true", "false", "wrong", "undetermined", "inconsistent", "consistent", "empty"];
 
   // 수식 토막: 연산자가 든 짧은 식(k(k+1), 2h₂+o₂, mod) — 괄호 모양은 통일
   function fragments(text) {
@@ -665,10 +696,16 @@
     return out;
   }
 
-  // 숫자만 든 식(2+2, 17×24). 날짜(2026-10-06)는 뺀다
+  // 숫자만 든 식(2+2, 17×24)과 단위가 붙은 수. 날짜(2026-10-06)는 뺀다
   function numberFormulas(text) {
     var t = plainMath(text).replace(/\s*([+\-*/^=−×])\s*/g, "$1");
-    return (t.match(/\d+(?:\.\d+)?(?:[+\-*/^−×]\d+(?:\.\d+)?)+/g) || []).filter(function (f) { return !/^\d+(-\d+)+$/.test(f); });
+    var out = (t.match(/\d+(?:\.\d+)?(?:[+\-*/^−×]\d+(?:\.\d+)?)+/g) || []).filter(function (f) { return !/^\d+(-\d+)+$/.test(f); });
+    // 단위가 붙은 수(5 km, 0.20 M, 2 mol)도 그 질문만의 단서다
+    (t.match(/\d+(?:\.\d+)?\s?(?:km|cm|mm|kg|mg|ml|mol|m|g|l|M|°c|°)(?![a-z])/gi) || []).forEach(function (u) {
+      var k = u.replace(/\s+/g, "").toLowerCase();
+      if (out.indexOf(k) < 0) out.push(k);
+    });
+    return out;
   }
 
   function hangulShare(text) {
@@ -787,7 +824,8 @@
       // 그 문항에만 있는 숫자·수식·개념까지 답에 나와야 '다른 질문의 답'으로 본다
       var bench = decoys.some(function (d) { return qs.some(function (q) { return d.indexOf(q) >= 0; }); });
       var strongOther = bestF ? sharedKeys(bestF, af).filter(function (k) { return k.indexOf("w:") !== 0 && !qf[k]; }) : [];
-      if (!bench && !strongOther.length) { result.status = "related"; result.wordsOnly = true; return result; }
+      // 직접 쓴 질문이고 단서가 충분히 겹치면 그 질문의 답으로 본다(다른 문항 비교는 P2-Bench 문항끼리 헷갈리는 것을 막는 용도)
+      if (!bench) { result.status = "related"; result.wordsOnly = !strongOther.length; result.customOverride = !!strongOther.length; return result; }
       result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result;
     }
     result.status = "unrelated";
