@@ -122,3 +122,21 @@ test("정답 값 대조: 최종 문장에 값이 없어도 답 전체에서 찾�
   assert.equal(st("계산하면 1/6 정도입니다. 따라서 AI 답은 틀렸습니다."), "match");
   assert.notEqual(st("베이즈 정리로 계산하면 실제 질병일 확률은 약 17%입니다. 따라서 AI의 99%는 틀렸습니다."), "mismatch");
 });
+
+test("복사하다 만 답: 풀이 중간을 최종 답으로 읽어 '다른 답'이나 '기준 정답과 다름'으로 단정하지 않는다", () => {
+  const m01 = ITEMS.find((it) => it.id === "M01");
+  const en = P.analyze(window.P2_EXAMPLES.find((e) => e.id === "M01").en.text);
+  const full = "조건을 정리하면 x ≡ 2 (mod 3), x ≡ 3 (mod 5), x ≡ 2 (mod 7)입니다.\n\n첫째와 셋째 조건에서 3과 7이 서로소이므로 x ≡ 2 (mod 21)이고, x = 21k + 2 꼴입니다.\n\nk = 0이면 x = 2인데, 2를 5로 나눈 나머지는 2라서 둘째 조건을 만족하지 않습니다.\n\nk = 1이면 x = 23이고, 23을 5로 나눈 나머지는 3이므로 세 조건을 모두 만족합니다.\n\n따라서 가장 작은 양의 정수 x는 **23**입니다.";
+  assert.equal(P.compare(en, P.analyze(full)).sameAnswer, true);
+  // 두 번째 문단 이후 어디서 끊어도 '다른 답'이 되지 않는다
+  for (let n = full.indexOf("첫째") + 10; n < full.length; n += 7) {
+    const cut = P.analyze(full.slice(0, n));
+    assert.notEqual(P.compare(en, cut).sameAnswer, false, "끊은 위치 " + n);
+    assert.notEqual(P.matchReference(cut, m01.answer, null).status, "mismatch", "끊은 위치 " + n);
+  }
+  const mid = P.analyze(full.slice(0, 140));
+  assert.equal(mid.cut, true);
+  assert.equal(P.compare(en, mid).mode, "cut");
+  // 끝난 답은 끊긴 것으로 보지 않는다
+  ["따라서 가장 작은 양의 정수는 23", "The answer is 23", "x = 23", "중국인의 나머지 정리를 쓰면 x = 23입니다"].forEach((t) => assert.equal(P.analyze(t).cut, false, t));
+});

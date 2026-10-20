@@ -231,7 +231,8 @@
     var flip = null;
     found.forEach(function (x) { if (x.id === "flip") flip = x; });
     var fa = flip && flip.index != null ? afterFlip(clean.slice(flip.index)) : "";
-    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), topics: tp, text: clean, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3 || isShortAnswer(clean),
+    var ff = findFinal(clean), source = fa ? "flip" : ff.source, cut = looksCut(clean);
+    return { empty: false, signals: found, finalAnswer: fa || ff.text, finalSource: source, cut: cut, finalReliable: finalReliable(clean, source, cut), lead: lead(clean), topics: tp, text: clean, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3 || isShortAnswer(clean),
       conclusionBy: conclusionBy(clean, tp), lastSentence: lastSentence(clean) };
   }
 
@@ -300,19 +301,50 @@
     return "";
   }
 
-  function finalAnswer(raw) {
+  // source: 최종 답을 어디서 찾았는지("boxed" | "label" | "bold" | "concluding" | "last-line")
+  function findFinal(raw) {
     var boxed = [];
     String(raw).replace(/\\boxed\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g, function (m, inner) { boxed.push(inner); return m; });
-    if (boxed.length) return plainMath(boxed.join(" / ")).trim().slice(0, 160);
+    if (boxed.length) return { text: plainMath(boxed.join(" / ")).trim().slice(0, 160), source: "boxed" };
     var text = plainMath(raw);
     var lines = text.split(/\n+/).filter(function (l) { return l.trim() && !/^[\s|:-]+$/.test(l); });
-    var a = labeled(lines, ANSWER_LABEL) || labeled(lines, CONCLUSION_LABEL);
+    var a = labeled(lines, ANSWER_LABEL) || labeled(lines, CONCLUSION_LABEL), source = "label";
     if (!a) {
+      source = "bold";
       var bolds = (text.match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
       for (var i = bolds.length - 1; i >= 0 && !a; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i])) a = bolds[i];
     }
-    a = a || concluding(lines) || (lines.length ? cleanLine(lines[lines.length - 1]) : "");
-    return a.replace(/\s+/g, " ").trim().slice(0, 160);
+    if (!a) { a = concluding(lines); source = "concluding"; }
+    if (!a) { a = lines.length ? cleanLine(lines[lines.length - 1]) : ""; source = "last-line"; }
+    return { text: a.replace(/\s+/g, " ").trim().slice(0, 160), source: source };
+  }
+
+  function finalAnswer(raw) { return findFinal(raw).text; }
+
+  // 답이 문장 중간에서 끝났는가(복사하다 만 답). 마침표·닫는 기호·한국어 종결 어미·짧은 등식 줄로 끝나면 끝난 것으로 본다
+  function looksCut(raw) {
+    var trimmed = String(raw || "").replace(/\s+$/, "");
+    // 굵은 글씨를 닫고 끝난 줄("- 전압: **8 V**")은 끝난 답이다
+    if (!trimmed || /\*\*$/.test(trimmed)) return false;
+    var t = trimmed.replace(/[*_]+$/, "");
+    if (/[.!?。…)\]}>|$`'"”’»~✓✔∎□■]$/.test(t)) return false;
+    if (/(다|요|음|함|임|됨|까|죠|오|네|군)$/.test(t)) return false;
+    var last = t.split(/\n/).pop().trim();
+    // 한글 없이 등식만 있는 짧은 줄("x = 23", "Answer: x = 23")로 끝나면 끝난 답이다
+    if (last.length <= 40 && /=/.test(last) && !/[가-힣]/.test(last)) return false;
+    // "따라서 답은 23", "정답: 0.20 M"처럼 '은·는·이·가·:' 뒤의 값으로 끝나면 끝난 답이다
+    if (/(은|는|이|가|\bis|\bare|\bequals|[:：=])\s*[-+]?\d[\d.,/]*\s*(%|°|[a-zA-Z]{1,3})?$/.test(last)) return false;
+    return true;
+  }
+
+  // 최종 답으로 읽은 글을 믿을 수 있는가. 표시("답:", \boxed, 굵은 숫자)로 찾았으면 믿고,
+  // 결론 접속어로 찾았으면 답이 끊기지 않았을 때만, 마지막 줄로 대신했으면 한 문단짜리 짧은 답일 때만 믿는다
+  // (여러 문단으로 풀어 가다 멈춘 답의 마지막 줄은 결론이 아니라 풀이 중간이다)
+  function finalReliable(raw, source, cut) {
+    if (source === "boxed" || source === "label" || source === "bold" || source === "flip") return true;
+    if (cut) return false;
+    if (source === "last-line") return String(raw).split(/\n+/).filter(function (l) { return l.trim(); }).length <= 1;
+    return true;
   }
 
   // 답의 첫 문장(제목·번호 목차 줄은 건너뜀)과 마지막 결론 문장을 함께 본다
@@ -493,7 +525,19 @@
 
   // a, b: { finalAnswer, lead, topics, text, signals }
   // 돌려주는 값: sameAnswer(true | false | "partial" | null), mode, why(판정 근거 문장들)
+  // 결론 문장을 찾지 못한(답이 중간에 끊긴 듯한) 쪽이 있으면 '다른 답'으로 단정하지 않는다.
+  // a·b의 finalReliable이 false일 때만 해당하고, 같은 답이라는 판정은 그대로 둔다
   function compare(a, b) {
+    var r = compareCore(a, b);
+    var cutA = a.finalReliable === false, cutB = b.finalReliable === false;
+    if (r.sameAnswer === true || !(cutA || cutB)) return r;
+    var who = cutA && cutB ? "두 답 모두" : cutA ? "1단계 답" : "다른 언어 답";
+    return { sameAnswer: null, mode: "cut", cutA: cutA, cutB: cutB, aSignals: r.aSignals, bSignals: r.bSignals,
+      why: [who + "에서 결론 문장을 찾지 못했습니다. 끝이 문장 중간이거나, 여러 줄 풀이의 마지막 줄만 있고 ‘답:’·‘따라서’ 같은 결론 표시가 없습니다.",
+        "이 상태로 맞대면 풀이 중간의 값(예: k = 0일 때의 x = 2)을 최종 답으로 읽게 되므로 같다·다르다를 정하지 않았습니다."] };
+  }
+
+  function compareCore(a, b) {
     // 갈림(반대 개념·다른 숫자)은 최종 답 칸만 보고, 같음은 첫 문장·결론 문장까지 함께 본다
     var fa = keyOf(a.finalAnswer), fb = keyOf(b.finalAnswer);
     var ka = keyOf((a.finalAnswer || "") + "\n" + (a.lead || ""));
@@ -603,7 +647,16 @@
 
   // 답의 최종 답이 P2-Bench 기준 정답과 같은지 본다.
   // 돌려주는 값: status("match" | "mismatch" | "unknown"), strong(숫자·식·특정 개념으로 맞았는지), why
+  // 결론 문장을 찾지 못한 답은 기준 정답과 '다르다'고 단정하지 않는다(복사하다 만 답을 틀린 답으로 보지 않게)
   function matchReference(an, reference, claim) {
+    var r = matchReferenceCore(an, reference, claim);
+    if (r.status === "mismatch" && an && an.finalReliable === false) {
+      return { status: "unknown", cut: true, why: ["결론 문장을 찾지 못해 기준 정답과 맞대지 않았습니다(답이 중간에 끊겼을 수 있음)"] };
+    }
+    return r;
+  }
+
+  function matchReferenceCore(an, reference, claim) {
     if (!an || !reference) return { status: "unknown", why: [] };
     var claimed = claimCheck(an, claim);
     if (claimed) return { status: "mismatch", why: [claimed] };

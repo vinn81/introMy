@@ -255,6 +255,8 @@
       $("result-empty").hidden = true;
       $("result-body").hidden = false;
       scrollAnnotated();
+      // 복사하다 만 답: 풀이 중간을 최종 답으로 읽게 되므로 알린다
+      if (state.analysis.finalReliable === false) setNote("input-note", "결론 문장을 찾지 못했습니다. 답이 중간에 끊긴 것 같으니 AI 답을 끝까지 복사해 붙여 넣었는지 확인하세요.", true);
       if ($("answer-b").value.trim()) compare(true);
       else { $("compare-body").hidden = true; setNote("compare-note", ""); }
       if (document.activeElement && document.activeElement.id === "run") {
@@ -310,6 +312,7 @@
     } else if (a.finalAnswer) {
       notes.push("최종 답으로 읽은 글(" + short60(a.finalAnswer) + ")은 수식 표기를 바꿔 읽은 것이라 원문에서 위치를 표시하지 못했습니다.");
     }
+    if (a.finalReliable === false) notes.unshift("결론 문장을 찾지 못해 마지막 부분을 대신 표시했습니다. 풀이 중간일 수 있으니 답을 끝까지 붙여 넣었는지 확인하세요.");
     var noPos = [];
     a.signals.forEach(function (sg) {
       if (!state.checked[sg.id]) return;
@@ -395,7 +398,9 @@
     var title, text;
     var rel = state.relevance || { status: "related" };
     var offTopic = rel.status !== "related" && !$("relevance-ok").checked;
-    var noConclusion = !offTopic && !a.hasConclusion && ids.length === 0 && !wrong;
+    // 문장 중간에서 끝난 답(복사하다 만 답)은 끊긴 곳에 결론이나 흔들림이 있을 수 있어 점수를 보류한다
+    var cutHold = !offTopic && !!a.cut && !wrong;
+    var noConclusion = !offTopic && (cutHold || (!a.hasConclusion && ids.length === 0 && !wrong));
     $("relevance-box").hidden = rel.status === "related";
     $("rubric").hidden = noConclusion || offTopic;
     $("scored-part").hidden = offTopic || noConclusion;
@@ -413,6 +418,11 @@
         title = "답의 언어로는 관련성을 확인하지 못했습니다";
         text = "이 앱은 한국어·영어 답을 점검합니다. 숫자·수식·개념 단서만으로는 판단할 수 없어 점수를 보류했습니다. 고른 문항의 답이 맞다면 아래 확인 칸을 체크하세요.";
       }
+    } else if (cutHold) {
+      $("score-total").textContent = "—";
+      scoreBox.className = "score";
+      title = "답이 중간에 끊긴 것 같아 점수를 매기지 않았습니다";
+      text = "답이 문장 중간(“…" + String(a.text || "").replace(/\s+$/, "").slice(-24) + "”)에서 끝납니다. 끊긴 부분에 결론이나 흔들림이 있을 수 있어 점수를 보류했습니다. AI 답을 끝까지 복사해 붙여 넣으세요.";
     } else if (noConclusion) {
       $("score-total").textContent = "—";
       scoreBox.className = "score";
@@ -440,7 +450,8 @@
     $("why").innerHTML = whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s).map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
 
     var next = [];
-    if (noConclusion) next.push("AI 답의 마지막 결론 부분까지 붙여 넣었는지 확인하세요. 답이 결론 없이 끝났다면 AI에게 ‘최종 답을 한 줄로 말해 줘’라고 다시 물어보세요.");
+    if (cutHold) next.push("AI 답을 처음부터 끝까지 모두 선택해 복사한 뒤 다시 붙여 넣으세요. 끝까지 넣은 답인데도 이렇게 나오면 마지막 문장이 마침표 없이 끝났는지 보세요.");
+    else if (noConclusion) next.push("AI 답의 마지막 결론 부분까지 붙여 넣었는지 확인하세요. 답이 결론 없이 끝났다면 AI에게 ‘최종 답을 한 줄로 말해 줘’라고 다시 물어보세요.");
     if (offTopic) next.push("AI에게 실제로 물은 문항을 골랐는지, 답 칸에 그 문항의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
     if (wrong) next.push("기준 정답이나 교재·공식 자료로 답을 다시 확인하세요.");
     ids.forEach(function (id) { next.push(P.SIGNALS[id].next); });
@@ -481,6 +492,11 @@
       w.push("관련성이 확인되지 않은 글에 흔들림 점수를 주면 엉뚱한 글도 100점이 되므로, 점수와 흔들림 신호를 감췄습니다. 위 확인 칸을 체크하면 점수를 매깁니다.");
       return w;
     }
+    if (noConclusion && a.cut) {
+      w.push("답의 끝이 마침표·물음표나 ‘~다·~요’ 같은 끝맺음 없이 문장 중간에서 끝납니다: “…" + String(a.text || "").replace(/\s+$/, "").slice(-40) + "”.");
+      w.push("이대로 점수를 매기면 끊긴 부분의 결론·흔들림을 못 보고, 풀이 중간의 값을 최종 답으로 읽게 되므로 점수와 기준 정답 대조를 보류했습니다.");
+      return w;
+    }
     if (noConclusion) {
       w.push("결론을 밝힌 흔적을 다음과 같이 찾아봤지만 하나도 없었습니다: ‘답:’, ‘결론’, ‘정리’, ‘따라서·그러므로·therefore·so’, 등식(=), 판정어(타당·참·거짓·틀림·결정할 수 없음 등), 핵심 개념 3개 이상.");
       w.push("답의 마지막 문장: “" + (a.lastSentence || "없음") + "”.");
@@ -490,6 +506,7 @@
     var ref = state.refCheck;
     if (ref && ref.status === "match") w.push("기준 정답(" + state.reference + ")과 대조: 같음 — " + ref.why.join(", ") + ".");
     else if (ref && ref.status === "mismatch") w.push("기준 정답(" + state.reference + ")과 대조: 다름 — " + ref.why.join(", ") + ". 그래서 ‘최종 답 자체가 틀렸다’를 자동으로 체크했습니다(직접 확인 후 끌 수 있음).");
+    else if (ref && ref.cut) w.push("기준 정답(" + state.reference + ")과 맞대지 않았습니다: " + ref.why[0] + ". 답을 끝까지 붙여 넣었는지 확인하세요.");
     else if (ref) w.push("기준 정답(" + state.reference + ")과 자동으로 맞대지 못했습니다. 최종 답과 직접 비교하세요.");
     if (a.signals.length) {
       a.signals.forEach(function (sg) { w.push("자동 탐지 — " + P.SIGNALS[sg.id].title + ": “" + sg.evidence + "”"); });
@@ -507,6 +524,7 @@
   function describe(an, rel, confirmed, ids, wrong) {
     ids = ids || an.signals.map(function (x) { return x.id; });
     if (rel && rel.status !== "related" && !confirmed) return rel.status === "unrelated" ? "질문과 관련 없어 보임 · 점수 보류" : "질문과 언어가 달라 관련성 미확인";
+    if (an.cut && !wrong) return "답이 중간에 끊긴 듯함 · 점수 보류";
     if (!an.hasConclusion && !ids.length && !wrong) return "결론을 찾지 못함 · 점수 보류";
     var s = P.score(ids, !!wrong);
     var head = wrong ? "최종 답 틀림 · " : "";
@@ -549,6 +567,7 @@
       $("compare-body").hidden = false;
       $("compare-body").classList.remove("stale");
       renderPair();
+      if (state.analysisB.finalReliable === false) setNote("compare-note", "다른 언어 답에서 결론 문장을 찾지 못했습니다. 답이 중간에 끊긴 것 같으니 AI 답을 끝까지 복사해 붙여 넣었는지 확인하세요.", true);
       if (!silent) $("compare-body").scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (e) {
       setNote("compare-note", "비교 중 문제가 생겼습니다. 두 답을 다시 넣어 주세요.", true);
@@ -559,9 +578,11 @@
     // 사용자가 최종 답 칸을 고쳤으면 그 칸만 보고, 그대로면 답의 첫 문장도 함께 본다
     // 최종 답 칸을 고치면 서술형 개념 비교 대신 고친 칸끼리만 비교한다
     var untouched = $("final-a").value === state.analysis.finalAnswer && $("final-b").value === state.analysisB.finalAnswer;
+    // 최종 답 칸을 직접 고쳤으면 사용자가 적은 결론을 믿는다(끊긴 답 판정을 하지 않음)
     var a = { finalAnswer: $("final-a").value, lead: untouched ? state.analysis.lead : "", topics: untouched ? state.analysis.topics : [], text: untouched ? state.analysis.text : "",
-      signals: checkedIds().map(function (id) { return { id: id }; }) };
-    var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], text: untouched ? state.analysisB.text : "", signals: state.analysisB.signals };
+      signals: checkedIds().map(function (id) { return { id: id }; }), finalReliable: untouched ? state.analysis.finalReliable : true };
+    var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], text: untouched ? state.analysisB.text : "", signals: state.analysisB.signals,
+      finalReliable: untouched ? state.analysisB.finalReliable : true };
     var c = P.compare(a, b);
     var cls, head, body, extra = "";
     var why = (c.why || []).slice();
@@ -604,6 +625,10 @@
     } else if (c.sameAnswer === false) {
       cls = "bad"; head = "두 답의 최종 답이 다릅니다.";
       body = "언어만 바꿨는데 답이 달라졌다면 둘 다 그대로 믿지 마세요. 기준 자료로 확인하거나 AI에게 두 답의 차이를 설명하게 하세요.";
+    } else if (c.mode === "cut") {
+      cls = "unknown";
+      head = (c.cutA && c.cutB ? "두 답 모두" : c.cutA ? "1단계 답이" : "다른 언어 답이") + " 중간에 끊긴 것 같아 같다·다르다를 정하지 않았습니다.";
+      body = "결론 문장을 찾지 못하면 풀이 중간의 값을 최종 답으로 읽게 됩니다. AI 답을 끝까지 복사해 붙여 넣으세요. 끝까지 넣었는데도 이렇다면 위 최종 답 칸에 결론(예: 23)을 직접 적으면 바로 다시 비교합니다.";
     } else if (c.sameAnswer === null) {
       cls = "unknown"; head = "두 답을 맞댈 단서가 부족해 같다·다르다를 정하지 않았습니다.";
       body = "아래 근거처럼 두 답에서 비교할 숫자·수식·판정·핵심 개념을 충분히 찾지 못했습니다. 틀리게 단정하지 않으려고 판정을 보류했습니다. 위 두 칸에 각 답의 결론을 짧게(예: 23, 타당하다, invalid, 결정할 수 없다) 적으면 바로 다시 비교합니다.";
@@ -662,8 +687,9 @@
     $("clear").addEventListener("click", clearAll);
     $("copy-result").addEventListener("click", copyResult);
     $("compare").addEventListener("click", function () { compare(false); });
-    $("final-a").addEventListener("input", function () { if (state.analysisB) renderPair(); });
-    $("final-b").addEventListener("input", function () { if (state.analysisB) renderPair(); });
+    // 최종 답 칸을 직접 고치면 그 칸끼리 비교하므로 '끊긴 답' 안내는 지운다
+    $("final-a").addEventListener("input", function () { setNote("compare-note", ""); if (state.analysisB) renderPair(); });
+    $("final-b").addEventListener("input", function () { setNote("compare-note", ""); if (state.analysisB) renderPair(); });
     $("wrong-answer").addEventListener("change", function () {
       $("wrong-auto").hidden = true;
       if (!state.analysis) return;
