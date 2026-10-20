@@ -86,3 +86,28 @@ test("한·영 짝 120개는 '다른 답'이나 '판정 보류' 없이 115쌍 �
   });
   assert.ok(same >= 115, "same " + same);
 });
+
+test("반대말 바꿈: 실제 짝은 하나도 '반대'로 걸지 않고, 같은 언어로 고친 답은 거의 다, 언어가 다른 답은 뚜렷한 것만 잡는다", { skip }, () => {
+  const SWAP_KR = [["증가", "감소"], ["늘어", "줄어"], ["높아", "낮아"], ["높은", "낮은"], ["커지", "작아지"], ["큰", "작은"], ["왼쪽", "오른쪽"], ["정반응", "역반응"], ["직렬", "병렬"], ["필요조건", "충분조건"], ["최대", "최소"], ["흡열", "발열"], ["산성", "염기성"], ["상승", "하락"]];
+  const SWAP_EN = [["increase", "decrease"], ["higher", "lower"], ["larger", "smaller"], ["left", "right"], ["maximum", "minimum"], ["necessary", "sufficient"], ["endothermic", "exothermic"], ["series", "parallel"]];
+  const swap = (t, list) => { let out = t, hits = 0; list.forEach(([x, y]) => { const n = out.split(x).length + out.split(y).length - 2; if (n) { hits += n; out = out.split(x).join("\0").split(y).join(x).split("\0").join(y); } }); return { text: out, hits }; };
+  const diff = (x, y) => P.compare(P.analyze(x), P.analyze(y)).sameAnswer === false;
+  const g = {};
+  ANSWERS.forEach((a) => { (g[a.qid] = g[a.qid] || {})[a.model + a.lang] = a.text; });
+  let realBad = 0, cross = 0, crossN = 0, sameKr = 0, sameKrN = 0, sameEn = 0, sameEnN = 0;
+  Object.values(g).forEach((v) => {
+    ["Opus", "Sonnet"].forEach((m) => {
+      const en = v[m + "EN"], kr = v[m + "KR"];
+      if (diff(en, kr)) realBad++;
+      const sk = swap(kr, SWAP_KR);
+      if (sk.hits) { crossN++; sameKrN++; if (diff(en, sk.text)) cross++; if (diff(kr, sk.text)) sameKr++; }
+      const se = swap(en, SWAP_EN);
+      if (se.hits) { sameEnN++; if (diff(en, se.text)) sameEn++; }
+    });
+    ["KR", "EN"].forEach((l) => { if (diff(v["Opus" + l], v["Sonnet" + l])) realBad++; });
+  });
+  assert.equal(realBad, 0, "실제 짝을 '반대'로 건 수");
+  assert.equal(sameKr, sameKrN, "같은 언어(한국어)로 고친 답");
+  assert.ok(sameEn >= sameEnN - 1, "같은 언어(영어)로 고친 답 " + sameEn + "/" + sameEnN);
+  assert.ok(cross >= 9, "언어가 다른 답 " + cross + "/" + crossN);
+});

@@ -525,6 +525,132 @@
 
   // a, b: { finalAnswer, lead, topics, text, signals }
   // 돌려주는 값: sameAnswer(true | false | "partial" | null), mode, why(판정 근거 문장들)
+  // 방향이 반대인 낱말 짝(한·영). 앞의 것(neg)을 먼저 지워 "불가능"이 "가능"으로, "타당하지 않"이 "타당"으로 다시 잡히지 않게 한다
+  var DIRECTIONS = [
+    { name: "증가·감소", pos: "증가", neg: "감소",
+      p: /증가|늘어|늘었|늘리|늘린|커지|커진|커졌|높아|높은|상승|올라가|올라간|\bincreas\w*|\brises?\b|\brising\b|\bgrows?\b|\bhigher\b/gi,
+      n: /감소|줄어|줄었|줄이|줄인|작아지|작아진|작아졌|낮아|낮은|하락|내려가|내려간|떨어지|떨어진|\bdecreas\w*|\bfalls?\b|\bfalling\b|\bdeclin\w*|\blower\b|\breduc\w*/gi },
+    { name: "왼쪽·오른쪽", pos: "왼쪽", neg: "오른쪽",
+      p: /왼쪽|좌측|역반응|\b(?:shifts?|shifted|shifting|moves?|toward|to the) left\b|\bleftward/gi,
+      n: /오른쪽|우측|정반응|\b(?:shifts?|shifted|shifting|moves?|toward|to the) right\b|\brightward/gi },
+    { name: "크다·작다", pos: "큰", neg: "작은",
+      p: /큰 |크다|커서|가장 큰|\blarg(?:e|er|est)\b|\bbigg?(?:er|est)?\b|\bgreatest\b/gi,
+      n: /작은 |작다|작아서|가장 작은|\bsmall(?:er|est)?\b|\bleast\b/gi },
+    { name: "직렬·병렬", pos: "직렬", neg: "병렬", p: /직렬|\bin series\b|\bseries (?:circuit|connection)/gi, n: /병렬|\bin parallel\b|\bparallel (?:circuit|connection)/gi },
+    { name: "필요조건·충분조건", pos: "필요조건", neg: "충분조건", p: /필요 ?조건|necessary condition/gi, n: /충분 ?조건|sufficient condition/gi },
+    { name: "최대·최소", pos: "최대", neg: "최소", p: /최대|최댓값|\bmaxim\w*/gi, n: /최소|최솟값|\bminim\w*/gi },
+    { name: "흡열·발열", pos: "흡열", neg: "발열", p: /흡열|endotherm\w*/gi, n: /발열|exotherm\w*/gi },
+    { name: "타당·부당", pos: "타당", neg: "부당", n: /타당하지 않|타당하지 못|부당|\binvalid\b|\bnot valid\b/gi, p: /타당|\bvalid\b/gi, negFirst: true },
+    { name: "참·거짓", pos: "참", neg: "거짓", n: /거짓|\bfalse\b|참이 아니/gi, p: /참(?:이다|입니다|이며|이고|이므로|이라|인)|\btrue\b/gi, negFirst: true }
+  ];
+
+  function directionCounts(text) {
+    var t = String(text || ""), out = {};
+    DIRECTIONS.forEach(function (d) {
+      var rest = t, pc, nc;
+      if (d.negFirst) { nc = (rest.match(d.n) || []).length; rest = rest.replace(d.n, " "); pc = (rest.match(d.p) || []).length; }
+      else { pc = (rest.match(d.p) || []).length; nc = (rest.match(d.n) || []).length; }
+      out[d.name] = { pos: pc, neg: nc, d: d };
+    });
+    return out;
+  }
+
+  // 언어가 다른 두 답: 낱말을 한 줄씩 맞댈 수 없으므로, 방향 낱말 수를 센다.
+  // 양쪽 모두 그 짝의 낱말이 2번 이상 나오고 한쪽으로 절반 넘게 기울었는데 그 쪽이 서로 반대일 때만 반대 내용으로 본다
+  // (논문 한·영 답 120쌍에서 잘못 걸리는 짝이 0이 되는 선. 참·거짓은 진리표 때문에 언어마다 횟수가 달라 최종 답 비교에만 쓴다)
+  function directionConflicts(textA, textB) {
+    var ca = directionCounts(textA), cb = directionCounts(textB), out = [];
+    Object.keys(ca).forEach(function (k) {
+      var x = ca[k], y = cb[k], na = x.pos - x.neg, nb = y.pos - y.neg, ta = x.pos + x.neg, tb = y.pos + y.neg;
+      if (k === "참·거짓") return;
+      if (na * nb < 0 && ta >= 2 && tb >= 2 && Math.abs(na) / ta >= 0.5 && Math.abs(nb) / tb >= 0.5) {
+        var lean = function (c, n) { return (n > 0 ? c.d.pos : c.d.neg) + " " + Math.max(c.pos, c.neg) + "번 · " + (n > 0 ? c.d.neg : c.d.pos) + " " + Math.min(c.pos, c.neg) + "번"; };
+        out.push(k + ": 1단계 답은 ‘" + (na > 0 ? x.d.pos : x.d.neg) + "’ 쪽(" + lean(x, na) + "), 다른 언어 답은 ‘" + (nb > 0 ? y.d.pos : y.d.neg) + "’ 쪽(" + lean(y, nb) + ")");
+      }
+    });
+    return out;
+  }
+
+  // 같은 언어로 된 두 답은 낱말을 한 줄씩 맞댈 수 있다. 같은 자리의 낱말이 아래 반대말 짝으로 바뀌었는지 본다.
+  // 바뀐 낱말에서 반대말 부분을 뺀 나머지가 같아야 한다("증가한다" ↔ "감소한다", "가능하다" ↔ "불가능하다")
+  var ANTONYMS = [
+    ["증가", "감소"], ["늘", "줄"], ["높", "낮"], ["높은", "낮은"], ["큰", "작은"], ["커", "작아"], ["크", "작"], ["많은", "적은"], ["많", "적"],
+    ["왼쪽", "오른쪽"], ["좌측", "우측"], ["정반응", "역반응"], ["직렬", "병렬"], ["필요", "충분"], ["최대", "최소"], ["최댓값", "최솟값"],
+    ["흡열", "발열"], ["산성", "염기성"], ["상승", "하락"], ["참", "거짓"], ["타당", "부당"], ["있는", "없는"], ["있", "없"], ["가능", "불가능"],
+    ["맞는", "틀린"], ["맞", "틀"], ["옳", "그르"], ["같은", "다른"], ["같", "다르"], ["양수", "음수"], ["양성", "음성"], ["이전", "이후"],
+    ["앞", "뒤"], ["위", "아래"], ["강", "약"], ["빠르", "느리"], ["빨라", "느려"], ["길", "짧"], ["무겁", "가볍"], ["항상", "결코"],
+    ["increas", "decreas"], ["more", "less"], ["higher", "lower"], ["high", "low"], ["larger", "smaller"], ["largest", "smallest"], ["large", "small"],
+    ["greater", "less"], ["left", "right"], ["true", "false"], ["valid", "invalid"], ["possible", "impossible"], ["necessary", "sufficient"],
+    ["maximum", "minimum"], ["max", "min"], ["positive", "negative"], ["before", "after"], ["above", "below"], ["strong", "weak"],
+    ["faster", "slower"], ["same", "different"], ["correct", "incorrect"], ["supported", "unsupported"], ["consistent", "inconsistent"],
+    ["can", "cannot"], ["is", "isn't"], ["does", "doesn't"], ["always", "never"], ["rises", "falls"], ["rise", "fall"]
+  ];
+
+  function sameLanguage(x, y) {
+    var hx = hangulShare(x), hy = hangulShare(y);
+    return (hx >= 0.5 && hy >= 0.5) || (hx < 0.2 && hy < 0.2);
+  }
+
+  // 두 배열에서 같은 원소의 짝(가장 긴 공통 부분열). 너무 크면 맞대지 않는다
+  function lcsPairs(xs, ys) {
+    var n = xs.length, m = ys.length;
+    if (!n || !m || n * m > 4000000) return [];
+    var dp = [];
+    for (var i = 0; i <= n; i++) dp.push(new Uint16Array(m + 1));
+    for (i = n - 1; i >= 0; i--) for (var j = m - 1; j >= 0; j--) dp[i][j] = xs[i] === ys[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    var out = [];
+    i = 0; j = 0;
+    while (i < n && j < m) {
+      if (xs[i] === ys[j]) { out.push([i, j]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) i++; else j++;
+    }
+    return out;
+  }
+
+  // 맞춰진 두 열 사이에서 바뀐 구간(같은 길이로 바뀐 것만)을 원소 짝으로 돌려준다
+  function replacedPairs(xs, ys) {
+    var pairs = lcsPairs(xs, ys).concat([[xs.length, ys.length]]), out = [], pi = 0, pj = 0;
+    pairs.forEach(function (p) {
+      if (p[0] - pi === p[1] - pj) for (var k = 0; k < p[0] - pi; k++) out.push([xs[pi + k], ys[pj + k]]);
+      pi = p[0] + 1; pj = p[1] + 1;
+    });
+    return out;
+  }
+
+  function wordKey(w) { return w.toLowerCase().replace(/[*_`.,;:!?()[\]{}"'“”‘’]/g, ""); }
+
+  function antonymSwap(wa, wb) {
+    for (var i = 0; i < ANTONYMS.length; i++) {
+      var x = ANTONYMS[i][0], y = ANTONYMS[i][1];
+      if (wa.indexOf(x) >= 0 && wb.indexOf(y) >= 0 && wa.replace(x, "") === wb.replace(y, "")) return true;
+      if (wa.indexOf(y) >= 0 && wb.indexOf(x) >= 0 && wa.replace(y, "") === wb.replace(x, "")) return true;
+    }
+    return false;
+  }
+
+  // 두 글의 낱말이 얼마나 같은 순서로 겹치는가(0~1). 따로 쓴 같은 언어 답은 논문 답에서 최대 0.61이었다
+  function tokenOverlap(textA, textB) {
+    var x = String(textA).split(/\s+/).filter(Boolean), y = String(textB).split(/\s+/).filter(Boolean);
+    var n = x.length, m = y.length;
+    if (!n || !m || n * m > 4000000) return 0;
+    var prev = new Uint16Array(m + 1), cur = new Uint16Array(m + 1), t;
+    for (var i = n - 1; i >= 0; i--) {
+      for (var j = m - 1; j >= 0; j--) cur[j] = x[i] === y[j] ? prev[j + 1] + 1 : Math.max(prev[j], cur[j + 1]);
+      t = prev; prev = cur; cur = t;
+    }
+    return prev[0] / Math.max(n, m);
+  }
+
+  function swappedWords(textA, textB) {
+    var la = String(textA).split(/\n/).map(function (l) { return l.trim(); }), lb = String(textB).split(/\n/).map(function (l) { return l.trim(); });
+    var found = [];
+    replacedPairs(la, lb).forEach(function (lp) {
+      var wa = lp[0].split(/\s+/).map(wordKey), wb = lp[1].split(/\s+/).map(wordKey);
+      replacedPairs(wa, wb).forEach(function (w) { if (w[0] && w[1] && antonymSwap(w[0], w[1])) found.push("‘" + w[0] + "’ ↔ ‘" + w[1] + "’"); });
+    });
+    if (!found.length) return [];
+    return ["같은 자리의 낱말이 반대말로 바뀜(" + found.length + "곳): " + uniq(found).slice(0, 4).join(", ") + (found.length > 4 ? " 등" : "")];
+  }
+
   // 결론 문장을 찾지 못한(답이 중간에 끊긴 듯한) 쪽이 있으면 '다른 답'으로 단정하지 않는다.
   // a·b의 finalReliable이 false일 때만 해당하고, 같은 답이라는 판정은 그대로 둔다
   function compare(a, b) {
@@ -566,6 +692,12 @@
     // 같은 변수에 다른 값을 준 식(x=1/(t-1) ↔ x=1/(t-2), t≠1 ↔ t≠2)이 있거나, 숫자가 절반도 안 겹치면 다른 답
     var relDiff = relationsDiffer(fa.maths, fb.maths);
     if (relDiff) conflicts.push("같은 변수에 다른 값: " + relDiff);
+    // 최종 답이 같아 보여도 풀이에서 방향 낱말이 반대로 바뀌었으면 다른 내용이다
+    // (같은 언어면 낱말을 한 줄씩 맞대고, 언어가 다르면 방향 낱말이 뚜렷이 반대로 기울 때만)
+    // 같은 언어이고 낱말이 80% 넘게 겹치면(한 답을 복사해 고친 답) 한 줄씩 맞대고, 아니면 방향 낱말 수를 센다
+    var copied = a.text && b.text && sameLanguage(a.text, b.text) && tokenOverlap(a.text, b.text) >= 0.8;
+    var direction = !a.text || !b.text ? [] : copied ? swappedWords(a.text, b.text) : directionConflicts(a.text, b.text).map(function (d) { return "방향이 반대 — " + d; });
+    direction.forEach(function (d) { conflicts.push(d); });
     if (fa.nums.length && fb.nums.length && !similarNums(finA, finB) && !shared) {
       conflicts.push("최종 답의 숫자가 다름: " + uniq(fa.nums).join(", ") + " ↔ " + uniq(fb.nums).join(", "));
     }
@@ -577,7 +709,7 @@
       if (numsSimilar) why.push("두 답의 숫자가 절반 이상 겹침: " + uniq(numsA).filter(function (n) { return hasNum(numsB, n); }).slice(0, 5).join(", "));
       if (ynSame) why.push("두 답 모두 ‘" + (ka.yn === "yes" ? "예" : "아니오") + "’로 답함");
     }
-    var result = { sameAnswer: same, mode: "answer", aSignals: a.signals.length, bSignals: b.signals.length, why: why };
+    var result = { sameAnswer: same, mode: "answer", aSignals: a.signals.length, bSignals: b.signals.length, why: why, direction: direction };
 
     // 한 줄 최종 답이 없거나 핵심 개념이 많은 서술형 답은 개념을 얼마나 똑같이 다뤘는지로 본다
     var ta = a.topics || [], tb = b.topics || [];

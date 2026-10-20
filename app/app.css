@@ -335,6 +335,8 @@ mark.m-signal { background: var(--warn-soft); color: #6b3f00; box-shadow: inset 
   background: var(--accent-soft); color: var(--accent-deep); font-size: 0.75rem; font-weight: 850;
 }
 .copy-result { margin-top: 18px; }
+.limit-note { margin: -4px 0 14px; padding: 10px 14px; border-radius: 12px; background: var(--surface-soft); color: var(--muted); font-size: 0.84rem; }
+.limit-note b { color: var(--text); }
 .result-text { margin-top: 10px; }
 
 /* 판정 근거 */

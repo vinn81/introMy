@@ -140,3 +140,18 @@ test("복사하다 만 답: 풀이 중간을 최종 답으로 읽어 '다른 답
   // 끝난 답은 끊긴 것으로 보지 않는다
   ["따라서 가장 작은 양의 정수는 23", "The answer is 23", "x = 23", "중국인의 나머지 정리를 쓰면 x = 23입니다"].forEach((t) => assert.equal(P.analyze(t).cut, false, t));
 });
+
+test("반대말로 바뀐 풀이: 같은 언어로 복사해 고친 답은 바뀐 자리를 찾고, 언어가 다르면 뚜렷이 반대로 기울 때만 잡는다", () => {
+  const kr = "온도를 높이면 평형은 흡열 방향으로 이동하므로 생성물이 증가한다.\n압력을 높이면 기체 분자 수가 적은 쪽으로 이동해 수득률이 증가한다.\n따라서 두 조건 모두 생성물이 증가한다.";
+  const swapped = kr.split("증가").join("감소");
+  const c = P.compare(P.analyze(kr), P.analyze(swapped));
+  assert.equal(c.sameAnswer, false);
+  assert.ok(c.direction.length && /증가.*감소|감소.*증가/.test(c.direction[0]));
+  // 똑같은 답끼리는 그대로 같은 답
+  assert.notEqual(P.compare(P.analyze(kr), P.analyze(kr)).sameAnswer, false);
+  // 언어가 다른 두 답: 한쪽은 '증가'로, 다른 쪽은 'decrease'로 뚜렷이 기울면 반대
+  const en = "Raising the temperature shifts the equilibrium toward the endothermic side, so the product decreases.\nRaising the pressure also decreases the yield.\nTherefore the product decreases in both cases.";
+  const c2 = P.compare(P.analyze(kr), P.analyze(en));
+  assert.equal(c2.sameAnswer, false);
+  assert.ok(/증가·감소/.test(c2.direction[0]));
+});
