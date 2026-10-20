@@ -434,6 +434,8 @@
     $("verdict-title").textContent = title;
     $("verdict-text").textContent = text;
     var shown = $("score-total").textContent;
+    // 점수 고리를 점수만큼 채운다(보류면 비움)
+    scoreBox.style.setProperty("--pct", shown === "—" ? 0 : Number(shown));
     $("result-live").textContent = "2단계 결과: " + (shown === "—" ? "점수 보류" : shown + "점") + ". " + title;
     $("why").innerHTML = whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s).map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
 
