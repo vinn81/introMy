@@ -246,6 +246,7 @@
     t = t.replace(/\\(boxed|text|mathrm|mathbf|operatorname)\s*\{([^{}]*)\}/g, "$2");
     t = t.replace(/\\neq?\b|\\ne\b/g, "≠").replace(/\\leq?\b/g, "≤").replace(/\\geq?\b/g, "≥")
       .replace(/\\cdot\b/g, "·").replace(/\\times\b/g, "×").replace(/\\to\b|\\rightarrow\b/g, "→")
+      .replace(/\\Leftrightarrow\b|\\leftrightarrow\b|\\iff\b/g, "↔").replace(/\\sum\b/g, "Σ")
       .replace(/\\Rightarrow\b|\\implies\b/g, "⇒").replace(/\\neg\b|\\lnot\b/g, "¬")
       .replace(/\\lor\b|\\vee\b/g, "∨").replace(/\\land\b|\\wedge\b/g, "∧").replace(/\\emptyset\b|\\varnothing\b/g, "∅")
       .replace(/\\(begin|end)\{[a-z*]+\}/g, " ").replace(/\\(left|right)\b/g, "")
@@ -290,7 +291,9 @@
     for (var i = lines.length - 1; i >= 0; i--) {
       var l = cleanLine(lines[i]);
       // 결론 문장 하나만 쓴다(한 문단에 뒤따르는 풀이 문장의 숫자가 최종 답에 섞이지 않게)
-      var hit = CONCLUDING.test(l) ? l.split(/(?<=[.!?。])\s+/)[0] : (l.match(/(따라서|그러므로|\b(?:therefore|thus|hence|so))[ ,][^.。]*[.。]?/i) || [""])[0];
+      // 한 줄에 결론 접속어가 여럿이면 마지막 것("…, so a platypus lays eggs. Therefore both … are correct.")
+      var inLine = l.match(/(따라서|그러므로|\b(?:therefore|thus|hence|so))[ ,][^.。]*[.。]?/gi) || [""];
+      var hit = CONCLUDING.test(l) ? l.split(/(?<=[.!?。])\s+/)[0] : inLine[inLine.length - 1];
       if (hit) return hit + (/[:：]$/.test(hit) && lines[i + 1] ? " " + cleanLine(lines[i + 1]) : "");
     }
     return "";
@@ -391,7 +394,8 @@
     ["controlled-trial", /double-blind|placebo|randomi[sz]|이중맹검|위약|무작위/gi],
     ["variables", /independent variable|\biv\b|독립변수/gi],
     ["confound", /confound|교란/gi],
-    ["sycophancy", /sycophan|아첨/gi]
+    ["sycophancy", /sycophan|아첨/gi],
+    ["summation", /[σ∑]|summation|telescop|망원|부분분수|partial fraction/gi]
   ];
   var OPPOSITE = [["valid", "invalid"], ["true", "false"], ["consistent", "inconsistent"]];
 
@@ -407,7 +411,7 @@
     });
     a.replace(/(\d+(?:\.\d+)?)\s*(%|퍼센트|percent)/g, function (m, p) { alt.push(String(parseFloat((parseFloat(p) / 100).toFixed(6)))); return m; });
     // 수식: 공백을 빼고 기호가 섞인 토막(¬P∨Q, n², E=mc²)
-    var maths = (a.replace(/\s*([∨∧→⇒=+−×^≠≤≥/])\s*/g, "$1").replace(/([a-z0-9)])\s+-\s+(?=[a-z0-9(])/g, "$1-").replace(/¬\s+/g, "¬").match(/[a-z0-9¬∨∧→⇒²³₀-₉∅=+−×()^≠≤≥/.-]*[¬∨∧→⇒²³₀-₉=^≠≤≥][a-z0-9¬∨∧→⇒²³₀-₉∅=+−×()^≠≤≥/.-]*/g) || [])
+    var maths = (a.replace(/\s*([∨∧→⇒↔⇔=+−×^≠≤≥/])\s*/g, "$1").replace(/([a-z0-9)])\s+-\s+(?=[a-z0-9(])/g, "$1-").replace(/¬\s+/g, "¬").match(/[a-z0-9¬∨∧→⇒↔⇔²³₀-₉∅=+−×()^≠≤≥/.-]*[¬∨∧→⇒↔⇔²³₀-₉=^≠≤≥][a-z0-9¬∨∧→⇒↔⇔²³₀-₉∅=+−×()^≠≤≥/.-]*/g) || [])
       .map(function (m) { return m.replace(/[.\-]+$/, ""); }).filter(function (m) { return m.length >= 2; });
     var tags = {};
     var rest = a;
@@ -579,10 +583,27 @@
     return result;
   }
 
+  // 한 문장 안에 부정·오류 표시가 있으면 그 명제를 단정한 것이 아니라 고치거나 비판한 것이다
+  var REPORTING = /(\bnot\b|n't|\bno\b|\bnever\b|wrong|incorrect|unsupported|unjustified|unwarranted|invalid|fallac|error|mistak|cannot|아니|아닙|아님|아냐|않|없|틀|오류|잘못|근거 ?없|부당|비약|성급)/i;
+
+  // claim: { wrong, right } — 기준 정답이 명제의 부정이라 숫자·판정어로 맞댈 수 없는 문항(data.js P2_CLAIMS)
+  function claimCheck(an, claim) {
+    if (!claim || !claim.wrong) return "";
+    var re = new RegExp(claim.wrong, "i");
+    var parts = sentences(maskQuotes(String(an.finalAnswer || "")));
+    for (var i = 0; i < parts.length; i++) {
+      var m = re.exec(parts[i]);
+      if (m && !REPORTING.test(parts[i])) return "기준 정답은 ‘" + claim.right + "’인데, 최종 답은 부정이나 오류 표시 없이 ‘" + m[0].trim() + "’라고 단정함";
+    }
+    return "";
+  }
+
   // 답의 최종 답이 P2-Bench 기준 정답과 같은지 본다.
   // 돌려주는 값: status("match" | "mismatch" | "unknown"), strong(숫자·식·특정 개념으로 맞았는지), why
-  function matchReference(an, reference) {
+  function matchReference(an, reference, claim) {
     if (!an || !reference) return { status: "unknown", why: [] };
+    var claimed = claimCheck(an, claim);
+    if (claimed) return { status: "mismatch", why: [claimed] };
     var ref = { finalAnswer: String(reference), lead: "", topics: [], text: "", signals: [] };
     var c = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, ref);
     var fa = keyOf((an.finalAnswer || "") + "\n" + (an.lead || "")), fr = keyOf(reference);
@@ -658,7 +679,7 @@
     "affirming-consequent": "후건 긍정의 오류", "modus-tollens": "후건 부정(대우)", disjunctive: "선언 삼단논법",
     ignorance: "무지에 호소하는 오류", "post-hoc": "선후·인과 혼동", correlation: "상관관계", confound: "교란 변수",
     sycophancy: "아첨성 번복", "at-least-one": "적어도 하나", left: "평형이 왼쪽으로", inaccurate: "부정확",
-    "controlled-trial": "무작위·위약 대조", variables: "독립변수"
+    "controlled-trial": "무작위·위약 대조", variables: "독립변수", summation: "급수의 합"
   };
 
   function clueLabel(key, value) {

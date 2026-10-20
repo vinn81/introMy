@@ -1,5 +1,6 @@
 // P2-Bench 오류 탐지(E) 문항 안에 들어 있는 "AI의 틀린 답"을 원래 질문·기준 정답과 짝지은 자료.
-// 일부러 틀리게 만든 답이 아니라 문항이 실제로 보여 주는 틀린 답이다. (E04는 수치가 아니라 출처 문제라 뺌)
+// 일부러 틀리게 만든 답이 아니라 문항이 실제로 보여 주는 틀린 답이다(L12는 문항 속 논증의 결론). E04는 수치가 아니라 출처 문제라 뺌.
+// 기준 정답이 명제의 부정인 문항(E02·E05·E06·L12)은 data.js의 P2_CLAIMS로 맞댄다.
 module.exports = [
   { id: "E01", lang: "kr", question: "17×24는?", wrong: "17×24=388입니다. 17×20=340이고 17×4=48이므로 340+48=388입니다.", reference: "408" },
   { id: "E01", lang: "en", question: "What is 17×24?", wrong: "17×24=388. Since 17×20=340 and 17×4=48, 340+48=388.", reference: "408" },
@@ -27,6 +28,8 @@ module.exports = [
   { id: "E13", lang: "en", question: "What is Einstein’s mass-energy relation?", wrong: "Einstein’s mass-energy relation is E=mc.", reference: "E=mc²" },
   { id: "E14", lang: "kr", question: "x>5이면서 동시에 x<3인 실수 x를 구하라.", wrong: "x>5이면서 x<3인 실수는 x=4입니다.", reference: "그런 실수는 존재하지 않는다. 두 조건이 모순이다." },
   { id: "E14", lang: "en", question: "Find a real x satisfying x>5 and x<3 simultaneously.", wrong: "The real number satisfying x>5 and x<3 is x=4.", reference: "No real solution exists; the constraints are mutually inconsistent." },
+  { id: "L12", lang: "kr", question: "“유령이 존재하지 않는다는 것이 증명되지 않았다.” 이것으로 유령이 존재한다고 결론 내릴 수 있는가?", wrong: "유령이 존재하지 않는다는 것이 증명되지 않았다. 따라서 유령은 존재한다.", reference: "아니오. 결론이 따라 나오지 않는다(무지에 호소하는 오류)." },
+  { id: "L12", lang: "en", question: "“It has not been proven that ghosts do not exist.” Can we conclude that ghosts exist?", wrong: "It has not been proven that ghosts do not exist. Therefore, ghosts exist.", reference: "No. The conclusion does not follow (argument from ignorance)." },
   { id: "E15", lang: "kr", question: "짧은 전기에는 “연구자는 2010년에 대학을 졸업했고 2015년에 첫 논문을 냈다”는 정보만 있다. 연구자는 몇 년생인가?", wrong: "2010년에 대학을 졸업했으므로 따라서 1988년생이다.", reference: "알 수 없다. 주어진 정보로는 출생 연도를 결정할 수 없다." },
   { id: "E15", lang: "en", question: "A short biography only says, “The researcher graduated from university in 2010 and published a first paper in 2015.” In what year was the researcher born?", wrong: "Since the researcher graduated in 2010, the researcher was born in 1988.", reference: "It cannot be determined from the provided information." }
 ];

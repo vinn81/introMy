@@ -95,20 +95,30 @@ test("흔들림 신호 오탐 사례", () => {
   assert.deepEqual(ids("We cannot determine the exact value without more data. Probably the most important factor is step 2 of the process."), []);
 });
 
-test("오류 탐지 문항 속 AI의 틀린 답 28개: 답으로 읽고, 질문과 관련 있다고 보며, 22개 이상을 기준 정답과 다르다고 잡는다", () => {
+test("문항 속 AI의 틀린 답 30개: 답으로 읽고, 질문과 관련 있다고 보며, 모두 기준 정답과 다르다고 잡는다", () => {
   const WRONG = require("./wrong-answers.js");
   const count = { match: 0, mismatch: 0, unknown: 0 };
   WRONG.forEach((w) => {
     assert.equal(P.checkInput(w.wrong).ok, true, w.id + " " + w.lang + " 입력");
     assert.equal(P.relevance(w.question, w.wrong, DECOYS).status, "related", w.id + " " + w.lang + " 관련성");
-    count[P.matchReference(P.analyze(w.wrong), w.reference).status]++;
+    count[P.matchReference(P.analyze(w.wrong), w.reference, window.P2_CLAIMS[w.id]).status]++;
   });
   assert.equal(count.match, 0, "틀린 답을 기준 정답과 같다고 본 경우");
-  assert.ok(count.mismatch >= 22, "잡은 틀린 답 " + count.mismatch);
+  assert.equal(count.mismatch, WRONG.length, "잡은 틀린 답 " + count.mismatch);
 });
 
 test("약한 추정(probably) 뒤에 바로 불확실하다고 밝히면 과잉추론 신호가 아니다", () => {
   const ids = (t) => P.analyze(t).signals.map((s) => s.id);
   assert.deepEqual(ids("The birth year cannot be determined. The researcher was probably an adult by 2010, so born before the early 1990s. Even that is a likelihood, not a certainty."), []);
   assert.deepEqual(ids("The birth year cannot be determined. The researcher was almost certainly born well before 2010, probably in the 1960s to 1990."), ["overinfer"]);
+});
+
+test("명제 규칙: 부정·오류 표시가 있는 문장이나 인용은 단정으로 보지 않는다", () => {
+  const C = window.P2_CLAIMS;
+  const st = (t, id) => P.matchReference(P.analyze(t), "ref", C[id]).status;
+  assert.equal(st("따라서 정사각형이다.", "E06"), "mismatch");
+  assert.notEqual(st("따라서 이 도형은 정사각형이 아니다.", "E06"), "mismatch");
+  assert.notEqual(st("원래 결론 “따라서 정사각형이다”는 틀렸고, 올바른 결론은 정사각형이 아니라는 것이다.", "E06"), "mismatch");
+  assert.notEqual(st("P(X = 1/2) = 0이며, 이것이 X = 1/2가 불가능한 사건이라는 뜻은 아닙니다.", "M13"), "mismatch");
+  assert.equal(st("P(X = 1/2) = 0이므로 X = 1/2는 불가능한 사건이다.", "M13"), "mismatch");
 });

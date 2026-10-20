@@ -5,6 +5,7 @@
   var P = window.P2Check;
   var EXAMPLES = window.P2_EXAMPLES || [];
   var ITEMS = window.P2_ITEMS || [];
+  var CLAIMS = window.P2_CLAIMS || {};
   var MAX_LEN = 20000;
   // 관련성 확인에서 '다른 질문'으로 쓰는 P2-Bench 60문항(한국어·영어)
   var DECOYS = ITEMS.map(function (it) { return [it.kr, it.en]; });
@@ -155,6 +156,13 @@
     return [q];
   }
 
+  // 질문 칸이 P2-Bench 문항 그대로면 그 문항의 명제 규칙(P2_CLAIMS)을 쓴다
+  function claimFor() {
+    var q = ($("question").value || "").trim();
+    for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].kr === q || ITEMS[i].en === q) return CLAIMS[ITEMS[i].id] || null;
+    return null;
+  }
+
   function hideResult() {
     $("result-live").textContent = "";
     state.analysis = null;
@@ -223,7 +231,7 @@
       state.analysis = P.analyze(text);
       state.relevance = P.relevance(questionForRelevance(), text, DECOYS);
       // 기준 정답이 있으면(P2-Bench 문항) 최종 답을 자동으로 맞댄다
-      state.refCheck = state.reference ? P.matchReference(state.analysis, state.reference) : null;
+      state.refCheck = state.reference ? P.matchReference(state.analysis, state.reference, claimFor()) : null;
       var ref = state.refCheck;
       // 질문 단서가 적게 겹쳐도 최종 답이 기준 정답과 숫자·식으로 맞으면 이 질문의 답이다
       if (ref && ref.status === "match" && ref.strong && state.relevance.status !== "related" && state.relevance.reason !== "other") {

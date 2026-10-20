@@ -35,12 +35,12 @@ test("감점 4건은 논문 점수와 같게, 만점 236건은 오탐 없이 100
   assert.deepEqual(fp, []);
 });
 
-test("자기 질문과 짝지으면 237개 이상 관련 있음", { skip }, () => {
+test("자기 질문과 짝지으면 240개 모두 관련 있음", { skip }, () => {
   const related = ANSWERS.filter((a) => {
     const it = itemOf(a.qid);
     return P.relevance([it.kr, it.en], a.text, DECOYS).status === "related";
   }).length;
-  assert.ok(related >= 237, "related " + related);
+  assert.equal(related, 240);
 });
 
 test("다른 59문항 질문과 짝지으면 0.5% 이하만 관련 있음으로 통과", { skip }, () => {
@@ -69,7 +69,7 @@ test("앱 기준(기준 정답 일치로 관련성을 올리는 것 포함)으�
 });
 
 test("최종 답이 모두 맞은 240개 중 기준 정답과 '다르다'고 잘못 대조되는 답은 없다", { skip }, () => {
-  const wrong = ANSWERS.filter((a) => P.matchReference(P.analyze(a.text), itemOf(a.qid).answer).status === "mismatch").map((a) => a.run);
+  const wrong = ANSWERS.filter((a) => P.matchReference(P.analyze(a.text), itemOf(a.qid).answer, window.P2_CLAIMS[a.qid]).status === "mismatch").map((a) => a.run);
   assert.deepEqual(wrong, []);
 });
 
