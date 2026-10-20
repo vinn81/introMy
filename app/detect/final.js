@@ -31,11 +31,19 @@
   }
 
   // 콜론이 붙은 표시("답: …")이거나, 표시만 있는 제목 줄("## 최종 답", "### 결론")
-  var ANSWER_LABEL = /^[\s>*#-]*\**\s*(final answers?|answer|최종 답|최종 답변|정답|답)\s*\**\s*([:：]\s*\**\s*|$)/i;
+  // 결론 표시 앞에 붙는 꾸밈: 제목(#), 인용(>), 목록 기호, 굵은 글씨(**), 이모지(✅ 📌 👉 🎯 등)
+  var LEAD = "^(?:[\\s>*#\\-•·✅✔☑👉➡★☆▶▷■□●◆◇※\\uFE0F]|[\\uD83C-\\uDBFF][\\uDC00-\\uDFFF])*\\**\\s*";
+  // 콜론이 붙은 표시("답: …")이거나, 표시만 있는 제목 줄("## 최종 답", "### ✅ Final Answer")
+  var ANSWER_LABEL = new RegExp(LEAD + "(the final answers?|final answers?|correct(?:ed)? answers?|short answer|answer|최종 답변|최종 정답|최종 답|올바른 답|바른 답|정답|해답|답)\\s*\\**\\s*([:：]\\s*\\**\\s*|$)", "i");
+  var CONCLUSION_LABEL = new RegExp(LEAD + "(verdict|conclusion|summary|in summary|final result|bottom line|tl;?dr|key takeaway|최종 평가|최종 결론|최종 정리|한 ?줄 요약|핵심 요약|결론|정리|요약|핵심|요점)\\s*\\**\\s*([:：.]\\s*\\**\\s*|$)", "i");
+  // 답을 밝히는 문장("정답은 23입니다", "23이 정답입니다", "∴ x = 23", "The final answer is …", "요컨대 …")
+  // "결론적으로·정리하면" 같은 맺는 말은 문장 맨 앞에 올 때만 센다("조건을 정리하면 …"은 결론이 아니다)
+  var ANSWER_PHRASE = /(the final answer is|the answer is|정답은|최종 답은|(?:이|가) 정답|∴|^\W*(?:결론적으로|요컨대|요약하면|정리하면|한마디로|in short|in conclusion|to summarize|in summary)\b)/i;
+  // "the answer is determinate", "정답은 유일하다"처럼 답의 성질만 말하는 문장은 답을 밝힌 것이 아니다
+  var NOT_A_VALUE = /(the (?:final )?answer is|정답은|답은)\s*(?:\w+ly\s+)?(determinate|unique|well-defined|correct|wrong|clear|consistent|valid|유일|명확|분명|확정)/i;
+  // 결론이 아닌 맺음 인사("도움이 되었길 바라요", "Let me know if …")
+  var CLOSING = /(도움이 되|궁금한 (점|게)|더 (필요|알고)|물어보세요|말씀해 ?주세요|알려 ?주세요|드릴게요|드릴까요|let me know|hope (this|that) helps|feel free|happy to help|if you(?:'d| would)? like|want me to)/i;
 
-  var CONCLUSION_LABEL = /^[\s>*#-]*\**\s*(verdict|conclusion|summary|in summary|final result|최종 평가|최종 결론|최종 정리|결론|정리|요약)\s*\**\s*([:：.]\s*\**\s*|$)/i;
-
-  // 결론을 이끄는 문장(가장 마지막 것을 쓴다)
   var CONCLUDING = /^(따라서|그러므로|그래서|결론적으로|즉,|정답은|답은|최종적으로|therefore|thus|hence|so,? |in conclusion|the answer is|the smallest|the result is)/i;
 
   function cleanLine(l) {
@@ -50,7 +58,8 @@
       // 표시 줄이 비어 있으면 이어지는 줄(최대 3줄, 다음 제목 전까지)이 답이다
       if (rest.length <= 1) {
         var parts = [];
-        for (var j = i + 1; j < lines.length && parts.length < 3 && !/^\s*#/.test(lines[j]); j++) parts.push(cleanLine(lines[j]));
+        // 맺음 인사("도움이 되었길 바라요")가 나오면 거기서 멈춘다
+        for (var j = i + 1; j < lines.length && parts.length < 3 && !/^\s*#/.test(lines[j]) && !CLOSING.test(lines[j]); j++) parts.push(cleanLine(lines[j]));
         rest = parts.join(" / ");
       }
       if (rest.length > 1) return rest;
@@ -67,6 +76,7 @@
   function concluding(lines) {
     for (var i = lines.length - 1; i >= 0; i--) {
       var l = cleanLine(lines[i]);
+      if (CLOSING.test(l)) continue;
       // 결론 문장 하나만 쓴다(한 문단에 뒤따르는 풀이 문장의 숫자가 최종 답에 섞이지 않게)
       // 한 줄에 결론 접속어가 여럿이면 마지막 것("…, so a platypus lays eggs. Therefore both … are correct.")
       var inLine = l.match(/(따라서|그러므로|\b(?:therefore|thus|hence|so))[ ,][^.。]*[.。]?/gi) || [""];
@@ -76,7 +86,19 @@
     return "";
   }
 
-  // source: 최종 답을 어디서 찾았는지("boxed" | "label" | "bold" | "concluding" | "last-line")
+  // 답을 밝히는 문장(가장 마지막 것). 물음표로 끝나는 문장(질문을 다시 적은 것)과 맺음 인사는 뺀다
+  function answerPhrase(lines) {
+    for (var i = lines.length - 1; i >= 0; i--) {
+      var parts = cleanLine(lines[i]).split(/(?<=[.!。])\s+/);
+      for (var k = parts.length - 1; k >= 0; k--) {
+        var sent = parts[k].trim();
+        if (sent.length > 1 && ANSWER_PHRASE.test(sent) && !/[?？]$/.test(sent) && !CLOSING.test(sent) && !NOT_A_VALUE.test(sent)) return sent;
+      }
+    }
+    return "";
+  }
+
+  // source: 최종 답을 어디서 찾았는지("boxed" | "label" | "phrase" | "bold" | "concluding" | "last-line")
   function findFinal(raw) {
     var boxed = [];
     String(raw).replace(/\\boxed\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g, function (m, inner) { boxed.push(inner); return m; });
@@ -84,13 +106,20 @@
     var text = plainMath(raw);
     var lines = text.split(/\n+/).filter(function (l) { return l.trim() && !/^[\s|:-]+$/.test(l); });
     var a = labeled(lines, ANSWER_LABEL) || labeled(lines, CONCLUSION_LABEL), source = "label";
+    if (!a) { a = answerPhrase(lines); source = "phrase"; }
     if (!a) {
       source = "bold";
+      // 숫자가 든 굵은 글씨 중 마지막 것. "Step 1." "2단계" 같은 순서 제목은 뺀다
       var bolds = (text.match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
-      for (var i = bolds.length - 1; i >= 0 && !a; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i])) a = bolds[i];
+      for (var i = bolds.length - 1; i >= 0 && !a; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i]) && !/^(step|case|part|\d+\s*단계|단계|경우)\b/i.test(bolds[i])) a = bolds[i];
     }
     if (!a) { a = concluding(lines); source = "concluding"; }
-    if (!a) { a = lines.length ? cleanLine(lines[lines.length - 1]) : ""; source = "last-line"; }
+    if (!a) {
+      // 마지막 줄로 대신하되, 맺음 인사 줄은 건너뛴다
+      var rest = lines.filter(function (l) { return !CLOSING.test(l); });
+      a = rest.length ? cleanLine(rest[rest.length - 1]) : (lines.length ? cleanLine(lines[lines.length - 1]) : "");
+      source = "last-line";
+    }
     return { text: a.replace(/\s+/g, " ").trim().slice(0, 160), source: source };
   }
 

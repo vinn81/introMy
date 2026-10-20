@@ -155,3 +155,21 @@ test("반대말로 바뀐 풀이: 같은 언어로 복사해 고친 답은 바�
   assert.equal(c2.sameAnswer, false);
   assert.ok(/증가·감소/.test(c2.direction[0]));
 });
+
+test("여러 AI 말투의 결론 찾기(형식 견본): 이모지 제목·한 줄 요약·정답 문장·∴·boxed를 찾고 맺음 인사는 건너뛴다", () => {
+  const STYLES = require("./answer-styles.js");
+  STYLES.forEach((s) => {
+    const a = P.analyze(s.text);
+    if (s.expect) {
+      assert.ok(a.finalAnswer.indexOf(s.expect) >= 0, s.style + " → " + a.finalAnswer);
+      if (s.avoid) assert.ok(a.finalAnswer.indexOf(s.avoid) < 0, s.style + " → " + a.finalAnswer);
+      // 맞는 답이므로 기준 정답과 '다르다'고 해서는 안 된다
+      const it = ITEMS.find((x) => x.id === s.item);
+      assert.notEqual(P.matchReference(a, it.answer, window.P2_CLAIMS[s.item]).status, "mismatch", s.style);
+    } else {
+      assert.equal(a.finalReliable, false, s.style + " (결론이 없는 답)");
+    }
+  });
+  // 답의 성질만 말하는 문장("the answer is determinate")은 답을 밝힌 문장이 아니므로 굵게 쓴 답을 이기지 못한다
+  assert.equal(P.analyze("17 × 24 = **408**\n\nThe problem gives enough information, and the answer is determinate.").finalAnswer, "408");
+});
