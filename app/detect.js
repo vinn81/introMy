@@ -72,6 +72,16 @@
     return null;
   }
 
+  // 답 표시("Answer:", "답:")를 걷어낸 뒤 문장이 "Yes." "아니오,"처럼 예/아니오 한 마디로 시작할 때만 그 답으로 본다
+  // ("No contradiction found"의 No는 답이 아니다)
+  var LEADING_YN = /^(?:(?:final answers?|answer|최종 답|정답|답|결론|conclusion)\s*[:：]\s*)?(yes|no|예|네|아니오|아니요)(?=\s*[.,!:;)—–-]|\s*$)/i;
+
+  function leadingYesNo(s) {
+    var m = LEADING_YN.exec(String(s).replace(/\*/g, "").trim());
+    if (!m) return null;
+    return /^(yes|예|네)$/i.test(m[1]) ? "yes" : "no";
+  }
+
   function detectFlip(text, original) {
     for (var i = 0; i < FLIP_PATTERNS.length; i++) {
       var m = FLIP_PATTERNS[i].exec(text);
@@ -79,9 +89,9 @@
     }
     var lines = sentences(original);
     if (lines.length >= 3) {
-      var first = yesNo(lines[0].replace(/\*/g, ""));
+      var first = leadingYesNo(lines[0]);
       var lastBold = original.match(/\*\*[^*\n]{1,120}\*\*/g);
-      var last = lastBold ? yesNo(lastBold[lastBold.length - 1].replace(/\*/g, "")) : null;
+      var last = lastBold ? leadingYesNo(lastBold[lastBold.length - 1]) : null;
       if (first && last && first !== last) {
         return { evidence: "첫 답: " + lines[0].replace(/\*/g, "") + " → 마지막 답: " + lastBold[lastBold.length - 1].replace(/\*/g, "") };
       }
@@ -100,17 +110,19 @@
     re.lastIndex = m.index;
     var g;
     while ((g = re.exec(text))) {
-      // 논문 E15처럼 '구체적' 추정(숫자·연도)이 같은 문장에 붙은 경우만 본다
+      // 논문 E15처럼 '구체적' 추정(연도·두 자리 이상 숫자)이 같은 문장에 붙은 경우만 본다
+      // ("step 2", "case 1" 같은 순서 번호는 추정이 아니다)
       var sentEnd = text.slice(g.index).search(/[.!?。\n]/);
       var sent = text.slice(g.index, g.index + (sentEnd < 0 ? 200 : sentEnd));
-      if (/\d/.test(sent)) return { index: g.index, length: sent.length };
+      if (/\d{2,}/.test(sent.replace(/\b(step|case|part|item|line|단계|번째)\s*\d+/gi, ""))) return { index: g.index, length: sent.length };
     }
     return null;
   }
 
   // 3) 설명 모순: '모두 맞다'는 문장 가까이에 틀렸다는 표시가 있다
   var ALL_OK = /(\b(both|all)\b[^.\n]{0,40}\b(are|is)\b[^.\n]{0,10}\b(correct|right|fine|valid)\b|(둘 다|모두|전부)[^.\n]{0,20}(맞|옳|정확))/i;
-  var BAD = /(✘|✗|❌|\bwrong\b|\bincorrect\b|\bnot correct\b|틀렸|틀린|잘못)/i;
+  // 틀림 표시는 기호(✘)나 서술어("is wrong", "틀렸다")만 센다. "the incorrect approach would be" 같은 가정 속 명사구는 뺀다
+  var BAD = /(✘|✗|❌|\b(is|are|was|were|be|looks|seems)\s+(actually\s+|in fact\s+)?(wrong|incorrect|not correct)\b|틀렸|틀립니다|틀리다|잘못(되|됐|했|이다|입니다))/i;
 
   function detectContradiction(text) {
     var m = ALL_OK.exec(text);
@@ -171,10 +183,17 @@
   // 결론을 밝힌 흔적: '답/결론' 표시, 결론 접속어, 등식, 판정 표현(타당·참·틀림·결정 불가 등)
   var CONCLUSION_HINT = /(final answer|answer|verdict|conclusion|therefore|thus|hence|\bso\b|the result|in short|in summary|summary|최종|정답|정리|요약|답[은:：]|결론|따라서|그러므로|그래서|결과적으로|=|타당|부당|\b(in)?valid\b|\b(true|false|correct|incorrect|wrong)\b|참이|거짓|맞습니다|맞다|틀렸|틀린|옳|오류|fallacy|\berror\b|cannot be|불가능|결정할 수|알 수 없|^\s*(yes|no|예|아니오|아니요)\b)/im;
 
+  // 두 문장 이하의 짧은 답("프랑스의 수도는 파리입니다.")은 답 전체가 결론이다
+  function isShortAnswer(text) {
+    var t = String(text).trim();
+    return t.length <= 200 && sentences(t).length <= 2;
+  }
+
   function conclusionBy(text, tp) {
     var m = CONCLUSION_HINT.exec(text);
     if (m) return m[0].trim() === "=" ? "등식(=)으로 답을 냄" : "결론 표시 ‘" + m[0].trim() + "’";
     if (tp.length >= 3) return "핵심 개념 " + tp.length + "개(" + tp.slice(0, 4).join(", ") + ")를 다룬 서술형 답";
+    if (isShortAnswer(text)) return "두 문장 이하의 짧은 답이라 답 전체를 결론으로 봄";
     return "";
   }
 
@@ -200,7 +219,7 @@
     var flip = null;
     found.forEach(function (x) { if (x.id === "flip") flip = x; });
     var fa = flip && flip.index != null ? afterFlip(clean.slice(flip.index)) : "";
-    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), topics: tp, text: clean, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3,
+    return { empty: false, signals: found, finalAnswer: fa || finalAnswer(clean), lead: lead(clean), topics: tp, text: clean, hasConclusion: CONCLUSION_HINT.test(clean) || tp.length >= 3 || isShortAnswer(clean),
       conclusionBy: conclusionBy(clean, tp), lastSentence: lastSentence(clean) };
   }
 
@@ -259,7 +278,8 @@
   function concluding(lines) {
     for (var i = lines.length - 1; i >= 0; i--) {
       var l = cleanLine(lines[i]);
-      var hit = CONCLUDING.test(l) ? l : (l.match(/(따라서|그러므로|therefore|thus|hence|so)[ ,][^.。]*[.。]?/i) || [""])[0];
+      // 결론 문장 하나만 쓴다(한 문단에 뒤따르는 풀이 문장의 숫자가 최종 답에 섞이지 않게)
+      var hit = CONCLUDING.test(l) ? l.split(/(?<=[.!?。])\s+/)[0] : (l.match(/(따라서|그러므로|\b(?:therefore|thus|hence|so))[ ,][^.。]*[.。]?/i) || [""])[0];
       if (hit) return hit + (/[:：]$/.test(hit) && lines[i + 1] ? " " + cleanLine(lines[i + 1]) : "");
     }
     return "";
@@ -366,6 +386,14 @@
   function keyOf(answer) {
     var a = plainMath(answer || "").toLowerCase().replace(/−/g, "-").replace(/(\d),(?=\d{3}\b)/g, "$1");
     var nums = (a.match(/\d+(?:\.\d+)?/g) || []).map(function (n) { return String(parseFloat(n)); });
+    // 같은 값의 다른 표기(1/2 = 0.5, 50% = 0.5)도 맞댈 수 있게 소수 값을 따로 모은다.
+    // 관련성 단서에는 쓰지 않는다(1/2만 보고 P(X=1/2) 문항으로 헷갈리지 않게)
+    var alt = [];
+    a.replace(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)(?![\d.])/g, function (m, p, q) {
+      if (parseFloat(q) !== 0) alt.push(String(parseFloat((parseFloat(p) / parseFloat(q)).toFixed(6))));
+      return m;
+    });
+    a.replace(/(\d+(?:\.\d+)?)\s*(%|퍼센트|percent)/g, function (m, p) { alt.push(String(parseFloat((parseFloat(p) / 100).toFixed(6)))); return m; });
     // 수식: 공백을 빼고 기호가 섞인 토막(¬P∨Q, n², E=mc²)
     var maths = (a.replace(/\s*([∨∧→⇒=+−×^≠≤≥/])\s*/g, "$1").replace(/([a-z0-9)])\s+-\s+(?=[a-z0-9(])/g, "$1-").replace(/¬\s+/g, "¬").match(/[a-z0-9¬∨∧→⇒²³₀-₉∅=+−×()^≠≤≥/.-]*[¬∨∧→⇒²³₀-₉=^≠≤≥][a-z0-9¬∨∧→⇒²³₀-₉∅=+−×()^≠≤≥/.-]*/g) || [])
       .map(function (m) { return m.replace(/[.\-]+$/, ""); }).filter(function (m) { return m.length >= 2; });
@@ -375,7 +403,7 @@
       var re = new RegExp(c[1].source, "gi");
       if (re.test(rest)) { tags[c[0]] = true; rest = rest.replace(new RegExp(c[1].source, "gi"), " "); }
     });
-    return { nums: nums, maths: maths, tags: tags, yn: yesNo(a) };
+    return { nums: nums, alt: alt, maths: maths, tags: tags, yn: yesNo(a) };
   }
 
   function relations(maths) {
@@ -399,11 +427,22 @@
     return agree ? "" : differ;
   }
 
+  // 반올림 차이는 같은 값으로 본다(15.38 ≈ 15.4, 0.1538 ≈ 0.154). 정수와 소수(0.5 ↔ 1)는 맞대지 않는다
+  function decimals(v) { var i = v.indexOf("."); return i < 0 ? 0 : v.length - i - 1; }
+  function numEq(x, y) {
+    if (x === y) return true;
+    var dx = decimals(x), dy = decimals(y), d = Math.min(dx, dy);
+    if (d < 1 || dx === dy) return false;
+    var precise = dx > dy ? x : y, rough = dx > dy ? y : x;
+    return parseFloat(parseFloat(precise).toFixed(d)) === parseFloat(rough);
+  }
+  function hasNum(list, v) { return list.some(function (w) { return numEq(v, w); }); }
+
   // 두 숫자 묶음이 절반 이상 겹치는가(중복 제거 후)
   function similarNums(x, y) {
     var ux = x.filter(function (v, i) { return x.indexOf(v) === i; });
     var uy = y.filter(function (v, i) { return y.indexOf(v) === i; });
-    var common = ux.filter(function (v) { return uy.indexOf(v) >= 0; }).length;
+    var common = ux.filter(function (v) { return hasNum(uy, v); }).length;
     var smaller = Math.min(ux.length, uy.length);
     return smaller > 0 && common / smaller >= 0.5;
   }
@@ -456,13 +495,15 @@
     var sharedMaths = ka.maths.filter(function (m, i) { return kb.maths.indexOf(m) >= 0 && ka.maths.indexOf(m) === i; });
     var sharedTags = tagsA.filter(function (t) { return tagsB.indexOf(t) >= 0; });
     var shared = sharedMaths.length > 0 || sharedTags.length > 0;
-    var numsSimilar = similarNums(ka.nums, kb.nums);
+    var numsA = ka.nums.concat(ka.alt), numsB = kb.nums.concat(kb.alt);
+    var finA = fa.nums.concat(fa.alt), finB = fb.nums.concat(fb.alt);
+    var numsSimilar = similarNums(numsA, numsB);
     var ynSame = ka.yn && ka.yn === kb.yn;
     var match = shared || numsSimilar || ynSame;
     // 같은 변수에 다른 값을 준 식(x=1/(t-1) ↔ x=1/(t-2), t≠1 ↔ t≠2)이 있거나, 숫자가 절반도 안 겹치면 다른 답
     var relDiff = relationsDiffer(fa.maths, fb.maths);
     if (relDiff) conflicts.push("같은 변수에 다른 값: " + relDiff);
-    if (fa.nums.length && fb.nums.length && !similarNums(fa.nums, fb.nums) && !shared) {
+    if (fa.nums.length && fb.nums.length && !similarNums(finA, finB) && !shared) {
       conflicts.push("최종 답의 숫자가 다름: " + uniq(fa.nums).join(", ") + " ↔ " + uniq(fb.nums).join(", "));
     }
     var same = conflicts.length ? false : (match ? true : null);
@@ -470,7 +511,7 @@
     if (same === true) {
       if (sharedMaths.length) why.push("두 답에 같은 식이 있음: " + sharedMaths.slice(0, 3).join(", "));
       if (sharedTags.length) why.push("두 답의 판정이 같음: " + sharedTags.map(function (t) { return "‘" + (TAG_LABELS[t] || t) + "’"; }).join(", "));
-      if (numsSimilar) why.push("두 답의 숫자가 절반 이상 겹침: " + uniq(ka.nums).filter(function (n) { return kb.nums.indexOf(n) >= 0; }).slice(0, 5).join(", "));
+      if (numsSimilar) why.push("두 답의 숫자가 절반 이상 겹침: " + uniq(numsA).filter(function (n) { return hasNum(numsB, n); }).slice(0, 5).join(", "));
       if (ynSame) why.push("두 답 모두 ‘" + (ka.yn === "yes" ? "예" : "아니오") + "’로 답함");
     }
     var result = { sameAnswer: same, mode: "answer", aSignals: a.signals.length, bSignals: b.signals.length, why: why };
@@ -526,6 +567,33 @@
     return result;
   }
 
+  // 답의 최종 답이 P2-Bench 기준 정답과 같은지 본다.
+  // 돌려주는 값: status("match" | "mismatch" | "unknown"), strong(숫자·식·특정 개념으로 맞았는지), why
+  function matchReference(an, reference) {
+    if (!an || !reference) return { status: "unknown", why: [] };
+    var ref = { finalAnswer: String(reference), lead: "", topics: [], text: "", signals: [] };
+    var c = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, ref);
+    var fa = keyOf((an.finalAnswer || "") + "\n" + (an.lead || "")), fr = keyOf(reference);
+    // 기준 정답은 해설 문장이 붙어 있어("…; the valid form is …") 판정어는 첫 마디로만 맞댄다
+    var numberConflict = c.sameAnswer === false && c.why.some(function (w) { return /^(최종 답의 숫자가 다름|같은 변수에 다른 값)/.test(w); });
+    if (c.sameAnswer === false && !numberConflict) {
+      var head = String(reference).split(/[;；.。]\s/)[0];
+      var c2 = compare({ finalAnswer: an.finalAnswer, lead: an.lead, topics: [], text: "", signals: [] }, { finalAnswer: head, lead: "", topics: [], text: "", signals: [] });
+      if (c2.sameAnswer !== false) return { status: "unknown", why: [] };
+    }
+    if (c.sameAnswer === false) {
+      // 최종 답을 잘못 뽑았을 수도 있으니, 기준 정답의 숫자가 답 본문에 모두 나오면 단정하지 않는다
+      var body = keyOf(an.text || "").nums, refNums = uniq(fr.nums);
+      if (refNums.length && refNums.every(function (n) { return hasNum(body, n); })) return { status: "unknown", why: [] };
+      return { status: "mismatch", why: c.why };
+    }
+    if (c.sameAnswer !== true) return { status: "unknown", why: [] };
+    var strong = similarNums(fa.nums.filter(function (n) { return n.length >= 2; }), fr.nums.filter(function (n) { return n.length >= 2; })) ||
+      overlap(fa.maths, fr.maths) ||
+      Object.keys(fa.tags).some(function (t) { return fr.tags[t] && GENERIC_TAGS.indexOf(t) < 0; });
+    return { status: "match", strong: strong, why: c.why };
+  }
+
   function uniq(xs) { return xs.filter(function (v, i) { return xs.indexOf(v) === i; }); }
 
   function short(t) {
@@ -565,7 +633,7 @@
   function clueLabel(key, value) {
     var kind = key.slice(0, 2), v = key.slice(2);
     if (kind === "n:") return "숫자 " + v;
-    if (kind === "m:" || kind === "f:") return "식 " + v;
+    if (kind === "m:" || kind === "f:" || kind === "d:") return "식 " + v;
     if (kind === "t:") return "개념 " + v;
     if (kind === "g:") return "개념 " + (TAG_LABELS[v] || v);
     return "낱말 ‘" + (typeof value === "string" ? value : v) + "’";
@@ -589,7 +657,18 @@
       var f = tok.replace(/[()\[\]{}]/g, "");
       if (f.length >= 3 && /[a-z]/.test(f) && /[a-z0-9][+\-*/^²³−×][a-z0-9]/.test(f) && !/^[a-z]+-[a-z]+$/.test(f)) out.push(f);
     });
+    // 계수가 붙은 항(3x, 2y)은 식을 풀어 쓴 답에도 그대로 남는다(3x+5=20 → 3x=15)
+    (t.match(/(^|[^a-z0-9.])\d+(?:\.\d+)?[a-z](?![a-z])/g) || []).forEach(function (m) {
+      var term = m.replace(/^[^0-9]/, "");
+      if (out.indexOf(term) < 0) out.push(term);
+    });
     return out;
+  }
+
+  // 숫자만 든 식(2+2, 17×24). 날짜(2026-10-06)는 뺀다
+  function numberFormulas(text) {
+    var t = plainMath(text).replace(/\s*([+\-*/^=−×])\s*/g, "$1");
+    return (t.match(/\d+(?:\.\d+)?(?:[+\-*/^−×]\d+(?:\.\d+)?)+/g) || []).filter(function (f) { return !/^\d+(-\d+)+$/.test(f); });
   }
 
   function hangulShare(text) {
@@ -603,6 +682,7 @@
     k.nums.forEach(function (n) { f["n:" + n] = 1; });
     k.maths.forEach(function (m) { f["m:" + m] = 1; });
     fragments(text).forEach(function (x) { f["f:" + x] = 1; });
+    numberFormulas(text).forEach(function (x) { f["d:" + x] = 1; });
     topics(text).forEach(function (t) { f["t:" + t] = 1; });
     Object.keys(k.tags).forEach(function (t) { if (GENERIC_TAGS.indexOf(t) < 0) f["g:" + t] = 1; });
     var originals = wordOriginals(text);
@@ -641,14 +721,17 @@
     var df = idf.idf[key] || 0;
     var w = Math.log((idf.n + 1) / (df + 1)) + 0.2;
     if (/^n:\d$/.test(key)) w *= 0.5;
-    if (key.indexOf("f:") === 0) w *= 1.5;
+    if (key.indexOf("f:") === 0 || key.indexOf("d:") === 0) w *= 1.5;
     return w;
   }
 
-  function similarity(qf, af, idf, neutralOnly) {
+  // digits: 숫자만 든 식(d:)도 셀지. 넣은 질문에만 쓰고 다른 문항과 맞댈 때는 뺀다
+  // (17×24를 다루는 두 문항처럼 숫자 식이 겹치는 문항끼리 헷갈리지 않게)
+  function similarity(qf, af, idf, neutralOnly, digits) {
     var total = 0;
     sharedKeys(qf, af).forEach(function (key) {
       if (neutralOnly && key.indexOf("w:") === 0) return;
+      if (!digits && key.indexOf("d:") === 0) return;
       total += weight(key, idf);
     });
     return total;
@@ -669,7 +752,7 @@
     var sameLang = qs.filter(function (q) { return Math.abs(hangulShare(q) - share) < 0.5; });
     var neutralOnly = sameLang.length === 0;
     var own = 0;
-    qs.forEach(function (q) { own = Math.max(own, similarity(features(q), af, idf, neutralOnly)); });
+    qs.forEach(function (q) { own = Math.max(own, similarity(features(q), af, idf, neutralOnly, true)); });
     var best = 0, bestId = null, bestF = null;
     decoys.forEach(function (d, i) {
       if (qs.some(function (q) { return d.indexOf(q) >= 0; })) return;
@@ -699,13 +782,20 @@
       result.status = "unknown";
       return result;
     }
-    if (own >= RELEVANCE_FLOOR) { result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result; }
+    if (own >= RELEVANCE_FLOOR) {
+      // 직접 쓴 질문(P2-Bench 문항이 아님)은 다른 문항과 낱말만 더 겹친다고 남의 답으로 보지 않는다.
+      // 그 문항에만 있는 숫자·수식·개념까지 답에 나와야 '다른 질문의 답'으로 본다
+      var bench = decoys.some(function (d) { return qs.some(function (q) { return d.indexOf(q) >= 0; }); });
+      var strongOther = bestF ? sharedKeys(bestF, af).filter(function (k) { return k.indexOf("w:") !== 0 && !qf[k]; }) : [];
+      if (!bench && !strongOther.length) { result.status = "related"; result.wordsOnly = true; return result; }
+      result.status = "unrelated"; result.reason = "other"; result.other = bestId; return result;
+    }
     result.status = "unrelated";
     result.reason = "weak";
     return result;
   }
 
-  var api = { relevance: relevance, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
+  var api = { relevance: relevance, matchReference: matchReference, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.P2Check = api;
 })(typeof window !== "undefined" ? window : this);

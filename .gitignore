@@ -10,3 +10,6 @@ renew/input/*
 !renew/input/*.example.csv
 renew/out/candidates.*
 submission/
+
+# 논문 본실험 답 240개(재현 패키지에서 로컬로만 만들어 씀)
+tests/fixtures/
