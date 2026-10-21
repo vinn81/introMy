@@ -116,6 +116,14 @@
     if (state.analysis) setNote("input-note", "논문 " + ex.en.run + " 응답을 불러왔습니다. 논문 채점: " + ex.en.score + "점. 3단계에는 같은 문항의 한국어 답(" + ex.kr.score + "점)을 넣어 두었습니다.");
   }
 
+  // "따라서·답:" 같은 결론 표시 없이 바로 답한 완결된 답("보고서 제출은 필요조건입니다. …")도
+  // 끊기지 않았고 최종 답이 기준 정답과 같으면 결론이 있는 답으로 본다(점수 보류·'끊긴 답' 안내를 하지 않음)
+  function trustIfMatched(an, ref) {
+    if (!an || an.empty || an.cut || !ref || ref.status !== "match") return;
+    if (!an.hasConclusion) { an.hasConclusion = true; an.conclusionBy = "결론 표시는 없지만 최종 답이 기준 정답과 같음"; }
+    an.finalReliable = true;
+  }
+
   function pickItem() {
     var it = currentItem();
     $("example-select").value = "";
@@ -239,6 +247,7 @@
       // 최종 답을 기준 정답과 자동으로 맞댄다(명제의 부정이 정답인 문항은 P2_CLAIMS 규칙도 쓴다)
       state.refCheck = P.matchReference(state.analysis, item.answer, CLAIMS[item.id] || null);
       var ref = state.refCheck;
+      trustIfMatched(state.analysis, ref);
       // 질문 단서가 적게 겹쳐도 최종 답이 기준 정답과 숫자·식으로 맞으면 이 질문의 답이다
       if (ref && ref.status === "match" && ref.strong && state.relevance.status !== "related" && state.relevance.reason !== "other") {
         state.relevance.status = "related";
@@ -591,6 +600,8 @@
       var textB = readAnswer("answer-b", "compare-note");
       if (textB === null) { $("compare-body").hidden = true; return; }
       state.analysisB = P.analyze(textB);
+      var itemB = currentItem();
+      if (itemB) trustIfMatched(state.analysisB, P.matchReference(state.analysisB, itemB.answer, CLAIMS[itemB.id] || null));
       state.relevanceB = P.relevance(questionForRelevance(), textB, DECOYS);
       $("final-a").value = state.analysis.finalAnswer || "";
       $("final-b").value = state.analysisB.finalAnswer || "";

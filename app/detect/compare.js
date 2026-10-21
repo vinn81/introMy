@@ -153,7 +153,9 @@
   function compare(a, b) {
     var r = compareCore(a, b);
     var cutA = a.finalReliable === false, cutB = b.finalReliable === false;
-    if (!(r.sameAnswer === true || !(cutA || cutB))) {
+    // 같은 자리·방향 낱말이 반대로 바뀐 것은 최종 답과 상관없이 본문에서 찾은 것이라 보류하지 않는다
+    var byDirection = r.sameAnswer === false && r.direction && r.direction.length > 0;
+    if (!(r.sameAnswer === true || !(cutA || cutB) || byDirection)) {
       var who = cutA && cutB ? "두 답 모두" : cutA ? "1단계 답" : "다른 언어 답";
       r = { sameAnswer: null, mode: "cut", cutA: cutA, cutB: cutB, aSignals: r.aSignals, bSignals: r.bSignals, direction: [],
         why: [who + "에서 결론 문장을 찾지 못했습니다. 끝이 문장 중간이거나, 여러 줄 풀이의 마지막 줄만 있고 ‘답:’·‘따라서’ 같은 결론 표시가 없습니다.",

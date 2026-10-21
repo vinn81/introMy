@@ -122,7 +122,8 @@
     if (!a) {
       source = "bold";
       // 숫자가 든 굵은 글씨 중 마지막 것. "Step 1." "2단계" "(3) 이중 맹검" 같은 순서 제목은 뺀다
-      var bolds = (text.match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
+      // 제목 줄("#### **방법 1: 관찰을 통한 풀이**")의 굵은 글씨도 제목이라 뺀다
+      var bolds = (text.replace(/^\s*#.*$/gm, "").match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
       for (var i = bolds.length - 1; i >= 0 && !a; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i]) && !/^(step|case|part|\d+\s*단계|단계|경우)\b/i.test(bolds[i]) && !/^\(\d+\)\s/.test(bolds[i])) a = bolds[i];
     }
     if (!a) { a = concluding(lines); source = "concluding"; }
@@ -148,6 +149,9 @@
     var trimmed = String(raw || "").replace(/\s+$/, "");
     // 굵은 글씨를 닫고 끝난 줄("- 전압: **8 V**")은 끝난 답이다
     if (!trimmed || /\*\*$/.test(trimmed)) return false;
+    // 식·코드 블록을 열고 닫지 않은 채 끝났으면($$ … , \[ … , ``` …) 중간에 끊긴 답이다
+    var count = function (re) { return (trimmed.match(re) || []).length; };
+    if (count(/\$\$/g) % 2 === 1 || count(/\\\[/g) > count(/\\\]/g) || count(/```/g) % 2 === 1) return true;
     var t = trimmed.replace(/[*_]+$/, "");
     if (/[.!?。…)\]}>|$`'"”’»~✓✔∎□■]$/.test(t)) return false;
     if (/(다|요|음|함|임|됨|까|죠|오|네|군)$/.test(t)) return false;
@@ -156,6 +160,8 @@
     if (last.length <= 40 && /=/.test(last) && !/[가-힣]/.test(last)) return false;
     // "따라서 답은 23", "정답: 0.20 M"처럼 '은·는·이·가·:' 뒤의 값으로 끝나면 끝난 답이다
     if (/(은|는|이|가|\bis|\bare|\bequals|[:：=])\s*[-+]?\d[\d.,/]*\s*(%|°|[a-zA-Z]{1,3})?$/.test(last)) return false;
+    // 목록·굵은 표시로 시작하는 요약 줄이 조사·어미가 아닌 말로 끝나면 끝난 답이다("* **(b) 압력 상승:** 정반응 (오른쪽)으로 이동")
+    if (/^([*\-•·]|\d+[.)])\s|^\*\*/.test(last) && /[가-힣]$/.test(t) && !/(은|는|이|가|을|를|에|의|로|와|과|도|고|며|면|서|지|게|나)$/.test(t)) return false;
     return true;
   }
 

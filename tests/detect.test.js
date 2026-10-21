@@ -240,3 +240,21 @@ test("결론 표시 없이 따로 줄을 잡은 마지막 식으로 끝나는 �
   assert.equal(an.finalSource, "equation");
   assert.equal(an.finalAnswer, "15.38%");
 });
+
+test("전체 기능 점검에서 나온 문제: 목록 요약 줄로 끝난 답은 끝난 답, 식을 열고 끊긴 답은 끊긴 답, 제목의 굵은 글씨는 최종 답이 아님", () => {
+  assert.equal(P.analyze("### 요약\n\n* **(a) 온도 상승:** 역반응 (왼쪽)으로 이동\n* **(b) 압력 상승:** 정반응 (오른쪽)으로 이동").cut, false);
+  assert.equal(P.analyze("* **(a)** 온도를 올리면 평형은").cut, true);
+  const cut = "#### **방법 1: 관찰을 통한 풀이**\n\n3과 7은 서로소이므로 최소공배수는 21입니다.\n\n따라서 x는 다음과 같은 형태입니다.\n\n$$x = 21k + 2 \\quad ";
+  const an = P.analyze(cut);
+  assert.equal(an.cut, true);
+  assert.notEqual(an.finalAnswer, "방법 1: 관찰을 통한 풀이");
+});
+
+test("반대말로 바뀐 답은 결론 문장을 못 찾은 답이어도 보류하지 않고 '반대 내용'", () => {
+  const kr = "(a) 온도를 올리면 왼쪽으로 이동합니다. 정반응이 발열 반응이므로 역반응 쪽이 유리해집니다.\n\n(b) 압력을 올리면 오른쪽으로 이동합니다. 기체 몰수가 적은 쪽이 유리해집니다.";
+  const sw = kr.split("왼쪽").join("\0").split("오른쪽").join("왼쪽").split("\0").join("오른쪽");
+  const s07 = ITEMS.find((it) => it.id === "S07");
+  const c = P.comparePair(P.analyze(kr), P.analyze(sw), s07.answer, null);
+  assert.equal(c.sameAnswer, false);
+  assert.ok(c.direction.length > 0);
+});
