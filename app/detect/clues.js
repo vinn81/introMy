@@ -45,7 +45,7 @@
     ["valid", /\bvalid\b|타당/gi],
     ["false", /\b(false|not true)\b|거짓|참이 아니/gi],
     ["true", /\btrue\b|참(이다|입니다|이며|이고|\b|$)/gi],
-    ["undetermined", /underdetermin|cannot (be )?(uniquely )?(determined|established|concluded|justif)|can't be determined|not (logically )?(established|determined)|insufficient|not enough information|cannot (conclude|establish|justify|be called)|cannot establish|결정할 수 없|알 수 없|정할 수 없|확정(되지 않|할 수 없)|결론(내|을 내)릴 수 없|말할 수 없|도출할 수 없|단정할 수 없/gi],
+    ["undetermined", /underdetermin|cannot (be )?(uniquely )?(determined|established|concluded|justif)|can't be determined|not (logically )?(established|determined)|insufficient|not enough information|cannot (conclude|establish|justify|be called)|cannot establish|(?:결정할|확정할|계산할|단정할|도출할|특정할|정할|알|말할) 수(?:는|가|도)? 없|확정되지 않|결론(내|을 내)릴 수 없/gi],
     ["inconsistent", /inconsistent|contradict|unsatisfiable|cannot (all )?be true|모순|일관되지 않|일관성이 없|동시에 참일 수 없/gi],
     ["consistent", /\bconsistent\b|일관(된다|됩니다|적이다|적입니다|성이 있)/gi],
     ["wrong", /\b(wrong|incorrect|unreliable|unjustified|not supported|not a valid)\b|틀렸|틀린|신뢰할 수 없|근거 없|잘못/gi],

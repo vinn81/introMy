@@ -29,6 +29,14 @@
     return "";
   }
 
+  // claim.match: 기준 정답의 명제를 그대로 말하는 표현("정사각형이 아니다", "A 또는 C"). 최종 답이나 첫 문장에 있으면 맞은 답이다.
+  // 따옴표 속 문장("올바른 결론은 ‘…아니다’입니다")도 답을 밝힌 것이므로 가리지 않는다
+  function claimMatch(an, claim) {
+    if (!claim || !claim.match) return "";
+    var m = new RegExp(claim.match, "i").exec(String(an.finalAnswer || "") + "\n" + String(an.lead || ""));
+    return m ? "기준 정답의 명제 ‘" + claim.right + "’를 최종 답에서 확인(‘" + m[0].trim() + "’)" : "";
+  }
+
   // 답의 최종 답이 P2-Bench 기준 정답과 같은지 본다.
   // 돌려주는 값: status("match" | "mismatch" | "unknown"), strong(숫자·식·특정 개념으로 맞았는지), why
   // 결론 문장을 찾지 못한 답은 기준 정답과 '다르다'고 단정하지 않는다(복사하다 만 답을 틀린 답으로 보지 않게)
@@ -49,6 +57,8 @@
     if (!an || !reference) return { status: "unknown", why: [] };
     var claimed = claimCheck(an, claim);
     if (claimed) return { status: "mismatch", why: [claimed] };
+    var said = claimMatch(an, claim);
+    if (said) return { status: "match", strong: false, why: [said] };
     // 기준 정답 속 "not 99%"처럼 부정된 값은 정답이 아니므로 뺀다
     var refText = String(reference).replace(/\b(not|rather than)\s+[^,;.]*?\d[^,;.]*/gi, " ");
     // 첫 마디에 숫자가 있으면 그것이 정답 값이다("The correct answer is 408; 340+68=408 because …"의 뒤는 해설)
@@ -66,6 +76,9 @@
       if (!admits && claimed) {
         return { status: "mismatch", why: ["기준 정답은 ‘" + refNo.map(function (t) { return TAG_LABELS[t]; }).join("·") + "’인데, 이 답은 그런 말 없이 " + claimed + "을 단정함"] };
       }
+      // 최종 답은 '틀림·오류'만 말해도, 답이 기준 정답과 같은 '결정할 수 없음' 등을 말하고 값을 단정하지 않았으면 맞은 답이다
+      var same = refNo.filter(function (t) { return whole.tags[t]; });
+      if (same.length && !claimed) return { status: "match", strong: false, why: ["기준 정답과 같이 ‘" + same.map(function (t) { return TAG_LABELS[t]; }).join("·") + "’이라고 말하고, 값을 단정하지 않음"] };
     }
     // 기준 정답은 해설 문장이 붙어 있어("…; the valid form is …") 판정어는 첫 마디로만 맞댄다
     var numberConflict = c.sameAnswer === false && c.why.some(function (w) { return /^(최종 답의 숫자가 다름|같은 변수에 다른 값)/.test(w); });
@@ -108,8 +121,21 @@
     return { status: "match", strong: strong, why: c.why };
   }
 
+  // 두 답 비교(compare)가 맞댈 단서를 못 찾아 보류했어도, 두 답이 각각 기준 정답과 맞으면 같은 답이다
+  // (결론이 LaTeX 수식 줄로 끝난 답, "A 또는 C"처럼 숫자·판정어가 없는 결론). 갈렸다는 판정은 바꾸지 않는다
+  function comparePair(a, b, reference, claim) {
+    var c = compare(a, b);
+    if (c.sameAnswer !== null || !reference) return c;
+    var ra = matchReferenceCore(a, reference, claim), rb = matchReferenceCore(b, reference, claim);
+    if (ra.status !== "match" || rb.status !== "match") return c;
+    return { sameAnswer: true, mode: "reference", aSignals: c.aSignals, bSignals: c.bSignals, direction: [], confidence: "medium",
+      why: ["두 답에서 직접 맞댈 단서는 부족했지만, 두 답 모두 기준 정답과 같습니다", "1단계 답: " + (ra.why[0] || "기준 정답과 같음"), "다른 언어 답: " + (rb.why[0] || "기준 정답과 같음")] };
+  }
+
   P2.REPORTING = REPORTING;
+  P2.comparePair = comparePair;
   P2.claimCheck = claimCheck;
+  P2.claimMatch = claimMatch;
   P2.matchReference = matchReference;
   P2.matchReferenceCore = matchReferenceCore;
 })((typeof window !== "undefined" ? window : globalThis).P2Lib = (typeof window !== "undefined" ? window : globalThis).P2Lib || {});

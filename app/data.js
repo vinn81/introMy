@@ -106,7 +106,10 @@ window.P2_ITEMS = [{"id": "M01", "category": "Mathematics", "difficulty": "Mediu
 window.P2_CLAIMS = {
   "E02": { wrong: "(추론과 전제가?|전제와 추론이?)\\s*(모두|둘 다)\\s*(옳|맞|타당|정확)|both the reasoning and the premises? (are|is) (correct|true|sound|valid)|the premise (is|was) (true|correct)|전제(는|가|도)\\s*(참|옳|맞)", right: "추론 형식은 타당하지만 전제 ‘모든 포유류는 알을 낳는다’는 거짓" },
   "E05": { wrong: "아이스크림[^.。\\n]{0,20}(익사를|익사 사고를)\\s*(일으킨|유발|초래|증가시킨)|ice-?cream( sales)?\\s+(cause|causes|lead to|leads to|increase|increases)\\s+drowning", right: "인과 결론은 근거가 없음(더운 날씨 같은 교란 변수)" },
-  "E06": { wrong: "정사각형이다|\\b(it|the shape|this shape) is a square\\b", right: "정사각형이 아님(후건 부정)" },
+  "E06": { wrong: "정사각형이다|\\b(it|the shape|this shape) is a square\\b", right: "정사각형이 아님(후건 부정)",
+    match: "정사각형이 아니|정사각형일 수 없|정사각형이 될 수 없|\\bnot a square\\b|cannot be a square|can't be a square" },
+  "L15": { right: "범인은 A 또는 C(유일하게 정할 수 없음)",
+    match: "A\\s*(또는|나|와|이거나)\\s*C|A일 수도 있고\\s*C|\\bA or C\\b|\\bboth A and C\\b|cannot be uniquely determined|유일하게 (결정|정)할 수 없" },
   "L12": { wrong: "유령(은|이)\\s*존재한다|ghosts? (do |does )?exists?\\b", right: "결론이 따라 나오지 않음(무지에 호소하는 오류)" },
   "M13": { wrong: "불가능한 사건(이다|입니다|임을 의미한다|이라는 뜻)|is an impossible event|\\bis impossible\\b", right: "확률은 0이지만 불가능한 사건은 아님" }
 };

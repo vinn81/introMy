@@ -43,6 +43,7 @@
     lead = P2.lead,
     compare = P2.compare,
     matchReference = P2.matchReference,
+    comparePair = P2.comparePair,
     relevance = P2.relevance;
 
   function analyze(text) {
@@ -67,7 +68,7 @@
       conclusionBy: conclusionBy(clean, tp), lastSentence: lastSentence(clean) };
   }
 
-  var api = { relevance: relevance, matchReference: matchReference, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare };
+  var api = { relevance: relevance, matchReference: matchReference, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare, comparePair: comparePair };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.P2Check = api;
 })(typeof window !== "undefined" ? window : globalThis);

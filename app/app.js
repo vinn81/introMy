@@ -615,7 +615,9 @@
       signals: checkedIds().map(function (id) { return { id: id }; }), finalReliable: untouched ? state.analysis.finalReliable : true };
     var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], text: untouched ? state.analysisB.text : "", signals: state.analysisB.signals,
       finalReliable: untouched ? state.analysisB.finalReliable : true };
-    var c = P.compare(a, b);
+    // 결론 칸을 고치지 않았으면, 단서가 부족해 보류할 때 두 답을 각각 기준 정답과도 맞대 본다
+    var item = currentItem();
+    var c = untouched && item ? P.comparePair(a, b, item.answer, CLAIMS[item.id] || null) : P.compare(a, b);
     var cls, head, body, extra = "";
     var why = (c.why || []).slice();
     var aOff = state.relevance && state.relevance.status !== "related" && !$("relevance-ok").checked;
@@ -694,6 +696,7 @@
     var level = aOff || bOff ? "low" : c.confidence || "low";
     var confWhy = level === "low" ? "같다·다르다를 정하지 않았습니다" :
       c.mode === "topics" || c.mode === "whole" ? "핵심 개념·답 전체 단서로 판단했습니다" :
+      c.mode === "reference" ? "두 답을 직접 맞대지 못해, 각 답이 기준 정답과 같은지로 판단했습니다" :
       level === "medium" ? "언어가 다른 두 답의 방향 낱말 수로 판단했습니다(이런 바뀜은 일부만 잡습니다)" :
       c.direction && c.direction.length ? "같은 자리의 낱말이 반대말로 바뀐 것을 찾았습니다" : "최종 답의 값·식·판정어로 판단했습니다";
     var confHtml = '<p class="conf-line conf-' + level + '"><span class="conf-level">' + CONF_LABEL[level] + "</span> " + escapeHtml(confWhy) + "</p>";

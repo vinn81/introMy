@@ -109,15 +109,21 @@
     if (!a) { a = answerPhrase(lines); source = "phrase"; }
     if (!a) {
       source = "bold";
-      // 숫자가 든 굵은 글씨 중 마지막 것. "Step 1." "2단계" 같은 순서 제목은 뺀다
+      // 숫자가 든 굵은 글씨 중 마지막 것. "Step 1." "2단계" "(3) 이중 맹검" 같은 순서 제목은 뺀다
       var bolds = (text.match(/\*\*([^*\n]{2,160})\*\*/g) || []).map(function (b) { return b.replace(/\*/g, "").trim(); });
-      for (var i = bolds.length - 1; i >= 0 && !a; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i]) && !/^(step|case|part|\d+\s*단계|단계|경우)\b/i.test(bolds[i])) a = bolds[i];
+      for (var i = bolds.length - 1; i >= 0 && !a; i--) if (/\d/.test(bolds[i]) && !/[:：]$/.test(bolds[i]) && !/^(step|case|part|\d+\s*단계|단계|경우)\b/i.test(bolds[i]) && !/^\(\d+\)\s/.test(bolds[i])) a = bolds[i];
     }
     if (!a) { a = concluding(lines); source = "concluding"; }
     if (!a) {
       // 마지막 줄로 대신하되, 맺음 인사 줄은 건너뛴다
       var rest = lines.filter(function (l) { return !CLOSING.test(l); });
       a = rest.length ? cleanLine(rest[rest.length - 1]) : (lines.length ? cleanLine(lines[lines.length - 1]) : "");
+      // 긴 문단이면 앞이 아니라 끝 문장들을 남긴다(결론은 문단 끝에 온다: "… The birth year cannot be determined.")
+      if (a.length > 160) {
+        var sents = a.split(/(?<=[.!?。])\s+/), tail = "";
+        for (var k = sents.length - 1; k >= 0 && (tail ? sents[k].length + 1 + tail.length : 0) <= 160; k--) tail = tail ? sents[k] + " " + tail : sents[k];
+        a = tail;
+      }
       source = "last-line";
     }
     return { text: a.replace(/\s+/g, " ").trim().slice(0, 160), source: source };

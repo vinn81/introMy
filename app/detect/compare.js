@@ -210,7 +210,12 @@
     var copied = a.text && b.text && sameLanguage(a.text, b.text) && tokenOverlap(a.text, b.text) >= 0.8;
     var direction = !a.text || !b.text ? [] : copied ? swappedWords(a.text, b.text) : directionConflicts(a.text, b.text).map(function (d) { return "방향이 반대 — " + d; });
     direction.forEach(function (d) { conflicts.push(d); });
-    if (fa.nums.length && fb.nums.length && !similarNums(finA, finB) && !shared) {
+    // 값을 여러 개 묻는 문항에서 두 답이 서로 다른 값 하나씩을 최종 답으로 내세운 경우(남는 H₂ 1 mol ↔ 생긴 H₂O 4 mol):
+    // 각 최종 답의 숫자가 모두 상대 답 본문에 있으면 갈린 것이 아니라 고른 값이 다른 것이다
+    var bodyA = a.text ? keyOf(a.text) : null, bodyB = b.text ? keyOf(b.text) : null;
+    var inBody = function (nums, body) { var all = body.nums.concat(body.alt); return uniq(nums).every(function (n) { return hasNum(all, n); }); };
+    var picked = bodyA && bodyB && inBody(fa.nums, bodyB) && inBody(fb.nums, bodyA);
+    if (fa.nums.length && fb.nums.length && !similarNums(finA, finB) && !shared && !picked) {
       conflicts.push("최종 답의 숫자가 다름: " + uniq(fa.nums).join(", ") + " ↔ " + uniq(fb.nums).join(", "));
     }
     var same = conflicts.length ? false : (match ? true : null);

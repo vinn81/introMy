@@ -185,3 +185,51 @@ test("판정의 근거 표시: 값·식으로 갈리면 강함, 개념·방향 �
   assert.equal(P.matchReference(P.analyze("따라서 답은 38입니다. 조건을 확인했습니다."), m01.answer, null).confidence, "high");
   assert.equal(P.matchReference(P.analyze("k = 0이면 x = 2인데,\n\n2를 5로 나눈 나머지는"), m01.answer, null).confidence, "low");
 });
+
+// 실제 ChatGPT·Gemini 답 40개(tests/fixtures/real-40.json, 저장소 밖)에서 나온 오판을 흉내 낸 짧은 견본
+test("실제 답에서 나온 오판: 값을 여러 개 묻는 문항에서 서로 다른 값을 고른 두 답은 '다른 답'이 아니다", () => {
+  const en = "2 mol O₂ consumes 4 mol H₂ and produces 4 mol H₂O.\n\n- Limiting reactant: O₂\n- H₂O produced: 4 mol\n- Excess H₂ remaining: \\(5-4=\\boxed{1\\text{ mol}}\\)";
+  const kr = "제한 반응물은 O₂입니다.\n\nH₂O는 **4 mol 생성**되고, H₂는 5-4=1 mol 남습니다.";
+  assert.notEqual(P.compare(P.analyze(en), P.analyze(kr)).sameAnswer, false);
+  // 상대 답에 없는 값이면 여전히 다른 답
+  assert.equal(P.compare(P.analyze("따라서 답은 4입니다."), P.analyze("Therefore the answer is 5.")).sameAnswer, false);
+});
+
+test("실제 답에서 나온 오판: '(3) 이중 맹검' 같은 번호 소제목은 최종 답이 아니다", () => {
+  const t = "실험 설계입니다.\n\n#### **(1) 무작위 배정**\n\n난수로 배정합니다.\n\n#### **(3) 이중 맹검 (Double-Blind)**\n\n연구자와 참가자 모두 모르게 합니다.";
+  assert.notEqual(P.analyze(t).finalAnswer, "(3) 이중 맹검 (Double-Blind)");
+});
+
+test("실제 답에서 나온 오판: '계산할 수 없다'·'확정할 수는 없다'도 '결정할 수 없음'이다", () => {
+  const e15 = ITEMS.find((it) => it.id === "E15");
+  const an = P.analyze("**근거가 부족한 결론입니다.** 2010년 졸업과 2015년 첫 논문만으로는 출생연도를 계산할 수 없습니다. 1988년생일 가능성은 있지만 확정할 수는 없습니다.");
+  assert.equal(P.matchReference(an, e15.answer, null).status, "match");
+  // 결론이 '오류'만 말해도 답이 '단정할 수 없다'고 하고 값을 단정하지 않으면 맞은 답
+  const an2 = P.analyze("전기의 정보만으로는 출생 연도를 단정할 수 없습니다.\n\n### 요약\n\nAI의 결론은 성급한 일반화 오류입니다.");
+  assert.equal(P.matchReference(an2, e15.answer, null).status, "match");
+  // 값을 단정한 답은 여전히 다름
+  assert.equal(P.matchReference(P.analyze("따라서 연구자는 1988년생입니다."), e15.answer, null).status, "mismatch");
+});
+
+test("긴 한 문단 답은 문단 끝 문장을 최종 답으로 본다", () => {
+  const t = "The conclusion is not justified.\n\nBeing born in 1988 would imply graduating at about 22, but assuming a typical graduation age does not establish this researcher's actual age, and many paths are possible here. The birth year cannot be determined from the information provided.";
+  assert.match(P.analyze(t).finalAnswer, /cannot be determined/);
+});
+
+test("명제 규칙(match): '정사각형이 아니다'·'A 또는 C'처럼 숫자 없는 결론도 기준 정답과 맞대고, 두 답 비교가 보류되면 기준 정답으로 같은 답을 확인", () => {
+  const e06 = ITEMS.find((it) => it.id === "E06"), l15 = ITEMS.find((it) => it.id === "L15");
+  const C = window.P2_CLAIMS;
+  assert.equal(P.matchReference(P.analyze("오류는 결론이 전제에서 따라오지 않는다는 점입니다.\n\n올바른 결론은 **“따라서 이 도형은 정사각형이 아니다”**입니다."), e06.answer, C.E06).status, "match");
+  assert.equal(P.matchReference(P.analyze("B는 범인이 아닙니다.\n\n따라서 범인은 A 또는 C입니다."), l15.answer, C.L15).status, "match");
+  // 틀린 명제를 단정하면 여전히 다름
+  assert.equal(P.matchReference(P.analyze("따라서 이 도형은 정사각형이다."), e06.answer, C.E06).status, "mismatch");
+  const en = "The conclusion is incorrect: a shape that is not a rectangle cannot be a square.\n\nThe valid reasoning is modus tollens:\n\\[\nS\\Rightarrow R,\\quad \\neg R\\quad \\therefore\\quad \\neg S.\n\\]";
+  const kr = "오류는 결론이 전제에서 따라오지 않는다는 점입니다.\n\n올바른 결론은 **“따라서 이 도형은 정사각형이 아니다”**입니다.";
+  assert.equal(P.compare(P.analyze(en), P.analyze(kr)).sameAnswer, null);
+  const c = P.comparePair(P.analyze(en), P.analyze(kr), e06.answer, C.E06);
+  assert.equal(c.sameAnswer, true);
+  assert.equal(c.mode, "reference");
+  assert.equal(c.confidence, "medium");
+  // 한쪽이 틀리면 기준 정답으로 같다고 하지 않는다
+  assert.notEqual(P.comparePair(P.analyze(en), P.analyze("따라서 이 도형은 정사각형이다."), e06.answer, C.E06).sameAnswer, true);
+});
