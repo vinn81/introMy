@@ -62,7 +62,11 @@ test("앱 기준(기준 정답 일치로 관련성을 올리는 것 포함)으�
       const r = P.relevance([o.kr, o.en], a.text, DECOYS);
       const ref = P.matchReference(an, o.answer);
       // app.js run()과 같은 규칙: 'other'가 아니면 기준 정답과의 강한 일치로 관련 있음이 된다
-      if (r.status === "related" || (r.reason !== "other" && ref.status === "match" && ref.strong)) passed++;
+      // 고른 문항의 필수 근거를 모두 짚으면 관련 있음(더 비슷한 다른 문항의 근거도 모두 짚었으면 제외) — app.js rubricVouches
+      const full = (rb) => rb && rb.hit === rb.total && !rb.wrong.length;
+      const other = r.other ? ITEMS.find((i) => i.kr === r.other[0]) : null;
+      const vouch = full(P.checkRubric(a.text, window.P2_RUBRIC[o.id])) && !(other && full(P.checkRubric(a.text, window.P2_RUBRIC[other.id])));
+      if (r.status === "related" || (r.reason !== "other" && ref.status === "match" && ref.strong) || vouch) passed++;
     });
   });
   assert.ok(passed / (240 * 59) <= 0.005, "passed " + passed);
@@ -112,9 +116,9 @@ test("반대말 바꿈: 실제 짝은 하나도 '반대'로 걸지 않고, 같�
   assert.ok(cross >= 9, "언어가 다른 답 " + cross + "/" + crossN);
 });
 
-test("근거 기준(시범 10문항): 논문 답 40개 모두 필수 근거를 짚고, 틀린 근거는 흔들린 2개(처음 단정한 답)에서만", { skip }, () => {
+test("근거 기준(60문항): 논문 답 240개 모두 필수 근거를 짚고, 틀린 근거는 흔들린 2개(처음 단정한 답)에서만", { skip }, () => {
   const rows = ANSWERS.filter((a) => window.P2_RUBRIC[a.qid]);
-  assert.equal(rows.length, 40);
+  assert.equal(rows.length, 240);
   const flagged = [];
   rows.forEach((a) => {
     const r = P.checkRubric(a.text, window.P2_RUBRIC[a.qid]);
@@ -122,4 +126,15 @@ test("근거 기준(시범 10문항): 논문 답 40개 모두 필수 근거를 �
     if (r.wrong.length) flagged.push(a.run);
   });
   assert.deepEqual(flagged.sort(), ["P2M-02-052", "P2M-02-100"]);
+});
+
+test("근거 기준: 질문 글만 넣으면 어느 문항도 통과하지 않고, 다른 문항 답에 대면 '모두 짚음'은 0.5% 이하", { skip }, () => {
+  const R = window.P2_RUBRIC;
+  ITEMS.forEach((it) => [it.kr, it.en].forEach((q) => {
+    const r = P.checkRubric(q, R[it.id]);
+    assert.ok(r.hit < r.total && r.wrong.length === 0, it.id);
+  }));
+  let full = 0, n = 0;
+  ANSWERS.forEach((a) => Object.keys(R).forEach((id) => { if (id === a.qid) return; n++; const r = P.checkRubric(a.text, R[id]); if (r.hit === r.total) full++; }));
+  assert.ok(full / n <= 0.005, full + "/" + n);
 });

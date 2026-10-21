@@ -73,6 +73,9 @@
       var admits = ["undetermined", "empty", "inconsistent", "wrong"].some(function (t) { return whole.tags[t]; });
       var claim = keyOf(an.finalAnswer || "");
       var claimed = claim.maths.length ? "식 " + claim.maths[0] : claim.nums.length ? "값 " + claim.nums.join(", ") : claim.tags.consistent ? "‘일관됨’" : "";
+      // 최종 답 자체가 기준 정답과 같은 '결정할 수 없음' 등을 말하면, 함께 든 값("17.5는 직각일 때만")은 조건부 예시다
+      var finalSame = refNo.filter(function (t) { return claim.tags[t]; });
+      if (finalSame.length) return { status: "match", strong: false, why: ["최종 답이 기준 정답과 같이 ‘" + finalSame.map(function (t) { return TAG_LABELS[t]; }).join("·") + "’이라고 말함"] };
       if (!admits && claimed) {
         return { status: "mismatch", why: ["기준 정답은 ‘" + refNo.map(function (t) { return TAG_LABELS[t]; }).join("·") + "’인데, 이 답은 그런 말 없이 " + claimed + "을 단정함"] };
       }

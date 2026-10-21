@@ -10,7 +10,11 @@
 
   // 수식·굵은 글씨·아래 첨자를 걷어내 표현을 찾기 쉽게 한다("$\text{H}_2$" → "H2", "O₂" → "O2")
   function rubricText(text) {
-    return plainMath(String(text || "").replace(/\\equiv(?![a-z])/gi, "≡").replace(/\\pmod\s*\{?\s*(\d+)\s*\}?/g, " (mod $1)").replace(/\\%/g, "%"))
+    // 분자·분모에 중괄호가 한 겹 더 있는 분수(\frac{5\cdot 3^{n-1}-1}{2})도 a/b 꼴로 편다
+    var t = String(text || "");
+    t = t.replace(/\\[dt]?frac\s*(\d)\s*(\d)/g, "$1/$2");  // \tfrac12 → 1/2
+    for (var k = 0; k < 2; k++) t = t.replace(/\\[dt]?frac\s*\{((?:[^{}]|\{[^{}]*\})*)\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g, "($1)/($2)");
+    return plainMath(t.replace(/\\equiv(?![a-z])/gi, "≡").replace(/\\pmod\s*\{?\s*(\d+)\s*\}?/g, " (mod $1)").replace(/\\%/g, "%"))
       .replace(/\*+|__|`/g, "").replace(/[₂]|_\{?2\}?/g, "2").replace(/[₃]|_\{?3\}?/g, "3")
       .replace(/\\[a-z]+\s*|\\[()]/gi, " ").replace(/[ \t]+/g, " ");
   }
@@ -29,6 +33,9 @@
   // 문제 속 주장을 다시 적은 줄("결론: 따라서 정사각형이다. ❌ 오류", "Let P = The shape is a square")은 답의 주장이 아니다
   var RESTATED = /(^|[\s(])(let |전제|premise|결론\s*[:：]|conclusion\s*[:：]|주장|claim|ai(의|'s| )|잘못된|flawed|wrong|❌|✗)/i;
 
+  // 주장을 단정하지 않고 전하거나 따지는 문장(“…를 입증하기에 불충분하다”, “…로 환원할 수도 있다”)
+  var HEDGED = /(insufficient|to establish|establish that|whether|하는지|인지(도)? |claims? that|concludes? that|reduc(e|ible|ed) to|equivalent to|불충분|입증하기|라는 (주장|결론)|라고 (주장|결론|단정)|환원|동치)/i;
+
   // 틀린 근거는 부정·오류 표시 없이 단정한 문장에서만 센다("90%는 민감도일 뿐 답이 아니다"는 틀린 근거가 아니다)
   function findClaim(text, p) {
     var lines = maskQuotes(text).split(/\n+/);
@@ -37,7 +44,7 @@
       var parts = sentences(lines[j]);
       for (var i = 0; i < parts.length; i++) {
         var sent = parts[i].trim(), m = new RegExp(p, "i").exec(sent);
-        if (m && !REPORTING.test(sent)) return m[0].trim();
+        if (m && !REPORTING.test(sent) && !HEDGED.test(sent)) return m[0].trim();
       }
     }
     return null;

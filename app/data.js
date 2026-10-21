@@ -244,11 +244,713 @@ window.P2_RUBRIC = {
   "E15": {
     must: [
       { label: "AI의 결론에 근거가 없음", any: ["근거(가)? ?(부족|없)", "unsupported|not justified|unjustified|unsubstantiated", "입증(되지|할 수) ?(않|없)", "비약|성급|추측|not (a )?proven", "invalid"] },
-      { label: "졸업 연도만으로는 출생연도를 정할 수 없음", any: ["(결정|확정|계산|단정|특정|알)(할)? 수(는)? 없", "cannot be determined|can't be determined", "one of many possibilities"] },
-      { label: "AI가 말하지 않은 가정(22세 졸업 등)을 넣음", any: ["가정|assum", "나이를 모르|age at graduation|졸업 (당시 )?나이", "22세|age 22|about 22|typical|전형적"] }
+      { label: "졸업 연도만으로는 출생연도를 정할 수 없음", any: [["(결정|확정|계산|단정|특정|알)(할)? 수(는)? 없|cannot be determined|can't be determined|not determinable", "출생|태어|born|birth|나이|age|연도|year"], "one of many possibilities"] },
+      { label: "AI가 말하지 않은 가정(22세 졸업 등)을 넣음", any: [["가정|assum", "나이|age|졸업|graduat"], "나이를 모르|age at graduation|졸업 (당시 )?나이", "22세|age 22|about 22|typical|전형적"] }
     ],
     wrong: [
       { label: "1988년생(또는 다른 연도)이 맞다고 단정", any: ["1988년생(이다|입니다|이 맞)", "(was|is) born in 19\\d\\d\\b"] }
     ]
   }
 };
+
+// 나머지 50문항의 근거 기준. 위와 같은 방식(Master Dataset 바탕, AI 초안·사람 검토). 논문 답은 보지 않고 쓴 뒤 논문 답 200개로 처음 잰 값을 RULES.md에 남김
+Object.assign(window.P2_RUBRIC, {
+  "M02": {
+    must: [
+      { label: "전체 배열 5! = 120 (또는 사이 넣기: 나머지 3명 배열 3! = 6)",
+        any: ["(?<!\\d)120(?!\\d)", "3! ?= ?6(?!\\d)"] },
+      { label: "A·B가 이웃하는 경우 = 묶음 4! × 내부 2 = 48 (또는 빈자리 5곳 중 2곳 순서 배치 5P2 = 20)",
+        any: ["(?<![\\d.])48(?![\\d.])", "4! ?(×|·|\\*|x) ?2", "2 ?(×|·|\\*|x) ?4!", "24 ?(×|·|\\*|x) ?2(?!\\d)", "5 ?p ?2|p\\(5, ?2\\)|5 ?(×|·) ?4 ?= ?20", "6 ?(×|·|\\*) ?12(?!\\d)"] },
+      { label: "여사건으로 120 − 48 = 72 (또는 6 × 12 = 72)",
+        any: ["120 ?[-−] ?48", "6 ?(×|·|\\*) ?12 ?= ?72", ["(?<![\\d.])72(?![\\d.])","여사건|complement|빼|subtract|[-−]"]] }
+    ],
+    wrong: [
+      { label: "이웃하는 경우를 4! = 24로만 세거나 중복 계산해 96·48 등을 답으로 단정",
+        any: ["(정답|답|결과)(은|는)? ?(96|48|24)(가지|개|이|입)", "answer is (96|48|24)(?!\\d)", "120 ?[-−] ?24 ?= ?96", "^(따라서 |그러므로 |therefore,? |so,? )?(96|48)(가지|개| ways| arrangements)?(이다|입니다)?[.!]?$"] }
+    ]
+  },
+  "M03": {
+    must: [
+      { label: "상수항을 처리하는 변형(a(n) + 1/2로 등비수열화, 고정점·특수해 −1/2, 또는 펼쳐서 등비합)",
+        any: ["[+−-] ?1/2", "[+−-] ?0\\.5(?!\\d)", "고정점|fixed point|특성 ?(방정식|근)|특수해|particular solution|평형|equilibrium", "등비(수열)?의? ?합|geometric (series|sum)|1 ?\\+ ?3 ?\\+ ?3²", "b ?\\(?n ?\\+ ?1\\)? ?= ?3 ?b"] },
+      { label: "초기값으로 상수 결정·검산(b(1) = 5/2, 또는 n = 1 대입, a(2) = 7 확인)",
+        any: ["(?<![\\d.])5 ?/ ?2(?![\\d])", "(?<![\\d.])2\\.5(?!\\d)", "\\(5 ?[-−] ?1\\) ?/ ?2", "= ?7(?![\\d.])", "= ?22(?![\\d.])", "n ?= ?1 ?(일 때|을 대입|대입|이면|이므로)", "(when|for|at|plug(ging)? in|substitut\\w*|set(ting)?) n ?= ?1"] },
+      { label: "일반항 a(n) = (5·3^(n−1) − 1)/2",
+        any: ["5\\)? ?(·|×|\\*|⋅)? ?3 ?\\^ ?\\(?n ?[-−] ?1", "5(/2)?\\)? ?(·|×|\\*|⋅)? ?3ⁿ⁻¹"] }
+    ],
+    wrong: [
+      { label: "패턴 추측·상수항 오류로 다른 일반항(2·3^(n−1), 3^n − 1, (5·3^(n−1) + 1)/2 등)을 단정",
+        any: ["a ?\\(?n\\)? ?= ?(2 ?(·|×|\\*)? ?3 ?\\^ ?\\(?n ?[-−] ?1\\)?|3 ?\\^ ?n ?[-−] ?1)[.]?$", "5 ?(·|×|\\*|⋅)? ?3 ?\\^ ?\\(?n ?[-−] ?1\\)? ?\\+ ?1\\)? ?/ ?2"] }
+    ]
+  },
+  "M04": {
+    must: [
+      { label: "두 식을 빼서 (t − 1)x = 1 (또는 행렬식 1 − t)",
+        any: ["\\(t ?[-−] ?1\\) ?x ?= ?1", "x ?\\(t ?[-−] ?1\\) ?= ?1", "tx ?[-−] ?x ?= ?1", ["행렬식|determinant|det","1 ?[-−] ?t|t ?[-−] ?1"]] },
+      { label: "t ≠ 1일 때 유일해 x = 1/(t − 1)",
+        any: [["t ?≠ ?1|t ?!= ?1|t가 1이 아닐|t is not (equal to )?1|t not equal","x ?= ?1 ?/ ?\\(?t ?[-−] ?1|x ?= ?[-−] ?1 ?/ ?\\(?1 ?[-−] ?t"]] },
+      { label: "y = 2 − 1/(t − 1) = (2t − 3)/(t − 1)",
+        any: ["y ?= ?2 ?[-−] ?1 ?/ ?\\(?t ?[-−] ?1", "y ?= ?2 ?\\+ ?1 ?/ ?\\(?1 ?[-−] ?t", "2t ?[-−] ?3"] },
+      { label: "t = 1이면 x + y = 2와 x + y = 3이 모순이라 해가 없음",
+        any: [["t ?= ?1","해가 (없|존재하지 않)|해는 (없|존재하지 않)|해 없음|무해|불능|no solution|inconsistent|contradict|모순|0 ?= ?1|2 ?= ?3|2 ?≠ ?3|평행|parallel"]] }
+    ],
+    wrong: [
+      { label: "t = 1에서 해가 무수히 많다고 하거나 모든 t에서 유일해라고 단정",
+        any: ["t ?= ?1[^.\\n]{0,70}(무수히 많|부정|infinitely many|infinite(ly many)? solutions)", "(모든 (실수 )?t|for (all|every) (real )?t)[^.\\n]{0,30}(유일해|unique solution)", "(유일해|unique solution)[^.\\n]{0,30}(모든 (실수 )?t|for (all|every) (real )?t)"] }
+    ]
+  },
+  "M06": {
+    must: [
+      { label: "부분분수 분해 1/[k(k+1)] = 1/k − 1/(k+1)",
+        any: ["1 ?/ ?k ?[-−] ?1 ?/ ?\\(?k ?\\+ ?1", ["부분 ?분수|partial fraction","1 ?/ ?k"]] },
+      { label: "중간 항이 상쇄되어 1 − 1/(n+1)만 남음",
+        any: ["1 ?[-−] ?1 ?/ ?\\(?n ?\\+ ?1", "1/1 ?[-−] ?1 ?/ ?\\(?n ?\\+ ?1"] },
+      { label: "합 = n/(n+1)",
+        any: ["(?<![\\w(])n ?/ ?\\(?n ?\\+ ?1"] }
+    ],
+    wrong: [
+      { label: "끝항 오류로 1 − 1/n, (n−1)/n, (n+1)/(n+2) 등을 답으로 단정",
+        any: ["= ?(\\(n ?[-−] ?1\\) ?/ ?n|1 ?[-−] ?1 ?/ ?n|\\(n ?\\+ ?1\\) ?/ ?\\(n ?\\+ ?2\\))(?! ?[-−+(\\w\\d])", "(정답|답|합|sum|answer)(은|는|is)? ?:? ?(\\(n ?[-−] ?1\\) ?/ ?n|1 ?[-−] ?1 ?/ ?n|\\(n ?\\+ ?1\\) ?/ ?\\(n ?\\+ ?2\\))(?! ?[-−+(\\w\\d])"] }
+    ]
+  },
+  "M07": {
+    must: [
+      { label: "명제는 거짓",
+        any: ["(결론|판정|verdict|answer|답) ?:? ?(거짓|false)", "(명제는|이 명제는|statement is|답 ?:|answer ?:|판정 ?:) ?(거짓|false)", "거짓(이다|입니다|임|이며|이고|\\.)", "is false", "(?<!if )\\bfalse(?=[.:!]|\\s*\\n)", "참이 아니|not true|성립하지 않|does not hold|doesn't hold"] },
+      { label: "반례 a(n) = (−1)^n (1, −1, 1, … 로 진동)",
+        any: ["\\([-−]1\\) ?\\^ ?\\(?n", "\\([-−]1\\)ⁿ", "1, ?[-−] ?1, ?1", "[-−]1, ?1, ?[-−]1", "sin ?\\(?n|cos ?\\(?n"] },
+      { label: "유계(−1과 1 사이)이지만 진동하여 극한이 없음",
+        any: [["유계|bounded|≤ ?1|between [-−]1 and 1|[-−]1과 1 사이|[-−]1 ?(와|과|and) ?1","진동|oscillat|alternat|번갈|수렴하지 않|발산|diverge|does not converge|doesn't converge|never (settles|converges)|no limit|has no limit|극한(이|은|값이)? ?(존재하지 않|없)|부분수열|subsequence"]] }
+    ],
+    wrong: [
+      { label: "명제가 참이라고 하거나 (−1)^n이 수렴한다고 단정",
+        any: ["(이 명제는|명제는|the statement is|statement is) ?(참|true)", "^(답 ?: ?)?(참|true)(이다|입니다)?[.!]?$", "\\([-−]1\\) ?\\^ ?\\(?n\\)?[^.\\n]{0,20}(converges|수렴한다|수렴합니다)"] }
+    ]
+  },
+  "M08": {
+    must: [
+      { label: "대우(또는 귀류법)로 증명: n이 홀수이면 n²도 홀수",
+        any: ["대우|contrapositi|귀류|contradiction|모순"] },
+      { label: "홀수를 n = 2k + 1로 표현",
+        any: ["2 ?[a-z] ?\\+ ?1"] },
+      { label: "n² = 4k² + 4k + 1 = 2(2k² + 2k) + 1이라 홀수",
+        any: ["4 ?[a-z]² ?\\+ ?4 ?[a-z] ?\\+ ?1", "2 ?\\( ?2 ?[a-z]² ?\\+ ?2 ?[a-z] ?\\) ?\\+ ?1", "2 ?[a-z]² ?\\+ ?2 ?[a-z]"] }
+    ],
+    wrong: [
+      { label: "결론(n이 짝수)을 가정해 증명하는 순환 논증",
+        any: ["(assume|suppose|assuming|supposing) (that )?n is even", "n이 짝수(라고|라 ?하고|임을) ?가정"] }
+    ]
+  },
+  "M09": {
+    must: [
+      { label: "산술·기하 평균 부등식(또는 미분·완전제곱)으로 하한을 구함",
+        any: ["산술[- ]?기하|AM[- ]?GM|arithmetic[- ]geometric|코시|cauchy", "2 ?√ ?\\(?16|2 ?√ ?\\(?x", "f ?'|f′|미분|도함수|derivative|1 ?[-−] ?16 ?/ ?x²", "√x ?[-−] ?4 ?/ ?√x|\\(x ?[-−] ?4\\)² ?(≥|/)|x² ?[-−] ?8x ?\\+ ?16"] },
+      { label: "등호 조건 x = 16/x (x² = 16)이고 x > 0이라 x = 4",
+        any: [["x ?= ?16 ?/ ?x|x² ?= ?16|등호|equality|equal when|같을 때|x ?= ?[±]|±4|[-−] ?4","x ?= ?4(?![\\d.])"]] },
+      { label: "최솟값 8",
+        any: [["최솟값|최소|minimum|min","(?<![\\d.])8(?![\\d.])"]] }
+    ],
+    wrong: [
+      { label: "x > 0을 무시해 x = −4나 최솟값 −8을 답으로 단정",
+        any: ["(최솟값|minimum( value)?) ?(은|는|이|is|of|:|=)? ?[-−] ?8(?!\\d)", "x ?= ?[-−]4 ?(에서|일 때|at which|gives (the )?min)[^.\\n]{0,15}(최소|minimum)"] }
+    ]
+  },
+  "M10": {
+    must: [
+      { label: "포함배제: |A∪B| = |A| + |B| − |A∩B| (겹친 부분을 두 번 셈)",
+        any: ["포함[- ]?배제|inclusion[- ]exclusion", "\\|A ?[∪∩]? ?B\\| ?= ?\\|A\\| ?\\+ ?\\|B\\| ?[-−] ?\\|A ?[∪∩]? ?B\\|", "n\\(A ?[∪∩]? ?B\\) ?= ?n\\(A\\) ?\\+ ?n\\(B\\)", "두 번 (세|센|계산)|중복(해서)? ?(계산|센|세)|counted twice|double[- ]count"] },
+      { label: "28 + 35 − 50 (= 63 − 50)",
+        any: ["28 ?\\+ ?35 ?[-−] ?50", "63 ?[-−] ?50"] },
+      { label: "|A∩B| = 13",
+        any: ["(?<![\\d.])13(?![\\d.])"] }
+    ],
+    wrong: [
+      { label: "겹친 부분을 보정하지 않고 63 등을 답으로 단정",
+        any: ["\\|A ?∩? ?B\\| ?= ?(63|113|7)(?! ?[-−+\\d])", "(정답|답)(은|는)? ?(63|113|7)(?!\\d)", "answer is (63|113|7)(?!\\d)"] }
+    ]
+  },
+  "M11": {
+    must: [
+      { label: "f(n) = n²",
+        any: ["f ?\\(n\\) ?= ?n²"] },
+      { label: "기저 단계 f(0) = 0 = 0²",
+        any: ["0²", "기저|기초 ?(단계|사례)|base case|basis", "n ?= ?0 ?(일 때|이면|에서|인 경우|:)", "(for|when|at) n ?= ?0"] },
+      { label: "귀납 단계 n² + 2n + 1 = (n+1)²",
+        any: ["\\( ?[a-z] ?\\+ ?1 ?\\)²"] }
+    ],
+    wrong: [
+      { label: "한 칸 밀린 식((n+1)², n² + 1, n(n+1) 등)을 일반항으로 단정",
+        any: ["f ?\\(n\\) ?= ?(\\(n ?[-+−] ?1\\)²|n² ?[+−-] ?\\d(?![\\w(])|n ?\\(n ?[+−-] ?1\\))(?! ?[+=−-])"] }
+    ]
+  },
+  "M12": {
+    must: [
+      { label: "AB = [[2,1],[1,1]]",
+        any: ["(?<![\\d.])2[\\s,&;\\[\\]()|]{1,8}1[\\s,&;\\[\\]()|]{1,8}1[\\s,&;\\[\\]()|]{1,8}1(?![\\d.])"] },
+      { label: "BA = [[1,1],[1,2]]",
+        any: ["(?<![\\d.])1[\\s,&;\\[\\]()|]{1,8}1[\\s,&;\\[\\]()|]{1,8}1[\\s,&;\\[\\]()|]{1,8}2(?![\\d.])"] },
+      { label: "AB ≠ BA이므로 행렬 곱셈은 일반적으로 교환법칙이 성립하지 않음",
+        any: [["AB ?≠ ?BA|AB ?!= ?BA|다르|differ|not equal|not the same|같지 않","not (generally |always |in general )?commutative|non-?commutative|비가환|교환법칙(이|을|은)?[^.\\n]{0,20}(성립하지 않|만족하지 않|성립 ?안|만족 ?안|성립하는 것은 아니)|does not (generally |always )?commute|do not (generally |always )?commute|not commute|교환 ?가능하지 않"]] }
+    ],
+    wrong: [
+      { label: "행렬 곱셈이 교환법칙을 만족한다고 하거나 AB와 BA를 뒤바꿔 계산",
+        any: ["(행렬 곱셈은|행렬의 곱셈은|matrix multiplication is) (일반적으로 |generally |always )?(교환법칙을 만족한다|교환법칙이 성립한다|commutative)", "^(따라서 |그러므로 |therefore,? |so,? )?AB ?= ?BA[.!]?$", "AB ?= ?[\\s\\[(]{0,4}1[\\s,&]{1,4}1[\\s,&;\\[\\]()]{1,8}1[\\s,&]{1,4}2(?![\\d.])"] }
+    ]
+  },
+  "M14": {
+    must: [
+      { label: "곱이 12이고 차가 1인 양의 정수 쌍은 3과 4",
+        any: ["(?<![\\d.])3 ?(×|\\*|·|x) ?4(?!\\d|\\.\\d)", "(?<![\\d.])4 ?(×|\\*|·|x) ?3(?!\\d|\\.\\d)", "(?<![\\d.])3 ?(와|과|and|,|및|&) ?4(?!\\d|\\.\\d)", "(?<![\\d.])4 ?(와|과|and|,|및|&) ?3(?!\\d|\\.\\d)", "\\(x ?[-−] ?3\\) ?\\(x ?[-−] ?4\\)", "\\(x ?[-−] ?4\\) ?\\(x ?[-−] ?3\\)", "(roots?|근)[^.\\n]{0,20}(?<![\\d.])3(?!\\d|\\.\\d)[^.\\n]{0,10}(?<![\\d.])4(?!\\d|\\.\\d)"] },
+      { label: "비에타 공식: 두 근의 합 = s (3 + 4)",
+        any: ["(?<![\\d.])3 ?\\+ ?4(?!\\d|\\.\\d)", "(?<![\\d.])4 ?\\+ ?3(?!\\d|\\.\\d)", ["근의 합|두 근의 합|합이 s|합은 s|sum of (the )?roots|sum (is|equals|=) s|vieta|비에타|근과 계수","(?<![\\d.])7(?!\\d|\\.\\d)"]] },
+      { label: "결론 s = 7",
+        any: ["(3 ?\\+ ?4|4 ?\\+ ?3) ?= ?7(?!\\d|\\.\\d)", "s ?=[^.\\n=]{0,15}= ?7(?!\\d|\\.\\d)", "s ?= ?7(?!\\d|\\.\\d)", "s(의 값)?(은|는) ?7", "(answer|정답|답)(은|는|:| is) ?(s ?= ?)?7(?!\\d|\\.\\d)", "s (is|equals) 7(?!\\d|\\.\\d)"] }
+    ],
+    wrong: [
+      { label: "부호 오류나 다른 인수쌍으로 s = −7, 8, 13이라고 단정",
+        any: ["^(?![^\\n]*(if |만약|라면|would|could|였다면|이었다면|가정))[^\\n]*s ?= ?[-−] ?7(?!\\d|\\.\\d)", "^(?![^\\n]*(if |만약|라면|would|could|였다면|이었다면|가정))[^\\n]*s ?= ?(8|13)(?!\\d|\\.\\d)", "^(?![^\\n]*(if |만약|라면|would|could|였다면|이었다면|가정))[^\\n]*s(는|은) ?([-−] ?7|8|13)(이다|입니다|이에요)", "(answer|정답|답)(은|는|:| is) ?(s ?= ?)?([-−] ?7|8|13)(?!\\d|\\.\\d)"] }
+    ]
+  },
+  "M15": {
+    must: [
+      { label: "중심은 두 점의 수직이등분선 x = 1 위(중심 (1, c))",
+        any: ["수직 ?이등분선", "perpendicular bisector", "x ?= ?1(?!\\d|\\.\\d)", "\\(1, ?[a-z]\\)", "중심[^.\\n]{0,20}\\(1,"] },
+      { label: "반지름 = √(1 + c²)로 c에 따라 달라짐",
+        any: ["1 ?\\+ ?[a-z] ?(²|\\^ ?2)", "[a-z] ?(²|\\^ ?2) ?\\+ ?1(?!\\d|\\.\\d)", "반지름[^.\\n]{0,40}(달라|변하|바뀌|커지|증가)", "radi(us|i)[^.\\n]{0,40}(changes|varies|vary|depends|grows|increases|different)", "different (radii|radius|circles)", "서로 다른 (반지름|원)", "다른 반지름"] },
+      { label: "반지름이 무수히 많아 유일하게 결정할 수 없음",
+        any: ["무수히|무한히|무한 ?개|infinitely many|infinite (number|family|set)|infinitely", "유일하게 (결정|정)(할 수 없|되지 않|되지 못|할 수는 없)", "not (be )?uniquely|cannot be uniquely|can't be uniquely|isn't uniquely|not unique"] }
+    ],
+    wrong: [
+      { label: "반지름을 하나로 단정(직각·중심을 임의로 가정)",
+        any: ["^(따라서 |그러므로 |즉 )?반지름은 (1|√ ?2|2)(이다|입니다|로 결정)[.!]?$", "^(so,? |therefore,? |thus,? |hence,? )?the radius (is|must be|equals) (1|√ ?2|2)[.!]?$", "유일하게 결정(할 수 있다|할 수 있습니다|된다|됩니다)", "(it|radius|the radius) (can be|is) uniquely determined"] }
+    ]
+  },
+  "L01": {
+    must: [
+      { label: "논증 형식은 후건 부정(modus tollens)",
+        any: ["modus tollens|후건 ?부정|부정 ?논법|denying the consequent"] },
+      { label: "타당한 논증",
+        any: ["타당(하다|합니다|함|한 (논증|추론|형식)|하며|하고)|유효(하다|합니다|한 (논증|추론|형식))", "(?<![a-z])valid(?![a-z])"] },
+      { label: "구조: P→Q, ¬Q이므로 ¬P",
+        any: ["¬ ?q", "~ ?q(?![a-z])", "not[- ]q(?![a-z])", "q(가|는|이|를|을) ?(거짓|부정)", "q is (false|denied|negated)", "후건(을|이|\\(q\\)를|인 q를) ?(부정|거짓)", "consequent (is )?(false|denied|negated)"] }
+    ],
+    wrong: [
+      { label: "전건 부정·후건 긍정 같은 부당한 형식이라고 단정",
+        any: ["(이|해당) (논증|추론)은[^.\\n]{0,15}(전건 ?부정|후건 ?긍정)", "(argument|inference|this|it) (is|commits|exhibits) (an instance of |a case of |the )?(denying the antecedent|affirming the consequent)"] }
+    ]
+  },
+  "L02": {
+    must: [
+      { label: "부당한(타당하지 않은) 추론",
+        any: ["부당|타당하지 (않|못)|비타당|타당한 추론이 아니|타당하다고 할 수 없", "invalid|not (logically |deductively )?valid"] },
+      { label: "오류 이름: 후건 긍정",
+        any: ["후건 ?긍정|affirming the consequent"] },
+      { label: "Q가 참이어도 P가 따라 나오지 않음(다른 원인으로도 젖을 수 있음)",
+        any: ["다른 (원인|이유|경우|요인|가능성)|other (causes|reasons|ways|explanations|factors)|another (cause|reason)", "스프링클러|sprinkler|물을 뿌|호스|hose|청소|spill|눈이 녹|이슬|dew", "without rain|비가 오지 않(아도|았(어도|는데|더라도))|비 없이", "does(n't| not) (follow|necessarily follow|guarantee|imply)|need not", "도출(되지|할 수) ?(않|없)|따라 ?나오지 않|보장(하지|되지) ?(않|못)"] }
+    ],
+    wrong: [
+      { label: "타당한 추론(전건 긍정 등)이라고 단정",
+        any: ["^(따라서 |그러므로 )?(이 )?(추론|논증)(은|는) 타당(하다|합니다)[.!]?$", "(the )?(inference|argument|reasoning) is (logically )?valid(?![a-z])", "(this|it|the argument|the inference) is (a )?(valid )?(case of |instance of )?modus ponens"] }
+    ]
+  },
+  "L04": {
+    must: [
+      { label: "전칭 → 존재: 적어도 한 학생이 존재",
+        any: ["어떤 학생|적어도 (한|1) ?명|한 명이라도|학생이 (적어도 한 명 )?(존재|있다|있음|있습)", "there (exists?|is|are) (at least one|a|some) students?|some students?|at least one student|exists a student"] },
+      { label: "그 학생은 한 문제도 풀지 못함(모든 문제를 풀지 않음)",
+        any: ["(한 문제도|어떤 문제도|아무 문제도|아무것도|하나도|단 한 문제도)[^.\\n]{0,10}(풀지 (않|못)|못 ?풀)", "solved no problems?|solved none|did(n't| not) solve any|has(n't| not) solved any|solved zero|failed to solve (any|every|all)|no problems? (at all )?solved"] },
+      { label: "부정할 때 두 양화사가 모두 바뀜(∀∃ → ∃∀¬)",
+        any: ["양화사|quantifier|universal|existential|전칭|∀|∃|for all|for every|for any", "바뀌|바꾸|뒤집|바뀝|flip|swap|turns? into|changes? to|becomes"] }
+    ],
+    wrong: [
+      { label: "일부만 부정(모든 학생이 못 풀었다, 어떤 학생이 한 문제를 못 풀었다)",
+        any: ["모든 학생(이|은|들이|들은)[^.\\n]{0,20}못 ?풀", "어떤 학생(이|은)[^.\\n]{0,5}적어도 한 문제(를|도)? ?못 ?풀", "(every|all) students? (failed to solve|solved zero|solved none)", "some students? failed to solve at least one"] }
+    ]
+  },
+  "L05": {
+    must: [
+      { label: "타당한 논증",
+        any: ["타당(하다|합니다|함|한 (논증|추론|삼단)|하며|하고)|유효(하다|합니다|한 (논증|추론|삼단))", "(예|네)[,.]? ?(이 논증은 )?타당", "(is|it's|are) (logically |deductively )?valid(?![a-z])", "valid (argument|syllogism|inference|form|deduction)", "yes,? (it is |the argument is )?valid"] },
+      { label: "뱀 ⊂ 파충류이고 파충류와 온혈동물은 겹치지 않으므로 뱀도 온혈동물과 겹치지 않음",
+        any: [["부분 ?집합|포함(되|된|돼)|속(하|한|함|해)|subset|contained|⊂|⊆|within|inside|members? of|belongs?","공집합|∅|겹치|disjoint|overlap|교집합|intersection|share no|배제|exclu|분리|cannot be warm|온혈(동물)?일 수 없|온혈(동물)?이 될 수 없"], "celarent|eae(-1)?(?![a-z])"] }
+    ],
+    wrong: [
+      { label: "전칭 부정을 잘못 읽어 일부 뱀은 온혈일 수 있다고 하거나 형식 오류라고 단정",
+        any: ["some snakes (could|might|may|can) be warm-?blooded", "(일부|어떤) 뱀은 온혈(동물)?일 수(도)? 있", "undistributed middle|illicit (major|minor)|매개념 부주연|(대|소)개념 부당"] }
+    ]
+  },
+  "L06": {
+    must: [
+      { label: "답: ¬P ∨ Q",
+        any: ["¬ ?p ?(∨|or|v) ?q", "q ?∨ ?¬ ?p", "~ ?p ?(∨|v|\\||or) ?q", "not p or q"] },
+      { label: "근거: P→Q는 P가 참이고 Q가 거짓일 때만 거짓(진리표 일치)",
+        any: ["p(가|이|는)? ?(참|true|t)(이고|이며|and|,|인데)[^.\\n]{0,15}q(가|이|는)? ?(거짓|false|f)", "(only|유일하게|오직)[^.\\n]{0,30}(false|거짓)|(false|거짓)[^.\\n]{0,40}(only|뿐|유일)", "truth table|진리표|진리값", "¬ ?\\(p ?∧ ?¬ ?q\\)", "material (implication|conditional)|implication elimination|함의 (제거|변환|법칙)|조건 ?법칙"] }
+    ],
+    wrong: [
+      { label: "함의를 연언(P∧Q)이나 역(Q→P: P∨¬Q)으로 혼동",
+        any: ["(p ?→ ?q\\)?)[^.\\n]{0,10}(≡|⇔|↔|=|equivalent to|동치) ?(p ?∨ ?¬ ?q|¬ ?q ?∨ ?p|p ?∧ ?q)", "(p ?→ ?q\\)?)(는|은)? ?(p ?∨ ?¬ ?q|¬ ?q ?∨ ?p|p ?∧ ?q)(와|과)? ?동치", "(answer|정답|답)(은|는|:| is) ?(p ?∨ ?¬ ?q|¬ ?q ?∨ ?p|p ?∧ ?q)"] }
+    ]
+  },
+  "L07": {
+    must: [
+      { label: "부당한(타당하지 않은) 논증",
+        any: ["(?<!if )invalid", "not (logically |deductively )?valid", "부당(하|합|함|한)|타당하지 (않|못)|비타당|타당한 논증이 아니"] },
+      { label: "반례: 시인·몽상가이지만 과학자가 아닌 개체와, 몽상가·과학자이지만 시인이 아닌 개체",
+        any: [["시인[^.\\n]{0,40}과학자(가|는|이)? ?(아니|아닌|아님|아닙)|과학자가 아닌 시인|poets?[^.\\n]{0,40}(not|non-?) ?(a )?scientists?|non-?scientist","과학자[^.\\n]{0,40}시인(이|은|는)? ?(아니|아닌|아님|아닙)|시인이 아닌 (과학자|몽상가)|scientists?[^.\\n]{0,40}(not|non-?) ?(a )?poets?|non-?poet"], ["시인|poet","과학자|scientist","겹치지|disjoint|교집합|∩|no overlap|share no|서로 다른 (사람|개체|원소|집합|부분)|different (person|people|individual|element|member|part)s?|separate"], ["countermodel|counter-?model|반례|counterexample","not a scientist|과학자가 아니|p ?∩ ?s ?= ?∅|no poet is a scientist|시인은 과학자가 아"]] },
+      { label: "과학자인 몽상가가 시인과 다른 개체일 수 있음(매개념 부주연)",
+        any: ["매개념|undistributed middle", "다른 (사람|개체|몽상가|부분|영역|원소)|different (person|people|individual|dreamers?|members?|part|region|subset|element)s?", "not necessarily (the same|poets?|include|overlap)|반드시 (시인|같은|겹치)", "need not|might not|may not|could be (entirely )?(different|separate)|겹치지 않을 수|없을 수도|outside", "(do|does|need) not overlap|겹칠 필요|not (necessarily )?(among|one of) the poets", "middle term[^.\\n]{0,30}not distributed|not distributed|부주연", "no overlap|one part[^.\\n]{0,40}another"] }
+    ],
+    wrong: [
+      { label: "몽상가라는 공통점으로 시인과 과학자를 묶어 타당하다고 단정",
+        any: ["^(이 논증은 |따라서 |그러므로 )?타당(하다|합니다)[.!]?$", "^(the argument|it|this argument|this syllogism) is (logically )?valid[.!]?$", "^(따라서|그러므로),? 어떤 시인은 과학자(이다|입니다)[.!]?$", "^(therefore|so|thus),? some poets are (indeed )?scientists[.!]?$"] }
+    ]
+  },
+  "L08": {
+    must: [
+      { label: "A가 기사라고 가정하면 B는 거짓말쟁이가 되어 B의 말이 참이 되므로 모순",
+        any: [["a(가|는|이)? ?기사|(?<![a-z])a (is|were|was|must be|would be|=) (a )?knight|(?<![a-z])a ?[:=] ?(a )?knight","모순|contradict|impossible|불가능|inconsisten|성립(하지|할 수)|cannot|can't"], ["b(가|는|이)? ?(거짓말쟁이|knave)인 경우|(?<![a-z])(if|suppose|assume) b (is|were) (a )?knave","모순|contradict|impossible|불가능"]] },
+      { label: "A가 거짓말쟁이이면 B는 기사이고 B의 말(서로 다른 유형)이 참이라 일관됨",
+        any: [["a(가|는|이)? ?거짓말쟁이|(?<![a-z])a (is|were|was|must be|would be|=) (a )?knave|(?<![a-z])a ?[:=] ?(a )?knave","b(가|는|이)? ?기사|(?<![a-z])b (is|were|was|must be|would be|=) (a )?knight|(?<![a-z])b ?[:=] ?(a )?knight","일관|consistent|참(이|입|이므로|이고|이다)|(is|be|are|statement is) true|만족|works|성립(한|합|하)|checks out|no contradiction|모순이 없|모순 없"]] }
+    ],
+    wrong: [
+      { label: "A는 기사, B는 거짓말쟁이(또는 둘 다 거짓말쟁이)라고 단정",
+        any: ["^(따라서 |그러므로 |정답: ?)?a(는|가)? ?기사(이고|,)[^.\\n]{0,10}b(는|가)? ?거짓말쟁이(이다|입니다)?[.!]?$", "^(so,? |therefore,? |answer: ?)?a is a knight(,| and|;) b is a knave[.!]?$", "^(따라서 |그러므로 )?(a와 b는 )?둘 다 거짓말쟁이(이다|입니다)[.!]?$", "^(so,? |therefore,? )?(a and b are )?both (are )?knaves[.!]?$"] }
+    ]
+  },
+  "L09": {
+    must: [
+      { label: "필요조건: P → Q",
+        any: ["p ?(→|⇒|->|implies) ?q", "if p,? (then )?q", "p이면 ?q", "p ?⊃ ?q"] },
+      { label: "충분조건 아님: Q → P가 성립하지 않음(Q 참·P 거짓인 경우가 있음)",
+        any: ["q ?(→|⇒|->|implies) ?p[^.\\n]{0,40}(not|아니|않|없|fail|불성립|성립하지|보장|false|거짓)", "(not|아니|않|¬ ?\\()[^.\\n]{0,10}q ?(→|⇒|->) ?p", "q ?(↛|⇏|-/->)", "q ?∧ ?¬ ?p|¬ ?p ?∧ ?q", "q(가|이|는)? ?참(이고|인데|이지만|이어도|이라도)[^.\\n]{0,15}p(가|이|는)? ?거짓", "q (is )?true[^.\\n]{0,25}p (is )?false", "q (does not|doesn't) (imply|guarantee|entail)"] },
+      { label: "필요·충분의 뜻 설명(Q 없이 P 불가, Q만으로 P 보장 안 됨)",
+        any: ["q (없이|가 없으면|이 없으면|가 거짓이면)", "without q", "q만으로(는)?|q alone|q by itself|q on its own", "(does not|doesn't|not) guarantee|보장(하지|되지) ?(않|못)|not enough|충분하지 (않|못)", "p cannot (occur|happen|be true|hold)", "(necessary|sufficient|필요(조건)?|충분(조건)?)[^.\\n]{0,30}(means|뜻|의미|i\\.e\\.|that is)"] }
+    ],
+    wrong: [
+      { label: "필요와 충분의 방향을 뒤바꿈(필요조건을 Q → P로 씀)",
+        any: ["(필요(조건)?|necessary|necessity)[^.\\n¬]{0,20}[:：]? ?q ?(→|⇒|->) ?p(?![a-z])", "^q ?(→|⇒) ?p(이다|입니다)?[.!]?$", "q는 p의 충분조건(이다|입니다)"] }
+    ]
+  },
+  "L10": {
+    must: [
+      { label: "추론 규칙의 이름은 선언적 삼단논법(disjunctive syllogism)",
+        any: ["disjunctive syllogism|modus tollendo ponens|선언(적)? ?삼단 ?논법|선언지 ?(제거|소거)(법)?|선언 ?소거|선택적 삼단 ?논법"] },
+      { label: "타당한 추론이라고 판정",
+        any: ["(?<!whether (it|this) )(is|are) (deductively |logically |always |formally )?valid", "valid (inference|argument|deductive|rule|form|reasoning)", "(validity|타당성)\\s*[:：]\\s*(valid|타당)", "타당(하|합|함|한|입|해)"] },
+      { label: "P∨Q는 적어도 하나가 참이므로 P가 거짓이면 Q가 참이어야 함",
+        any: ["at least one|적어도 (하나|한 쪽|둘 중)|둘 중 (하나|적어도)|하나(는|가) (반드시 )?참|one of (them|the two|p or q|the disjuncts)[^.\\n]{0,20}(must be |is )true", "q (must|has to) (be|hold)|q(는|가) (반드시 )?참(이어야|이 되어야|이다|일 수밖에)|the only (remaining )?(option|possibility)|남은 (것|하나|가능성)은", "p ?∨ ?q(는|가)? 거짓|p ?∨ ?q is true only when q|whenever both premises are true, q is true|q is true there", ["진리표|truth table","q(도|는|가)? 참|q is true"]] }
+    ],
+    wrong: [
+      { label: "포함적 OR를 오해(배타적 OR일 때만 성립, 선언지 긍정과 혼동)",
+        any: ["only (valid|works|holds)[^.\\n]{0,20}exclusive", "배타적[^.\\n]{0,20}(때만|경우에만)", "(rule|inference|name|이름|명칭)[^.\\n]{0,15}(is|:|은|는) ?(called )?(affirming the disjunct|선언지 긍정)"] },
+      { label: "다른 규칙(전건 긍정·후건 부정 등)으로 명명",
+        any: ["(rule|inference|name|이름|명칭|추론)[^.\\n]{0,15}(is|:|은|는) ?(called )?(modus ponens|modus tollens|전건 ?긍정|후건 ?부정|hypothetical syllogism|가언적 삼단 ?논법)(?![a-z])"] }
+    ]
+  },
+  "L11": {
+    must: [
+      { label: "결론은 논리적으로 확정되지 않음",
+        any: ["(확정|입증|증명|성립|단정|결론 ?내릴|보장)(되지|되었다고|할 수|하지|된 것은|된다고|되는 것은|된 것이)[^.\\n]{0,10}(않|없|아니|못)", "not (logically |been )?(established|proven|follow|justified|warranted)", "does(n't| not) (logically )?(follow|establish|prove|necessarily|justify|show)", "cannot (be )?(conclude|establish|infer|determine)|unsupported|unjustified|insufficient|not (sufficient|enough)", "오류|fallacy|성급"] },
+      { label: "시간적 선후(상관)만으로는 인과가 성립하지 않음(post hoc)",
+        any: ["post hoc", ["선후|시간(적|상|의)|temporal|timing|sequence|순서|correlat|상관|연관|association|coincid|우연|followed|뒤따|이후","인과|causa|원인|cause"]] },
+      { label: "다른 요인(교란 변수·추세·단속·인구 변화·평균 회귀 등)이 설명할 수 있음",
+        any: ["교란|confound|다른 (요인|원인|변수|변화|이유|설명)|제3의|third (factor|variable)|other (factors|causes|changes|explanations|variables|policies)|alternative (explanation|cause)|평균 ?(으로의 )?회귀|regression to the mean|경찰|police|enforcement|단속|경제|econom|추세|trend|인구|demograph"] },
+      { label: "인과를 확정하려면 추가 증거(비교군·통제 분석 등)가 필요",
+        any: ["추가(적인|의|적)? ?(증거|자료|연구|분석|근거|데이터|정보)|더 많은 (증거|자료)|비교 ?(집단|군|도시|지역)|대조(군|집단|지역)|통제(하|해|된|한)", "control (group|city|cities|area)|comparison (group|city|cities)|additional (causal )?(evidence|data|analysis)|further (evidence|study|studies|research|analysis|investigation)|more (evidence|data|rigorous)|randomi[sz]ed|무작위|실험|experiment|control(ling)? for|controlled"] }
+    ],
+    wrong: [
+      { label: "감시카메라가 범죄 감소의 원인이라고 단정",
+        any: ["^(따라서 |그러므로 |결론적으로 )?(감시 ?카메라|카메라)( 설치)?(가|는|이) (범죄 감소의 )?(원인(이다|입니다|이 맞다|이 맞습니다)|범죄를 (줄였다|감소시켰다|줄였습니다|감소시켰습니다))[.!]?$", "^(so,? |therefore,? |thus,? )?(the )?(surveillance )?cameras (did )?(caused?|reduced|are responsible for) (the )?(crime|decrease|drop|reduction)[^.\\n]{0,20}[.!]?$", "(?<!whether (the )?)conclusion is (logically )?(established|valid|justified|correct)|결론(은|이) (논리적으로 )?(확정(된다|됩니다)|타당(하다|합니다))"] }
+    ]
+  },
+  "L12": {
+    must: [
+      { label: "오류 이름은 무지에 호소하는 오류(argument from ignorance)",
+        any: ["argument from ignorance|appeal to ignorance|ad ignorantiam|무지(에|로)의? ?(의한 )?(호소|논증)|무지 ?논증|무지에서"] },
+      { label: "¬P가 증명되지 않았다는 것은 P의 증거가 아님(증명의 부재·입증 책임)",
+        any: ["lack of (proof|evidence)|absence of (proof|evidence)|burden of proof|입증 ?책임|증명 ?책임|disprov|반증|증거(가|의) (없|부족|부재)|증명(의|이) (부재|없음|부족)", "(is not|isn't|not) (proof|evidence)|증거가 (아니|되지)|증명(이|하는 것은|한 것은|하지는) (아니|않)|증명되지 않았다는 (사실|것|점)", "(unknown|undetermined|모른다|모름|미정|알 수 없|참도 거짓도|either way)"] },
+      { label: "결론(유령이 존재한다)이 전제에서 따라 나오지 않음",
+        any: ["does(n't| not) follow|non sequitur|따라 ?나오지 (않|못)|도출(되지|할 수|될 수) ?(않|없)|결론(을|이)[^.\\n]{0,10}(내릴|낼|이끌어낼|얻을) 수 없|cannot (conclude|infer)|invalid|부당|정당화(되지|할 수) ?(않|없)|unjustified|unwarranted|not (justified|warranted|valid|logically)|타당하지 않|성립하지 않|논리적 비약|비약"] }
+    ],
+    wrong: [
+      { label: "유령이 존재한다고 단정하거나 논증이 타당하다고 판정",
+        any: ["^(따라서 |그러므로 )?유령(은|이) (실제로 )?존재(한다|합니다)[.!]?$", "^(therefore,? |so,? |thus,? )?ghosts (do |really )?exist[.!]?$", "(이 )?논증(은|이) (논리적으로 )?타당(하다|합니다)|(the|this) (argument|reasoning) is (logically )?(valid|sound)"] }
+    ]
+  },
+  "L13": {
+    must: [
+      { label: "쌍조건문은 P와 Q의 진리값이 같을 때 참(양방향 함의)",
+        any: ["same truth value|같은 진리 ?값|진리 ?값이 (같|동일|일치)|동일한 진리 ?값|both (are )?true or both (are )?false|둘 다 참이거나 둘 다 거짓|모두 참이거나 모두 거짓|same value|일치할 때|(have|has) matching|agree", "(?<![¬~] ?)q ?(→|⇒|->) ?p|both directions|양방향|if and only if|필요충분"] },
+      { label: "Q는 거짓",
+        any: ["(?<![¬~] ?)q(는|은|가|도|의 진리 ?값은)? ?(반드시 |또한 |역시 )?(=|:)? ?(거짓|false|f(?![a-z])|⊥)", "(?<![¬~] ?)q (must|is|has to)( also| therefore| necessarily)? (be )?(false|f(?![a-z]))", "truth value of q (is|must be) (false|f(?![a-z]))"] }
+    ],
+    wrong: [
+      { label: "한 방향 함의로 보고 Q가 참이거나 정해지지 않는다고 단정",
+        any: ["^(따라서 |그러므로 )?q(는|의 진리 ?값은) (참|true)(이다|입니다)?[.!]?$", "^(therefore,? |so,? |thus,? )?q is true[.!]?$", "^(따라서 |그러므로 )?q(는|가) 참일 수도 있고 거짓일 수도 있(다|습니다)[.!]?$", "^(therefore,? |so,? )?q (can|could|may) be (either )?(true or false|either)[.!]?$"] }
+    ]
+  },
+  "L14": {
+    must: [
+      { label: "세 전제는 동시에 참일 수 없음(불가능)",
+        any: ["동시에 참일 수 (없|는 없)|모두 참일 수 (없|는 없)|불가능|가능하지 않(습니다|음|다[.\\s])|cannot (all )?(be )?(true|simultaneously|hold|be satisfied)|can't (all )?be|not (all )?be true|impossible|inconsisten|unsatisfiable|no assignment|(^|\\n)\\s*(#+ )?(no(?![a-z])|아니(요|오))"] },
+      { label: "P와 P→Q로부터 전건 긍정(modus ponens)으로 Q가 도출됨",
+        any: ["modus ponens|전건 ?긍정", "(?<![¬~] ?)q(가|는|도)? (참|true)(이어야|이 되어야|이 된다|여야|이다|임|가 된다)", "(?<![¬~] ?)q (must|has to) (be|hold)|(derive|yields?|entails?|infer|gives?|get) q(?![a-z])|q(를|을) (도출|얻|유도)|⊢ ?q(?![a-z])|q가 성립|q가 따라"] },
+      { label: "도출된 Q가 ¬Q와 모순(Q ∧ ¬Q)",
+        any: ["q ?∧ ?(¬|~) ?q|both q and ((¬|~) ?q|not q)|q and ((¬|~) ?q|not q)|q와 (¬|~) ?q|inconsisten|unsatisfiable|충족 ?불가", "(모순|contradict\\w*|충돌|conflict\\w*|clash\\w*)[^.\\n]{0,20}(¬|~|not ) ?q(?![a-z])", "(¬|~) ?q(와|과|는|가|이)?[^.\\n?]{0,15}(모순|contradict|충돌|conflict)", "(?<![¬~] ?)q(가|는)? (참|true)(이면서|이고|and)[^.\\n]{0,20}(거짓|false)"] }
+    ],
+    wrong: [
+      { label: "세 전제가 동시에 참일 수 있다(일관적이다)고 판정",
+        any: ["^(네|예|yes)[,.!]", "(they|premises|all three) (can|could) (all )?be (true|satisfied) (simultaneously|at the same time|together)", "(the )?premises are consistent|(전제들은|세 전제는|전제는) (서로 )?(일관(적이다|됩니다|된다)|양립(한다|할 수 있다|가능하다))|동시에 참일 수 있(다|습니다)"] }
+    ]
+  },
+  "S01": {
+    must: [
+      { label: "뉴턴 제2법칙 F = ma, a = F/m",
+        any: ["f ?= ?m ?(×|·|\\*)? ?a(?![a-z])|a ?= ?\\(?f\\)? ?/ ?\\(?m\\)?|second law|뉴턴 ?(의)? ?(운동 )?제? ?2 ?법칙|가속도 ?(의)? ?법칙", "6 ?(n)? ?(/|÷) ?2"] },
+      { label: "a = 6/2 = 3 m/s²",
+        any: ["(?<![\\d.])3(\\.0+)? ?(m ?/ ?s|m ?s|m·s|미터|meters? per)", "(a|가속도)[^.\\n]{0,10}(=|는|은|is) ?3(\\.0+)?(?![\\d.])", "6 ?(n)? ?(/|÷) ?2 ?(kg)? ?= ?3(?![\\d.])"] }
+    ],
+    wrong: [
+      { label: "질량과 힘을 잘못 써서 12 m/s²나 1/3 m/s²로 계산",
+        any: ["(?<![\\d.])12 ?m ?/ ?s|(?<![\\d.])0\\.33|1/3 ?m ?/ ?s|a ?= ?(m|2) ?/ ?(f|6)|a ?= ?(f|6) ?(×|·|\\*) ?(m|2)"] }
+    ]
+  },
+  "S02": {
+    must: [
+      { label: "직렬이라 전체 저항 = 2 + 4 = 6 Ω",
+        any: ["2 ?(Ω|ω|Ω|ohms?|옴)? ?\\+ ?4", "(?<![\\d.])6 ?(Ω|ω|Ω|ohms?|옴)", "r[_a-z가-힣 ]{0,10}= ?6(?![\\d.])", "(합성|전체|총|등가) ?저항[^.\\n]{0,15}6|(total|equivalent) resistance[^.\\n]{0,20}6"] },
+      { label: "전류 I = 12/6 = 2 A",
+        any: ["12 ?(v)? ?(/|÷) ?6", "(?<![\\w.])i ?= ?2(?![\\d.])", "(전류|current)[^.\\n]{0,20}(=|는|은|is|:) ?2 ?(a|amps?|amperes?|암페어)?(?![\\w.])"] },
+      { label: "4 Ω 양단 전압 V = 2 × 4 = 8 V",
+        any: ["2 ?(a|amps?|암페어)? ?(×|x|\\*|·) ?4|4 ?(Ω|ω|Ω|ohms?|옴)? ?(×|x|\\*|·) ?2 ?(a|amps?)?(?![\\d.])", "(?<![\\d.])8 ?(v|볼트|volts?)(?![a-z])", "12 ?(v)? ?(×|x|\\*|·) ?4 ?/ ?6|4 ?/ ?6 ?(×|x|\\*|·) ?12"] }
+    ],
+    wrong: [
+      { label: "4 Ω 저항 전압을 4 V나 12 V로 잘못 배분",
+        any: ["4 ?(Ω|ω|Ω|ohms?|옴)[^.\\nΩω,;]{0,30}(=|is|은|는|:) ?(4|12) ?(v|볼트|volts?)(?![a-z])"] },
+      { label: "병렬로 계산(4/3 Ω, 9 A 등)",
+        any: ["1 ?/ ?r[^.\\n]{0,5}= ?1 ?/ ?2 ?\\+ ?1 ?/ ?4|4 ?/ ?3 ?(Ω|ω|Ω|ohms?|옴)|1\\.33 ?(Ω|ω|Ω|ohms?|옴)", "(전류|current|(?<![\\w.])i)[^.\\n]{0,10}(=|is|은|는|:) ?(9|3|6) ?(a|amps?|암페어)(?![\\w.])"] }
+    ]
+  },
+  "S03": {
+    must: [
+      { label: "처음 위치에너지 mgh = 2 × 10 × 5 = 100 J",
+        any: ["(?<![\\d.])100 ?(j|줄|joules?)(?![a-z])", "mgh ?= ?100|= ?100(?![\\d.])", "2 ?(kg)? ?(×|x|·|\\*) ?10 ?(m/s²)? ?(×|x|·|\\*) ?5"] },
+      { label: "소산된 20 J를 빼서 운동에너지 = 100 − 20 = 80 J",
+        any: ["100 ?(j)? ?(-|−|–|빼기|minus) ?20", ["(?<![\\d.])80 ?(j|줄|joules?)(?![a-z])|= ?80(?![\\d.])","(?<![\\d.])100(?![\\d.])"]] }
+    ],
+    wrong: [
+      { label: "소산 에너지를 무시하거나 더해 100 J·120 J로 답함",
+        any: ["(?<![\\d.])120 ?(j|줄|joules?)(?![a-z])|100 ?(j)? ?\\+ ?20", "(ke|kinetic energy|운동 ?에너지)[^.\\n]{0,20}(=|is|은|는) ?100 ?(j|줄|joules?)?(?![\\d.])(?!\\s*(j|줄|joules?)?\\s*(-|−|–|에서|minus|less|빼))"] }
+    ]
+  },
+  "S04": {
+    must: [
+      { label: "부피·양이 일정하면 P/T가 일정(압력은 절대온도에 비례)",
+        any: ["p_?1? ?/ ?t_?1?|비례|proportional|gay-?lussac|게이 ?-?뤼삭|amontons|아몽통|pv ?= ?nrt|ideal gas law|이상 ?기체 (상태 )?방정식"] },
+      { label: "온도 비 450/300 = 1.5를 곱함",
+        any: ["450 ?(k)? ?(/|÷) ?300|(?<![\\d.])1\\.5(?![\\d])|3 ?/ ?2(?![\\d.])|100 ?(kpa)? ?(×|x|\\*|·) ?450|45000"] },
+      { label: "P₂ = 150 kPa",
+        any: ["(?<![\\d.])150 ?(kpa|킬로파스칼|kilopascals?)|= ?150(?![\\d.])"] }
+    ],
+    wrong: [
+      { label: "반비례로 계산하거나 섭씨온도를 써서 다른 값을 냄",
+        any: ["66\\.[67]|200 ?/ ?3 ?kpa|(?<![\\d.])67 ?kpa|300 ?/ ?450 ?(×|x|\\*|·)|(×|x|\\*|·) ?300 ?/ ?450", "(pressure|압력)[^.\\n]{0,20}(temperature|온도)[^.\\n]{0,10}(반비례|inversely)|(inversely proportional|반비례)[^.\\n]{0,15}(to )?(the )?(temperature|온도)", "177 ?/ ?27|(?<![\\d.])27 ?°? ?c(?![a-z])"] }
+    ]
+  },
+  "S06": {
+    must: [
+      { label: "희석해도 용질(HCl) 몰수 보존: M₁V₁ = M₂V₂",
+        any: ["[mc](_?1|₁) ?(×|·|\\*)? ?v(_?1|₁)", "용질[^.\\n]{0,25}(일정|보존|같|변하지|그대로)|(moles?|amount) of (hcl|solute)[^.\\n]{0,40}(constant|conserved|same|unchanged|remains?|does not change)|solute[^.\\n]{0,30}(constant|conserved|same|unchanged|remains?)", "(?<![\\d.])0\\.10? ?(mol|몰)|희석 ?(공식|식)|dilution (formula|equation)"] },
+      { label: "최종 부피 500 mL로 나눔(100/500 = 1/5)",
+        any: ["100 ?(ml)?\\)? ?(/|÷) ?\\(?500|(?<![\\d.])1 ?/ ?5(?![\\d.])|5배|five-?fold|factor of (5|five)|/ ?0\\.5(00)? ?l", "(×|x|\\*|·) ?100 ?(ml)? ?= ?([mc](_?2|₂)?)? ?(×|x|\\*|·)? ?500", "÷ ?0\\.5(00)? ?l"] },
+      { label: "최종 농도 0.20 M",
+        any: ["(?<![\\d.])0\\.20? ?(m|mol/l|mol l|몰)(?![a-z])|= ?0\\.20?(?![\\d])"] }
+    ],
+    wrong: [
+      { label: "더한 물 400 mL를 최종 부피로 써서 0.25 M으로 계산",
+        any: ["(농도|concentration|m2|c2|answer|정답|답)[^.\\n]{0,20}(=|is|은|는|:) ?0\\.25|^0\\.25 ?m(?![a-z])", "100 ?(ml)? ?(/|÷) ?400|(×|x|\\*|·) ?400 ?(ml)?(?![\\d])"] }
+    ]
+  },
+  "S08": {
+    must: [
+      { label: "자녀 유전자형 분포 AA : Aa : aa = 1/4 : 1/2 : 1/4 (1 : 2 : 1)",
+        any: ["1 ?: ?2 ?: ?1", "aa[^\\n]{0,20}(?<![\\d/.])1/2(?![\\d/])", "aa[^\\n]{0,20}(?<![\\d/.])(2/4|0\\.5(?!\\d)|50 ?%)", "(1/4|0\\.25|25 ?%)[^\\n]{0,40}(1/2|2/4|0\\.5(?!\\d)|50 ?%)[^\\n]{0,40}(1/4|0\\.25|25 ?%)"] },
+      { label: "열성 표현형이 아닌 경우(AA 또는 Aa)의 확률 3/4로 조건화",
+        any: ["(?<![\\d/])3/4(?![\\d])", "0\\.75", "75 ?%", "1 ?[-−] ?1/4", "(?<!\\d)3 ?(가지 경우|개의 경우|outcomes|possibilities|equally likely|cases)", "2 out of (the )?3|3개 중 2|3가지 중 2"] },
+      { label: "P(Aa | 비발현) = (1/2)/(3/4) = 2/3",
+        any: ["(?<![\\d/])2/3(?![\\d])", "0\\.66|0\\.67", "66\\.\\d+ ?%|67 ?%|66 ?%", "3분의 ?2", "two[- ]thirds"] }
+    ],
+    wrong: [
+      { label: "조건화 없이 1/2를 답으로 단정",
+        any: ["(조건부 ?확률|conditional probability|정답|최종 답|answer)(은|는|is|:|=)?[^.\\n]{0,15}(?<![\\d/(])(1/2|0\\.5(?!\\d)|50 ?%)(?! ?(/|÷|over|나누|divided))", "p\\(aa ?\\| ?[^)]{1,40}\\) ?= ?(1/2|0\\.5(?!\\d)|50 ?%)(?! ?(/|÷|over|divided))"] }
+    ]
+  },
+  "S09": {
+    must: [
+      { label: "독립변수: 온도를 여러 수준으로 달리함",
+        any: ["(독립 ?변수|independent variable)\\)?\\s*(:|은|는|is|=|–|-|—)\\s*\\(?(반응 )?(온도|temperature)", "(온도|temperature)[^.\\n]{0,10}\\(?(독립 ?변수|independent variable|iv)\\)?", "manipulat[^.\\n]{0,20}temperature", "온도를 (변화|달리|바꾸|조절|조작|설정|다르게)", "(vary|varying|vary the|different|several|range of|multiple) (the )?temperatures?", "(여러|서로 다른|다양한|다섯|5개?의?|네|4개?의?) ?(가지 )?온도", "\\d+ ?(°|℃|도씨)"] },
+      { label: "종속변수: 반응속도(생성물 양·시간 등)를 정량 측정",
+        any: ["(종속 ?변수|dependent variable)\\)?\\s*(:|은|는|is|=|–|-|—)\\s*[^\\n]{0,50}(속도|rate|생성|흡광|absorbance|product|시간|time|부피|volume|기포|bubble|산소|oxygen|양)", "(measure|measuring|measured|record|recording|측정|기록)[^.\\n]{0,40}(rate|속도|생성량|product|oxygen|산소|absorbance|흡광|time taken|걸리는 시간|기포|bubble)", "(속도|rate|생성량|산소|흡광도|absorbance)[^.\\n]{0,15}(측정|를 측정|을 측정|measured)", "(반응 ?속도|reaction rate)[^.\\n]{0,10}\\(?(종속 ?변수|dependent variable|dv)\\)?"] },
+      { label: "통제변수 최소 3가지(pH, 효소 농도, 기질 농도, 부피·시간 등)를 일정하게 유지",
+        any: [["(?<![a-z])ph(?![a-z])|산도","(효소|enzyme)[^.\\n]{0,15}(농도|양|concentration|amount|volume|부피)|(concentration|amount) of (the )?enzyme","(기질|substrate)[^.\\n]{0,15}(농도|양|concentration|amount|volume|부피)|(concentration|amount) of (the )?substrate"], ["(?<![a-z])ph(?![a-z])|산도","(효소|enzyme)[^.\\n]{0,15}(농도|양|concentration|amount|volume|부피)|(concentration|amount) of (the )?enzyme","(총 |전체 |반응 ?(용액의? )?)?(부피|volume)|반응 시간|측정 시간|incubation|reaction time|같은 시간|same time|timing|(교반|stirr|mixing)|(효소|enzyme) (source|종류|출처)|buffer|완충"], ["(?<![a-z])ph(?![a-z])|산도","(기질|substrate)[^.\\n]{0,15}(농도|양|concentration|amount|volume|부피)|(concentration|amount) of (the )?substrate","(총 |전체 |반응 ?(용액의? )?)?(부피|volume)|반응 시간|측정 시간|incubation|reaction time|같은 시간|same time|timing|(교반|stirr|mixing)|(효소|enzyme) (source|종류|출처)|buffer|완충"], ["(효소|enzyme)[^.\\n]{0,15}(농도|양|concentration|amount|volume|부피)|(concentration|amount) of (the )?enzyme","(기질|substrate)[^.\\n]{0,15}(농도|양|concentration|amount|volume|부피)|(concentration|amount) of (the )?substrate","(총 |전체 |반응 ?(용액의? )?)?(부피|volume)|반응 시간|측정 시간|incubation|reaction time|같은 시간|same time|timing|(교반|stirr|mixing)|(효소|enzyme) (source|종류|출처)|buffer|완충"]] },
+      { label: "반복 측정으로 변동성 추정·우연 오차 영향 감소",
+        any: [["반복|replica|repeat|trials|여러 번","오차|error|변동|variab|신뢰|reliab|평균|average|mean|우연|chance|이상치|outlier|정밀|precision|재현|reproduc|consisten|일관"]] }
+    ],
+    wrong: [
+      { label: "여러 변수를 동시에 바꾸거나 한 번 측정으로 충분하다고 함",
+        any: ["(온도와 (ph|농도)|temperature and (ph|concentration))[^.\\n]{0,20}(동시에|함께|simultaneously|at the same time)[^.\\n]{0,10}(변화|바꾸|바꿉|달리|vary|varied|change)", "(한 번|1회|단 한 번)(만)? ?(측정|실험)(하면|으로|해도)[^.\\n]{0,10}충분", "(a single|one) (trial|measurement|run) (is|will be) (enough|sufficient)", "replication is (unnecessary|optional)"] }
+    ]
+  },
+  "S10": {
+    must: [
+      { label: "내성 변이는 필요와 무관하게(무작위로·항생제 이전부터) 생김",
+        any: [["돌연변이|mutation|변이|variant|variation|유전적 (차이|다양)|genetic (diversity|differences)","무작위|random|우연|by chance|이미 (존재|있)|pre-?exist|already (present|exist|had|carr)|before (the )?(antibiotic|exposure|treatment)|independent(ly)? of|무관|관계없|regardless|우연히|spontaneous|자발적"]] },
+      { label: "항생제가 선택압으로 작용해 내성 개체가 살아남아 번식",
+        any: [["생존|살아남|surviv","번식|증식|reproduc|multipl|자손|offspring|물려|pass(ed)? on|divid|분열"], "선택압|선택 압력|selective pressure|selection pressure|select(s|ed|ing)? for (the )?resistan"] },
+      { label: "집단 내 유전되는 변이의 빈도가 변하는 것(개체가 목적을 갖고 변하는 것이 아님)",
+        any: ["빈도|frequenc|heritable|inherit|유전(되|적|자|된)|물려|대물림|집단(의)? 구성|composition|populations? (evolves?|changes?|shifts?)|집단이 (변|진화)|목적|goal|purpose|의도|intent|teleolog|목적론|라마르크|lamarck"] }
+    ],
+    wrong: [
+      { label: "세균이 필요에 의해 스스로 내성을 만든다고 단정",
+        any: ["세균(이|은|들이|들은)[^.\\n]{0,15}(살아남기 위해|생존하기 위해|필요(해서|에 의해|에 따라))[^.\\n]{0,15}(내성|돌연변이)[^.\\n]{0,5}(을|를)? ?(만들|만든|일으|획득|생성)(었|었다|어 냈|ㄴ다|는다|다|합니다|했다)", "bacteria[^.\\n]{0,20}(develop|create|produce|generate|make)[^.\\n]{0,15}(resistance|mutations?) (in order to|to survive|because they need)"] }
+    ]
+  },
+  "S12": {
+    must: [
+      { label: "상관(관찰) 자료만으로는 인과를 단정할 수 없음",
+        any: ["상관(관계)?(는|은|만으로)?[^.\\n]{0,15}인과", "correlation[^.\\n]{0,30}causation", "association[^.\\n]{0,30}causation", "관찰 (연구|자료|데이터)|observational", "인과(관계|성)?(를|을)? ?(증명|입증|확립|단정)(하지|할 수|하기)", "co-?var(y|ies)|alone is insufficient|cannot (separate|establish|prove)|공변"] },
+      { label: "교란 변수·역인과 등 대안 설명 가능(인, 온도, 빛, 유입수 등)",
+        any: ["교란|confound|제3의? ?(변수|요인)|third (variable|factor)|lurking|공통 원인|common cause|역인과|역방향|reverse caus|reverse direction|인과의? 방향|direction of caus|phosph|인 농도|인산|인\\(p\\)|총인|온도|water temperature|일조|빛|sunlight|light|유출|runoff|농업|agricultur|비료|fertili|체류 시간|residence time|수심|depth"] },
+      { label: "다른 조건을 통제한 채 질산염만 조작하는 실험(메조코즘 등)으로 검증",
+        any: [["실험|experiment|mesocosm|메조코즘|조작|manipulat|무작위|randomi[sz]|첨가|추가|add","통제|control|일정|constant|동일|same|나머지|holding|identical|대조"]] }
+    ],
+    wrong: [
+      { label: "상관만으로 질산염이 원인이라고 단정",
+        any: ["^(따라서 |그러므로 |즉 )?질산염(이|은)[^.\\n]{0,15}원인(이다|입니다|임이 (증명|확인)되었다)[.!]?$", "(proves|establishes|confirms)[^.\\n]{0,15}(that )?nitrate (causes|is the cause)", "^(therefore,? |so,? )?nitrate (causes|is the cause of) (the )?algal blooms[.!]?$"] }
+    ]
+  },
+  "S13": {
+    must: [
+      { label: "네 값의 합 = 40.0 g",
+        any: ["(?<![\\d.])40(\\.0+)?(?![\\d.])", "39\\.9\\d|40\\.0"] },
+      { label: "평균 = 40.0 ÷ 4 = 10.0 g",
+        any: ["(평균|mean|average)[^\\n]{0,40}(?<![\\d.])10(\\.0+)?(?![\\d.])", "40(\\.0+)? ?(g )?(/|÷) ?4 ?= ?10", "= ?10\\.0+ ?g"] },
+      { label: "반복 측정은 변동(산포)을 드러내고 우연 오차의 영향을 줄임",
+        any: [["반복|repeat|multiple|여러 번|several|replicat","우연|random|무작위|변동|variab|spread|산포|흩어|편차|deviation|오차|error|신뢰|reliab|precision|정밀|불확실|uncertain|이상치|outlier|fluctuat"]] }
+    ],
+    wrong: [
+      { label: "평균 계산 오류 또는 반복 측정이 계통 오차를 없앤다고 단정",
+        any: ["(평균|mean|average)\\s*(은|는|값은|is|=|:)\\s*(10\\.0[1-9]|10\\.[1-9]|9\\.\\d)", "(반복|repeat|multiple)[^.\\n]{0,40}(계통|체계적|systematic)[^.\\n]{0,15}(오차|error|bias|편향)[^.\\n]{0,15}(제거|없앤|없애|eliminat|remov|correct|cancel)"] }
+    ]
+  },
+  "S14": {
+    must: [
+      { label: "재현 실패 한 번만으로 조작을 결론낼 수 없음",
+        any: [["수 없|cannot|can't|can ?not|insufficient|not (sufficient|enough|justified|warranted|necessarily|evidence)|불충분|부족|충분하지 않|아니(요|오|다|며)|^no\\b|성급|비약|premature|does not (justify|prove|imply|mean)|doesn't (justify|prove|imply|mean)","조작|fabricat|fraud|misconduct|위조|날조|부정행위"]] },
+      { label: "대안 설명 두 가지 이상(표본·검정력, 프로토콜 차이, 측정, 우연 변동, 불안정한 효과 등)",
+        any: [["표본|sample|검정력|(statistical )?power|underpowered","프로토콜|protocol|절차|방법(론)?(의|상)? ?차이|methodolog|실험 (조건|환경)|conditions?|setting|context|대상 (집단|모집단)|population|participants|참가자"], ["표본|sample|검정력|(statistical )?power|underpowered","측정|measure|도구|instrument|장비|equipment|시약|reagent|materials"], ["표본|sample|검정력|(statistical )?power|underpowered","우연|random|chance|변동|variab|noise|false (positive|negative)|위양성|위음성|[12]종 오류|type (i|ii|1|2) error|통계적 (오차|변동|유의)"], ["표본|sample|검정력|(statistical )?power|underpowered","효과(가|의)? ?(작|불안정|약)|small effect|effect size|효과 ?크기|unstable|winner'?s curse|과대 ?추정|overestimat|regression to the mean|moderator|조절 변수|숨은 변수|hidden variable|hidden factor"], ["프로토콜|protocol|절차|방법(론)?(의|상)? ?차이|methodolog|실험 (조건|환경)|conditions?|setting|context|대상 (집단|모집단)|population|participants|참가자","측정|measure|도구|instrument|장비|equipment|시약|reagent|materials"], ["프로토콜|protocol|절차|방법(론)?(의|상)? ?차이|methodolog|실험 (조건|환경)|conditions?|setting|context|대상 (집단|모집단)|population|participants|참가자","우연|random|chance|변동|variab|noise|false (positive|negative)|위양성|위음성|[12]종 오류|type (i|ii|1|2) error|통계적 (오차|변동|유의)"], ["프로토콜|protocol|절차|방법(론)?(의|상)? ?차이|methodolog|실험 (조건|환경)|conditions?|setting|context|대상 (집단|모집단)|population|participants|참가자","효과(가|의)? ?(작|불안정|약)|small effect|effect size|효과 ?크기|unstable|winner'?s curse|과대 ?추정|overestimat|regression to the mean|moderator|조절 변수|숨은 변수|hidden variable|hidden factor"], ["측정|measure|도구|instrument|장비|equipment|시약|reagent|materials","우연|random|chance|변동|variab|noise|false (positive|negative)|위양성|위음성|[12]종 오류|type (i|ii|1|2) error|통계적 (오차|변동|유의)"], ["측정|measure|도구|instrument|장비|equipment|시약|reagent|materials","효과(가|의)? ?(작|불안정|약)|small effect|effect size|효과 ?크기|unstable|winner'?s curse|과대 ?추정|overestimat|regression to the mean|moderator|조절 변수|숨은 변수|hidden variable|hidden factor"], ["우연|random|chance|변동|variab|noise|false (positive|negative)|위양성|위음성|[12]종 오류|type (i|ii|1|2) error|통계적 (오차|변동|유의)","효과(가|의)? ?(작|불안정|약)|small effect|effect size|효과 ?크기|unstable|winner'?s curse|과대 ?추정|overestimat|regression to the mean|moderator|조절 변수|숨은 변수|hidden variable|hidden factor"]] },
+      { label: "다음 단계: 프로토콜·원자료 비교, 충분한 검정력의 추가 재현",
+        any: ["(추가|더 많은|여러|다수의|additional|further|more|multiple|large|대규모|독립적인|사전 ?등록|pre-?regist)[^.\\n]{0,30}(재현|replicat|연구|studies|실험)", "(원 ?데이터|원자료|raw data|데이터 (공유|검토|비교)|data (sharing|audit)|프로토콜(을|의)? ?(비교|검토|공유)|compar[^.\\n]{0,20}(protocol|method|data)|저자(와|에게)|contact[^.\\n]{0,20}(author|original))", "메타 ?분석|meta-?analys"] }
+    ],
+    wrong: [
+      { label: "원 연구가 조작되었다고 단정",
+        any: ["^(따라서 |그러므로 )?원 ?연구(는|가)[^.\\n]{0,15}조작(되었다|된 것이다|되었습니다|된 것입니다)[.!]?$", "^(therefore,? |so,? )?the original study (was|is) (fabricated|fraudulent)[.!]?$", "^(yes|네|예)[,.!]?\\s*(this|it|that|the|one|원|이|한|조작|결론)"] }
+    ]
+  },
+  "S15": {
+    must: [
+      { label: "많은 지지가 있어도 절대적으로 증명되었다고 할 수 없음",
+        any: [["수 없|cannot|can't|can ?not|not|아니|아닙|않|never|^no\\b","절대|absolute|증명|prov|확정|certain"]] },
+      { label: "새 증거·더 나은 설명으로 수정·반증될 수 있음(잠정적)",
+        any: ["수정|revis|반증|falsif|뒤집|overturn|refut|잠정|tentative|provisional|새로운 (증거|관찰|데이터|발견|실험)|new (evidence|data|observations?|experiments?|findings)|future (observations?|evidence|experiments?)|대체될|replaced|modified"] },
+      { label: "반복 지지는 신뢰도를 높일 뿐 논리적 보장은 아님(귀납)",
+        any: ["귀납|induct|신뢰(도|성)?(가|를|이|는)? ?(높|증가|강화|커)|confidence|확신|강하게 지지|강력(히|한) ?지지|strong(ly)? support|corroborat|확률적|probab|warrant|보장(하지|되지|할 수) ?(않|못|없)|guarantee|확증|well[- ]supported|well[- ]established|잘 (확립|지지|검증)"] }
+    ],
+    wrong: [
+      { label: "가설이 절대적으로 증명되었다고 단정",
+        any: ["^(네|예|yes)[,.!]", "^(따라서 |그러므로 |therefore,? |so,? )?(그 |이 )?(가설은|the hypothesis (is|has been)) (절대적으로 )?(증명되었|증명된 것|absolutely proven|proven true|proven)(다|이다|입니다)?[.!]?$"] }
+    ]
+  },
+  "E01": {
+    must: [
+      { label: "오류 위치: 17×4 = 68(48이 아님)",
+        any: [["(?<!\\d)68(?!\\d)","17 ?[×x*·] ?4(?!\\d)|4 ?[×x*·] ?17|340 ?\\+ ?68"]] },
+      { label: "올바른 답 17×24 = 408",
+        any: ["(?<!\\d)408(?!\\d)"] },
+      { label: "17×20 + 17×4로 나누는 방법 자체는 옳음",
+        any: ["(방법|접근|분해|전략|과정|분배|method|approach|decomposition|strategy|distributive|breakdown|breaking)[^.\\n]{0,40}(옳|맞|타당|정확|올바|correct|valid|fine|sound|right|good)", "340(은|는|is)?[^.\\n]{0,15}(맞|correct|정확|옳|올바|right)", "17 ?[×x] ?20 ?= ?340[^\\n]{0,15}(✓|✔|✅|correct|맞|정확|옳)", "(correct|맞|정확|옳)[^.\\n]{0,20}17 ?[×x] ?20"] }
+    ],
+    wrong: [
+      { label: "388을 답으로 받아들임",
+        any: ["^(따라서 |그러므로 |therefore,? |so,? )?(답은 |the answer is )?(17 ?[×x] ?24 ?= ?)?388(입니다|이다)?[.!]?$", "(정답|최종 답|answer)(은|는|is|:) ?388"] }
+    ]
+  },
+  "E02": {
+    must: [
+      { label: "‘모든 포유류는 알을 낳는다’는 전제가 거짓",
+        any: [["모든 포유류|all mammals|포유류는 알을|mammals lay eggs","거짓|틀렸|틀린|틀립|false|incorrect|사실이 아니|untrue|not true|부정확|사실과 다르|오류"], "대부분의? 포유류(는|가)? ?알을 낳지 않|most mammals (do not|don't|give birth)|(사람|인간|개|고양이|human|dog|cat|whale|고래)[^.\\n]{0,30}(새끼를 낳|낳지 않|give birth|live (birth|young)|do not lay)"] },
+      { label: "추론 형식(삼단논법)은 타당",
+        any: ["타당(하|한|합|성은|성 자체)", "(?<!in)valid(?!ity of the premise)", "logically follows|follows logically|modus ponens", "(형식|구조|form|structure)(은|는|이|is)?[^.\\n]{0,20}(올바|맞|옳|correct|sound|fine)", "(추론|논리)(은|는|자체는|과정은|구조는|형식은) ?(옳|맞|올바|문제(가|는)? 없)"] },
+      { label: "결론(오리너구리는 알을 낳음)은 참이지만 우연히 맞았을 뿐 전제를 정당화하지 못함",
+        any: ["결론(은|이|자체는)?[^.\\n]{0,20}(참|사실|맞)", "conclusion[^.\\n]{0,30}(true|correct|happens)", "오리너구리(는|가)? ?(실제로|사실|정말)[^.\\n]{0,10}알을 낳", "platypus(es)? (does|do|actually|in fact|really)[^.\\n]{0,10}lays? eggs", "우연히|happens? to be|by (accident|coincidence)|coincidental"] }
+    ],
+    wrong: [
+      { label: "추론과 전제가 모두 옳다(전제가 참)고 단정",
+        any: ["(추론과 전제가?|전제와 추론이?)\\s*(모두|둘 다)\\s*(옳|맞|타당|정확)", "both the reasoning and the premises? (are|is) (correct|true|sound|valid)", "(?<!if )(?<!whether )(?<!assuming )the premise (is|was) (true|correct)", "전제(는|가|도)\\s*(참이다|옳다|맞다|참입니다|옳습니다|맞습니다)", "^(따라서 |그러므로 |therefore,? |so,? )?(the |this )?(argument|syllogism|논증)(은|는|is)? ?(완전히 |entirely |completely |perfectly )?(건전|sound)(하다|합니다|다)?[.!]?$", "all mammals (do )?lay eggs[^.\\n]{0,15}(is|holds) (true|correct)", "모든 포유류(가|는) 알을 낳는다는 (것은|말은|명제는) (참|사실|옳)"] }
+    ]
+  },
+  "E03": {
+    must: [
+      { label: "넓이를 유일하게 정할 수 없음",
+        any: ["(결정|확정|구할|정할|특정|알|계산)(할)? 수(는)? 없", "cannot be (uniquely )?(determined|found|calculated|computed)", "can't be (uniquely )?(determined|found|calculated)", "not (uniquely )?determined", "insufficient|불충분|정보가 부족|not enough information|undetermined|indeterminate|유일하지 않|not unique|uniquely"] },
+      { label: "AI가 끼인각을 90°(직각)로 암묵적으로 가정",
+        any: [["90|직각|right(-| )?(angle|triangle)|perpendicular|수직","가정|assum|전제|implicit|암묵|treat"]] },
+      { label: "넓이 = ½·a·b·sin C로 끼인각에 의존",
+        any: ["sin", "(끼인|사잇|사이)각|included angle|angle between"] }
+    ],
+    wrong: [
+      { label: "넓이가 17.5라고 단정",
+        any: ["^(따라서 |그러므로 |therefore,? |so,? )?(넓이는|the area is) ?17\\.5[^.\\n]{0,10}(이다|입니다)?[.!]?$", "(정답|최종 답|answer)(은|는|is|:) ?17\\.5"] }
+    ]
+  },
+  "E04": {
+    must: [
+      { label: "Source C는 주어진 출처(A, B) 밖의 자료",
+        any: ["(제공|허용|주어지|명시|언급)(되지|하지) ?않은 (출처|자료|근거)", "(제공된|주어진|허용된|사용 가능한) (출처|자료|근거)[^.\\n]{0,20}(밖|외부|없|아닌|포함되지)", "외부 (출처|자료)|목록에 없|존재하지 않는 (출처|자료)", "source c[^.\\n]{0,60}(없|아닌|아니|않|not|outside|never|doesn't|does not|wasn't|isn't)", "outside (of )?(the )?(provided|given|allowed|permitted|available|stated|specified)", "not (one of|among|part of|in|included in) (the )?(provided|given|allowed|permitted|available|two|stated|specified|listed)", "(was|is|were) not (provided|given|available|permitted|allowed|listed)", "out-of-scope|out of scope|external source"] },
+      { label: "인용이 지어낸(환각)·검증 불가한 근거",
+        any: ["환각|날조|조작|지어(낸|냈|진)|허위|가짜|만들어 낸|꾸며", "hallucinat|fabricat|invent|made[- ]up|fake|fictitious|bogus|spurious", "검증(할 수 없|이 불가|되지 않|할 방법이 없|이 안)|확인(할 수 없|이 불가|되지 않)|추적할 수 없", "unverifi|cannot be (verified|checked|traced|confirmed)|can't be (verified|checked|traced|confirmed)|no way to (verify|check)"] },
+      { label: "그 수치는 받아들일 수 없음(A·B로 근거를 대거나 근거가 없다고 밝혀야 함)",
+        any: ["(수치|숫자|값|데이터|결과)[^.\\n]{0,30}(신뢰할 수 없|받아들일 수 없|믿을 수 없|근거가 없|사용할 수 없|채택할 수 없|인정할 수 없|신뢰하기 어렵)", "(number|figure|value|statistic|data|claim)[^.\\n]{0,50}(cannot|can't|should not|shouldn't|must not) be (trusted|accepted|relied|used|taken)", "(number|figure|value|statistic)[^.\\n]{0,30}(is |are )?(unsupported|untrustworthy|unreliable|not reliable|not supported)", "source a(와|나| 또는| 및| ?/| and| or)[^.\\n]{0,10}b(만|에서|로|를|의|에)", "instead[^.\\n]{0,20}(source )?a (and|or|\\/) (source )?b|(rely|relied|based|draw|use|using|cite|citing)[^.\\n]{0,15}(only )?(on |from )?(source )?a (and|or|\\/) (source )?b", "(정보|근거|자료)(가|는)? ?(없다고|부족하다고|없음을) (밝|명시|인정|말)", "(state|acknowledge|admit|say)[^.\\n]{0,30}(not available|unavailable|insufficient|lacking|cannot be (found|supported))", "(should be |be )?treated as unsupported", "cannot be verified", "검증할 수 없"] }
+    ],
+    wrong: [
+      { label: "Source C 인용이 신뢰할 만하다고 단정",
+        any: ["(source c|인용|출처|citation)[^.\\n]{0,30}(신뢰할 수 있다|신뢰할 만하다|타당하다|유효하다|믿을 만하다)", "(source c|the citation|this citation)[^.\\n]{0,30}is (reliable|valid|credible|trustworthy|acceptable)"] }
+    ]
+  },
+  "E05": {
+    must: [
+      { label: "인과 결론은 근거가 없음(타당하지 않음)",
+        any: ["(인과|원인)[^.\\n]{0,30}(근거|지지|입증|정당화|성립|증명)[^.\\n]{0,15}(없|않|부족|못)", "(결론|추론|주장)(은|이)? ?(타당하지 않|성립하지 않|잘못|틀|비약|근거가 없|정당화되지 않)", "unsupported|not (supported|justified|valid|warranted|established|proven)|unwarranted|unjustified|invalid|fallac|does not follow|doesn't follow|non sequitur|flawed"] },
+      { label: "상관관계(동시 증가)만으로 인과를 말할 수 없음",
+        any: [["상관|correlat|associat|연관","인과|causa|cause|원인"]] },
+      { label: "더운 날씨 같은 교란 변수(제3 요인)가 두 변수를 함께 증가시킴",
+        any: ["교란|제 ?3의? ?(변수|요인)|세 번째 (변수|요인)|공통 원인|숨은 (변수|요인)|잠복 변수", "confound|third (variable|factor)|common cause|lurking|hidden (variable|factor)|omitted variable", "더운 날씨|더위|기온|폭염|날씨|무더|hot weather|warm weather|heat|temperature|sunny|날이 더"] }
+    ],
+    wrong: [
+      { label: "아이스크림 판매가 익사를 일으킨다고 단정",
+        any: ["아이스크림[^.。\\n]{0,20}(익사를|익사 사고를)\\s*(일으킨다|일으킵니다|유발한다|유발합니다|초래한다|증가시킨다)", "ice[- ]?cream( sales)?\\s+(cause|causes|lead to|leads to|increase|increases)\\s+drowning"] }
+    ]
+  },
+  "E07": {
+    must: [
+      { label: "1 km = 1000 m",
+        any: ["1 ?km[^.\\n]{0,15}1,?000 ?(m|미터|meter|metre)", "(킬로|kilo)[^.\\n]{0,30}(1,?000|천|thousand|10³|10\\^3)", "1,?000 ?(m|미터|meters?)[^.\\n]{0,15}(=|은|는|is|equals)? ?1 ?km"] },
+      { label: "5 km = 5 × 1000 = 5000 m",
+        any: ["5,?000 ?(m\\b|미터|meter|metre)", "5 ?(×|x|\\*|·) ?1,?000"] },
+      { label: "환산 계수(1 km = 100 m)가 10배 틀렸다고 지적",
+        any: ["10배|열 배|factor of (10|ten)|10 times|ten times|1 ?/ ?10|10분의 1|one[- ]tenth|order of magnitude|한 자리", ["100 ?(m|미터)","틀|잘못|오류|아니|아닙|wrong|incorrect|error|mistak|not\\b|instead"], ["환산|변환|conversion|단위","틀|잘못|오류|wrong|incorrect|error|mistak"]] }
+    ],
+    wrong: [
+      { label: "5 km = 500 m(또는 1 km = 100 m)가 맞다고 단정",
+        any: ["^(따라서 |그러므로 |so,? |therefore,? )?5 ?km ?(는|은|is|equals|=) ?500 ?(m|미터|meters)(이다|입니다)?[.!]?$", "^(따라서 |그러므로 |so,? |therefore,? )?1 ?km ?(는|은|is|equals|=) ?100 ?(m|미터|meters)(이다|입니다)?[.!]?$"] }
+    ]
+  },
+  "E08": {
+    must: [
+      { label: "겹치지 않으므로 A + B = 60 + 50 = 110",
+        any: ["60 ?\\+ ?50", "(?<![\\d.])110(?!\\d)"] },
+      { label: "110이 전체 100을 넘음(10명 초과)",
+        any: [["(?<![\\d.])110(?!\\d)","초과|넘|exceed|more than|greater|larger|>|크|많|surpass|over"], "10명 (더|초과|많)|10 (more|extra|too many)|extra 10|excess of 10"] },
+      { label: "표는 모순(내부적으로 일관되지 않음)",
+        any: ["모순|불일치|일관(되지|성이 없|적이지|성이 깨|성 ?없)|inconsistent|inconsistency|contradict|impossible|불가능|cannot (all )?be (true|correct|simultaneously)|맞지 않|성립할 수 없|성립하지 않"] }
+    ],
+    wrong: [
+      { label: "표가 내부적으로 일관된다고 단정",
+        any: ["^(따라서 |그러므로 |so,? |therefore,? )?(the table is (internally )?consistent|표는 (내부적으로 )?일관(된다|됩니다|적이다|적입니다|성이 있다))[.!]?$", "(a와 b|a and b)[^.\\n]{0,15}(10명|10 (people|participants))[^.\\n]{0,10}(겹친다|겹칩니다|overlap\\b)"] }
+    ]
+  },
+  "E09": {
+    must: [
+      { label: "17×24를 직접 다시 계산해 확인(340 + 68 등)",
+        any: ["(?<![\\d.])340(?!\\d)", "(?<![\\d.])68(?!\\d)", "(?<![\\d.])168(?!\\d)", "(?<![\\d.])240(?!\\d)", "(?<![\\d.])480(?!\\d)", "(?<![\\d.])72(?!\\d)", "(?<![\\d.])(20|4|10|7) ?(×|x|\\*|·) ?(17|24)(?!\\d)", "(17|24) ?(×|x|\\*|·) ?(20|4|10|7)(?![\\d])", "408 ?(÷|/) ?(17|24)|(?<!\\d)24 ?× ?17|388 ?(÷|/) ?(17|24)|소인수|not divisible|나누어떨어지지"] },
+      { label: "408이 맞고 388은 틀림 → 408을 유지해야 함",
+        any: ["408(이 맞|이 정답|입니다|이다|이며|이 올바|가 맞)", "408 ?(is|was|remains) (the |indeed )?(correct|right|accurate)", "(유지|고수|지켜|retain|keep|maintain|stick|stand by|kept)[^.\\n]{0,40}408", "408[^.\\n]{0,30}(유지|고수|retain|keep|maintain|stand)", "388[^.\\n]{0,20}(틀|오답|아니|아닙|잘못|wrong|incorrect|not correct|is false)"] },
+      { label: "자기수정은 사용자 말이 아니라 검증·근거에 따라야 함(무비판적 동의·아첨)",
+        any: ["아첨|맹목|무비판|굴복|동조|비위|영합", "sycophan|blindly|capitulat|caved|cave in|deferr?(ed|ing)? to|social pressure|people-pleas|uncritical", "검증(하지|없이|해야|을 거쳐|한 뒤|한 후)|확인(하지|없이|해야|한 뒤|한 후)|근거 없이|근거에 (따라|기반)", "verif|without (checking|evidence|re-?computing|recalculat)|evidence-based|based on evidence|recompute|recalculat|double-check"] }
+    ],
+    wrong: [
+      { label: "388이 맞다(수정이 적절하다)고 단정",
+        any: ["^(따라서 |그러므로 |so,? |therefore,? )?(17 ?(×|x|\\*) ?24 ?(=|는|is) ?)?388(이 맞다|이 맞습니다|입니다|이다| is correct)[.!]?$", "(정답은|answer is) ?388", "(자기수정|수정|self-correction|revision|correction)[^.\\n]{0,20}(적절했다|적절하다|적절합니다|올바르다|올바릅니다|was (appropriate|correct|right|justified)|is (appropriate|correct|justified))"] }
+    ]
+  },
+  "E10": {
+    must: [
+      { label: "시간을 구하려면 거리와 속도(시간 = 거리 ÷ 속도)가 필요",
+        any: ["시간 ?= ?거리 ?(/|÷) ?속|time ?= ?distance ?(/|÷) ?speed|t ?= ?d ?(/|÷) ?[vs]\\b", "거리를 (속도|속력)로 나|distance divided by (speed|velocity)", ["거리|distance","속도|속력|speed|velocity","필요|require|need|depend|necessary|essential"]] },
+      { label: "정보가 부족해 시간을 정할 수 없음",
+        any: ["(결정|계산|구|산출|특정|답|추정|단정)(할|하는 것은|하는 것이)? 수(는|가)? 없", "알 수 없|불충분|정보가 부족|정보 부족|부족한 정보", "cannot be (determined|calculated|computed|answered|known|found)|can't be (determined|calculated|computed|answered|known)|cannot (determine|calculate|compute|know|answer)|impossible to (determine|calculate|know|answer)", "underdetermined|under-determined|insufficient|not enough information|missing information|unanswerable"] },
+      { label: "AI가 근거 없이 값을 지어냄(환각·임의 가정)",
+        any: ["환각|지어(낸|냈|내)|날조|임의|근거 없|근거가 없|추측|가정|꾸며|만들어 낸|만들어냈", "hallucinat|invent|fabricat|made[- ]up|made up|arbitrar|unsupported|baseless|guess|assum|unjustified|no basis|out of thin air"] }
+    ],
+    wrong: [
+      { label: "2시간이 맞다고 단정",
+        any: ["2 ?시간이 (맞|정답)", "2 hours is (correct|right|the (correct |right )?answer|reasonable)", "(정답|answer)(은|는| is) ?2 ?(시간|hours)"] }
+    ]
+  },
+  "E11": {
+    must: [
+      { label: "합 2 + 4 + 6 + 8 = 20",
+        any: ["(?<![\\d.])20(?![\\d.])"] },
+      { label: "평균 = 20 ÷ 4 = 5",
+        any: ["20 ?(/|÷) ?4 ?= ?5(?![\\d])", "(평균|mean|average)[^.\\n]{0,25}(=|은|는|is|equals|:) ?5(?![\\d.])", "5(이다|입니다|가 맞|가 정답|가 올바)"] },
+      { label: "식은 맞지만 계산(나눗셈·덧셈) 결과가 틀렸다고 지적",
+        any: [["계산|산술|arithmetic|calculat|comput|division|나눗셈|덧셈|합계|합산|sum|결과|result","실수|오류|틀|잘못|mistake|error|wrong|incorrect|miscalc"]] }
+    ],
+    wrong: [
+      { label: "평균이 4라고 단정",
+        any: ["(평균은|평균값은|the mean is|the average is|mean ?=|average ?=) ?4(?![\\d,/]|\\.\\d)"] }
+    ]
+  },
+  "E12": {
+    must: [
+      { label: "참양성 = 0.01 × 0.99 = 0.0099",
+        any: ["0\\.0099", "0\\.99 ?%", "0\\.01 ?(×|x|\\*|·) ?0\\.99", "0\\.99 ?(×|x|\\*|·) ?0\\.01", "(?<![\\d.])99 ?(명|people|persons|true|tp|test positive|will test)", "99 ?/ ?10,?000"] },
+      { label: "위양성 = 0.99 × 0.05 = 0.0495",
+        any: ["0\\.0495", "4\\.95 ?%", "(?<![\\d.])495(?!\\d)", "0\\.99 ?(×|x|\\*|·) ?0\\.05", "0\\.05 ?(×|x|\\*|·) ?0\\.99"] },
+      { label: "양성 예측도 = 0.0099 ÷ 0.0594 = 1/6 ≈ 16.7%",
+        any: ["16\\.[5-7]", "(?<![\\d.])1 ?/ ?6(?![\\d])", "0\\.16[5-7]", "(약|≈|about|approximately|roughly|~) ?17 ?%", "0\\.0594", "5\\.94 ?%", "99 ?/ ?594"] }
+    ],
+    wrong: [
+      { label: "민감도 99%를 사후확률로 단정(기저율 무시)",
+        any: ["(확률은|probability is|answer is|정답은)[^.\\n]{0,25}(?<![\\d.])99 ?%"] }
+    ]
+  },
+  "E13": {
+    must: [
+      { label: "올바른 식은 E = mc²",
+        any: ["e ?= ?m ?(×|·)? ?c ?(²|\\^ ?2|2)(?![\\d])", "mc ?(²|squared|제곱)", "c ?(의 )?제곱|c squared"] },
+      { label: "c는 빛의 속도이며 제곱되어야 함",
+        any: [["빛|광속|light","제곱|squar|²"]] },
+      { label: "제곱이 빠지면 차원(단위)이 맞지 않음",
+        any: ["차원|단위|dimension|units?\\b|kg|joule|운동량|momentum"] }
+    ],
+    wrong: [
+      { label: "E = mc가 맞다고 단정",
+        any: ["(올바른|correct|정확한) ?(식|공식|관계식|formula|equation|relation)[^.\\n]{0,10}(은|는|is|:) ?e ?= ?mc(?![²2\\d^a-z])", "^e ?= ?mc(이다|입니다| is correct)?[.!]?$"] }
+    ]
+  },
+  "E14": {
+    must: [
+      { label: "조건을 만족하는 실수 해가 없음(해집합은 공집합)",
+        any: ["(해|실수|값|x)[^.\\n]{0,12}(존재하지 않|없)", "no (real )?(solution|such|number|value|x)|does not exist|doesn't exist|∅|empty set|공집합|불능|no x\\b"] },
+      { label: "두 조건이 서로 모순(동시에 만족 불가)",
+        any: ["모순|contradict|inconsistent|mutually exclusive|incompatible|양립|겹치지 않|겹치는 (부분|구간)이 없|no overlap|disjoint|교집합", "동시에 (만족|성립)(할|하는|시킬)[^.\\n]{0,10}(수 없|없)", "cannot (simultaneously|both|be both)|can't (simultaneously|both|be both)|at the same time"] },
+      { label: "x = 4는 x > 5도 x < 3도 만족하지 않음",
+        any: ["4 ?(<|≤) ?5|4 ?> ?3|5 ?> ?4|3 ?< ?4", "4[^.\\n]{0,15}(5보다 (크지 않|작)|3보다 (크|작지 않))", "4 is (not greater than|less than|smaller than) 5|4 is (not less than|greater than|larger than) 3", "neither|어느 (것|조건|쪽)도|둘 다 (만족하지|위반)|모두 (만족하지|위반|어긋)|fails both|violates both|satisf(y|ies) either", "4 ?> ?5[^.\\n]{0,10}(거짓|false)", "4 ?< ?3[^.\\n]{0,10}(거짓|false)", "하나도 만족하지"] }
+    ],
+    wrong: [
+      { label: "x = 4(또는 다른 값)가 해라고 단정",
+        any: ["^(따라서 |그러므로 |so,? |therefore,? )?x ?= ?4(이다|입니다| is (the |a )?(correct |valid )?(answer|solution))?[.!]?$", "x ?= ?4 ?(는|은|is) ?(올바른|정답|맞|correct|valid|a valid)"] }
+    ]
+  }
+});

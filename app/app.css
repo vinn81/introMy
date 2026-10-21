@@ -278,6 +278,35 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .verdict-title { font-weight: 850; font-size: 1.2rem; letter-spacing: -0.02em; margin-bottom: 4px !important; }
 .verdict > p:not(.verdict-title) { color: #333a48; }
 
+/* 종합 고리 안에는 점수 대신 판정 낱말(좋음·확인 필요·문제 있음·보류) */
+#overall b { font-size: 1.5rem; letter-spacing: -0.03em; text-align: center; line-height: 1.15; padding: 0 14px; word-break: keep-all; }
+
+/* 결론 · 근거 · 흔들림 세 칸 */
+.axes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 4px 0 20px; }
+.axis { padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: #fff; min-width: 0; }
+.axis h3 { margin: 0 0 4px; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; color: var(--muted); }
+.axis-state { margin: 0 0 8px; font-weight: 850; font-size: 1.02rem; letter-spacing: -0.01em; }
+.axis-good { border-color: #b7dfd9; box-shadow: inset 4px 0 0 var(--ok); }
+.axis-good .axis-state { color: var(--ok); }
+.axis-warn { border-color: #f2c879; box-shadow: inset 4px 0 0 #d48a1a; }
+.axis-warn .axis-state { color: var(--warn); }
+.axis-bad { border-color: #f3b8b2; box-shadow: inset 4px 0 0 var(--bad); }
+.axis-bad .axis-state { color: var(--bad); }
+.axis-none .axis-state { color: var(--muted); }
+.axis-line { margin: 0 0 4px; font-size: 0.84rem; overflow-wrap: anywhere; }
+.axis-line span { display: block; font-size: 0.72rem; font-weight: 750; color: var(--muted); }
+.reason-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.84rem; }
+.reason-list li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; align-items: start; }
+.reason-list .mark { font-weight: 900; text-align: center; }
+.reason-list .hit .mark { color: var(--ok); }
+.reason-list .miss { color: #4a5262; }
+.reason-list .miss .mark { color: var(--warn); }
+.reason-list .wrong { color: var(--bad); font-weight: 650; }
+.reason-list .wrong q { grid-column: 2; display: block; margin-top: 2px; font-weight: 500; color: #7a1d14; quotes: "“" "”"; }
+.sub-score { font-size: 0.9rem; font-weight: 800; color: var(--muted); order: 2; }
+.sub::after { order: 1; }
+mark.m-wrong { background: var(--bad-soft); color: #7a1d14; box-shadow: inset 0 -2px 0 var(--bad); border-radius: 3px; }
+
 .rubric { display: grid; gap: 10px; margin-bottom: 22px; padding: 16px 18px; border-radius: 16px; background: var(--surface-soft); }
 .bar { display: grid; grid-template-columns: 130px 1fr 64px; gap: 12px; align-items: center; font-size: 0.88rem; }
 .bar .track { height: 8px; border-radius: 99px; background: #e3e6ef; overflow: hidden; }
@@ -386,6 +415,7 @@ mark.m-signal { background: var(--warn-soft); color: #6b3f00; box-shadow: inset 
   .facts, .pair, .about-grid { grid-template-columns: 1fr; }
   .kbd-hint { display: none; }
   .score-row { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .axes { grid-template-columns: 1fr; }
   .score { width: 112px; height: 112px; }
   .score b { font-size: 2.2rem; }
   .bar { grid-template-columns: 96px 1fr 56px; font-size: 0.84rem; }

@@ -285,3 +285,13 @@ test("근거 기준: 결론만 쓴 답은 필수 근거가 모자라고, 틀린 
   assert.equal(P.checkRubric("반대로 합격은 보고서 제출의 충분조건이 됩니다.", R.L03).wrong.length, 0);
   assert.equal(P.checkRubric("- 결론: 따라서 정사각형이다. ($P$) ❌ 오류", R.E06).wrong.length, 0);
 });
+
+test("근거 기준 60문항: 회귀 견본의 맞는 답은 필수 근거를 모두 짚고, 틀린 답은 근거 부족이나 틀린 근거로 잡힌다", () => {
+  const SAMPLES = require("./rubric-samples.js");
+  assert.equal(Object.keys(window.P2_RUBRIC).length, 60);
+  Object.keys(SAMPLES).forEach((id) => {
+    const R = window.P2_RUBRIC[id];
+    SAMPLES[id].good.forEach((t, k) => { const r = P.checkRubric(t, R); assert.ok(r.hit === r.total && r.wrong.length === 0, id + " good" + k + " " + r.hit + "/" + r.total); });
+    SAMPLES[id].bad.forEach((t, k) => { const r = P.checkRubric(t, R); assert.ok(r.hit < r.total || r.wrong.length > 0, id + " bad" + k); });
+  });
+});

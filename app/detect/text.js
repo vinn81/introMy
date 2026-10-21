@@ -36,14 +36,17 @@
     var t = String(text == null ? "" : text).slice(0, 20000).trim();
     if (!t) return { ok: false, reason: "empty" };
     var words = t.split(/\s+/).filter(Boolean);
-    if (t.length < 15) return { ok: false, reason: "short" };
+    // 한 줄짜리 답("정답은 72가지입니다.")도 결론·근거를 볼 수 있으므로 받는다. 너무 짧은 글자 토막만 거른다
+    if (!/[0-9a-z가-힣]/i.test(t) || (t.length < 4 && !/\d/.test(t))) return { ok: false, reason: "short" };
     var nonSpace = t.replace(/\s+/g, "");
     var letters = (nonSpace.match(/[a-z가-힣ㄱ-ㅎㅏ-ㅣ]/gi) || []).length;
     // 수식이 많은 답도 글자가 4분의 1은 넘는다(논문 답 240개 중 최저 0.39)
     // 짧은 계산 답("17×24=388. Since 17×20=340 …")은 글자보다 숫자가 많아도 등식이 있으면 답으로 읽는다
     var equation = /\d\s*[=×x*+\/−-]\s*\d[\s\S]*=|\d\s*=\s*\d/.test(t) && letters >= 3;
-    if (letters / nonSpace.length < 0.25 && !equation) return { ok: false, reason: "noletters" };
-    var oneChar = words.filter(function (w) { return w.length === 1; }).length;
+    // 짧은 값 답("13", "5000 m", "답: 2/3")은 글자가 적어도 받는다
+    if (letters / nonSpace.length < 0.25 && !equation && !(t.length <= 40 && /\d/.test(t))) return { ok: false, reason: "noletters" };
+    // 한 글자 토막 연타(a s d f …). 숫자·기호·대문자 변수(P, Q, T, F)는 식·진리표에 흔하므로 세지 않는다
+    var oneChar = words.filter(function (w) { return /^[a-z가-힣ㄱ-ㅎㅏ-ㅣ]$/.test(w); }).length;
     if (words.length >= 8 && oneChar / words.length > 0.6) return { ok: false, reason: "gibberish" };
     // 같은 글자가 길게 이어지거나(ㅋㅋㅋ…, aaaa…), 같은 토막을 되풀이한 글
     if (/([a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ])\1{14,}/i.test(nonSpace)) return { ok: false, reason: "repeated" };
@@ -69,7 +72,7 @@
       if (odd / latin.length > 0.3) return { ok: false, reason: "gibberish" };
     }
     if (latin.length < 5 && nonSpace.length > 40 && /^[a-z]+$/i.test(nonSpace)) return { ok: false, reason: "gibberish" };
-    if (words.length < 3) return { ok: false, reason: t.length > 40 ? "gibberish" : "short" };
+    if (words.length < 3 && t.length > 40) return { ok: false, reason: "gibberish" };
     return { ok: true };
   }
 

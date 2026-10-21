@@ -6,6 +6,7 @@
   var EXAMPLES = window.P2_EXAMPLES || [];
   var ITEMS = window.P2_ITEMS || [];
   var CLAIMS = window.P2_CLAIMS || {};
+  var RUBRICS = window.P2_RUBRIC || {};
   var ERROR_KO = window.P2_ERROR_KO || {};
   var MAX_LEN = 20000;
   // 관련성 확인에서 '다른 질문'으로 쓰는 P2-Bench 60문항(한국어·영어)
@@ -31,7 +32,7 @@
 
   var INPUT_MESSAGES = {
     empty: "답이 비어 있습니다. AI 답을 붙여 넣거나 논문 예시를 불러오세요.",
-    short: "답이 너무 짧아 흔들림을 볼 수 없습니다. 풀이까지 포함한 답 전체를 넣어 주세요.",
+    short: "답이 너무 짧습니다. AI 답 전체를 넣어 주세요.",
     noletters: "글자보다 기호·숫자가 대부분이라 답으로 읽을 수 없습니다. AI가 쓴 문장 답을 넣어 주세요.",
     repeated: "같은 글자나 문장이 되풀이된 입력이라 점검하지 않았습니다. AI 답 원문을 넣어 주세요.",
     gibberish: "읽을 수 있는 문장이 아닌 것 같아 점검하지 않았습니다. AI 답 원문을 넣어 주세요."
@@ -122,6 +123,24 @@
     if (!an || an.empty || an.cut || !ref || ref.status !== "match") return;
     if (!an.hasConclusion) { an.hasConclusion = true; an.conclusionBy = "결론 표시는 없지만 최종 답이 기준 정답과 같음"; }
     an.finalReliable = true;
+  }
+
+  // 고른 문항의 필수 근거를 모두 짚고 틀린 근거가 없으면 이 문항의 답으로 본다.
+  // 단, 더 비슷해 보인 다른 문항의 근거도 모두 짚었다면 어느 쪽 답인지 알 수 없으므로 보증하지 않는다
+  function rubricVouches(text, rb, rel) {
+    if (!rb || rb.hit < rb.total || rb.wrong.length) return false;
+    var other = rel.other ? ITEMS.filter(function (it) { return it.kr === rel.other[0]; })[0] : null;
+    var orb = other ? P.checkRubric(text, RUBRICS[other.id] || null) : null;
+    return !(orb && orb.hit === orb.total && !orb.wrong.length);
+  }
+
+  // 한두 줄짜리 답("s = 7", "Valid modus tollens.")은 질문 단서가 거의 없어 관련성을 잴 수 없으므로, 사용자가 고른 문항을 믿는다.
+  // 다른 문항의 근거를 더 많이 짚었을 때만 예외. 엉뚱한 짧은 글은 근거 0개라 '좋음'이 되지 않는다
+  function shortTrust(text, rb, rel) {
+    if (String(text).trim().length > 200 || rel.status === "unknown") return false;
+    var other = rel.other ? ITEMS.filter(function (it) { return it.kr === rel.other[0]; })[0] : null;
+    var orb = other ? P.checkRubric(text, RUBRICS[other.id] || null) : null;
+    return !(orb && rb && orb.hit > rb.hit);
   }
 
   function pickItem() {
@@ -248,6 +267,17 @@
       state.refCheck = P.matchReference(state.analysis, item.answer, CLAIMS[item.id] || null);
       var ref = state.refCheck;
       trustIfMatched(state.analysis, ref);
+      // 문항마다 정한 필수 근거·틀린 근거와 맞댄다(data.js P2_RUBRIC)
+      state.rubricCheck = P.checkRubric(text, RUBRICS[item.id] || null);
+      // 다른 문항과 단서가 겹쳐 보여도, 고른 문항의 필수 근거를 모두 짚고 틀린 근거가 없으면 이 질문의 답이다
+      // (논문 답 240개를 다른 59문항 기준에 대면 '모두 짚음'은 0.3% 이하)
+      if (state.relevance.status !== "related" && rubricVouches(text, state.rubricCheck, state.relevance)) {
+        state.relevance.status = "related";
+        state.relevance.byRubric = true;
+      } else if (state.relevance.status !== "related" && shortTrust(text, state.rubricCheck, state.relevance)) {
+        state.relevance.status = "related";
+        state.relevance.byShort = true;
+      }
       // 질문 단서가 적게 겹쳐도 최종 답이 기준 정답과 숫자·식으로 맞으면 이 질문의 답이다
       if (ref && ref.status === "match" && ref.strong && state.relevance.status !== "related" && state.relevance.reason !== "other") {
         state.relevance.status = "related";
@@ -265,7 +295,7 @@
       $("result-body").hidden = false;
       scrollAnnotated();
       // 복사하다 만 답: 풀이 중간을 최종 답으로 읽게 되므로 알린다
-      if (state.analysis.finalReliable === false) setNote("input-note", "결론 문장을 찾지 못했습니다. 답이 중간에 끊긴 것 같으니 AI 답을 끝까지 복사해 붙여 넣었는지 확인하세요.", true);
+      if (state.analysis.cut) setNote("input-note", "답이 문장 중간에서 끝납니다. AI 답을 끝까지 복사해 붙여 넣었는지 확인하세요.", true);
       if ($("answer-b").value.trim()) compare(true);
       else { $("compare-body").hidden = true; setNote("compare-note", ""); }
       if (document.activeElement && document.activeElement.id === "run") {
@@ -307,6 +337,8 @@
     if ($("relevance-ok").checked) return ["high", "직접 확인함"];
     if (rel.status === "related") {
       if (rel.byReference) return ["medium", "질문 단서는 적지만 기준 정답 값과 맞음"];
+      if (rel.byRubric) return ["medium", "질문 단서는 적지만 이 문항의 필수 근거를 모두 짚음"];
+      if (rel.byShort) return ["low", "짧은 답이라 고른 문항을 그대로 믿음"];
       return rel.score >= 5 && rel.best < rel.score ? ["high", "고른 문항의 답"] : ["medium", "고른 문항의 답(단서가 많지 않음)"];
     }
     if (rel.status === "unrelated") return rel.reason === "weak" && rel.score === 0 ? ["high", "관련 없음"] : ["medium", rel.reason === "other" ? "다른 문항의 답으로 보임" : "관련 없어 보임"];
@@ -319,6 +351,9 @@
     if (!offTopic && !noConclusion) {
       var ref = state.refCheck;
       if (ref) items.push(confChip("최종 답 대조", ref.confidence || "low", ref.status === "match" ? "기준 정답과 같음" : ref.status === "mismatch" ? "기준 정답과 다름" : "맞대지 못함"));
+      var rb = state.rubricCheck;
+      if (rb) items.push(confChip("근거 대조", "medium", "필수 근거 " + rb.hit + "/" + rb.total + (rb.wrong.length ? " · 틀린 근거 " + rb.wrong.length : ""),
+        "근거는 문항마다 정한 한·영 표현 목록으로 찾습니다. 근거를 말했는지는 알지만 제대로 설명했는지는 직접 읽어 확인해야 합니다."));
       items.push(confChip("흔들림 신호", "medium", ids.length ? "신호 " + ids.length + "개" : "신호 없음",
         "흔들림 규칙은 논문의 감점 4건으로 만들어, 다른 AI의 실제 답에서 얼마나 맞는지는 아직 재지 않았습니다. 신호를 직접 켜고 끌 수 있습니다."));
     }
@@ -358,9 +393,18 @@
       if (sg.index == null || !sg.length) { noPos.push(P.SIGNALS[sg.id].title); return; }
       marks.push({ start: sg.index, end: sg.index + sg.length, cls: "m-signal" });
     });
+    // 틀린 근거로 찾은 문장(정규화한 글에서 찾은 것이라 원문에서 위치를 못 찾으면 건너뜀)
+    (state.rubricCheck ? state.rubricCheck.wrong : []).forEach(function (w) {
+      var at = findLast(text, w.evidence);
+      if (at) marks.push({ start: at.start, end: at.end, cls: "m-wrong" });
+    });
     if (noPos.length) notes.push("‘" + noPos.join(", ") + "’은 첫 답과 마지막 답을 맞대 찾은 신호라 한 곳을 표시하지 않았습니다(위 근거 참고).");
-    // 겹치는 표시는 앞의 것을 남긴다
-    marks.sort(function (x, y) { return x.start - y.start; });
+    // 겹치는 표시는 틀린 근거 > 흔들림 신호 > 최종 답 순서로 남긴다
+    var RANK = { "m-wrong": 0, "m-signal": 1, "m-final": 2 }, kept = [];
+    marks.sort(function (x, y) { return RANK[x.cls] - RANK[y.cls]; }).forEach(function (m) {
+      if (!kept.some(function (k) { return m.start < k.end && k.start < m.end; })) kept.push(m);
+    });
+    marks = kept.sort(function (x, y) { return x.start - y.start; });
     var html = "", at = 0;
     marks.forEach(function (m) {
       if (m.start < at) return;
@@ -375,21 +419,27 @@
   // 긴 답이면 흔들림 신호(없으면 최종 답)가 보이게 원문 칸을 굴려 둔다(결과가 화면에 보인 뒤에만 위치를 잴 수 있다)
   function scrollAnnotated() {
     var box = $("annotated");
-    var target = box.querySelector("mark.m-signal") || box.querySelector("mark.m-final");
+    var target = box.querySelector("mark.m-wrong") || box.querySelector("mark.m-signal") || box.querySelector("mark.m-final");
     box.scrollTop = target ? Math.max(0, target.offsetTop - 40) : 0;
   }
 
   // 과제·보고서에 붙일 수 있게 점검 결과를 글로 묶는다
   function resultText() {
     var it = currentItem(), ids = checkedIds(), s = P.score(ids, $("wrong-answer").checked);
-    var score = $("score-total").textContent, scored = !$("scored-part").hidden;
+    var scored = !$("scored-part").hidden, rb = state.rubricCheck, ref = state.refCheck || {};
     var lines = ["[답 흔들림 점검기 · P2-Bench " + it.id + " · " + it.category + "]",
       "질문: " + it.kr, "기준 정답: " + it.answer,
-      "점수: " + (score === "—" ? "보류" : score + " / 100") + " — " + $("verdict-title").textContent,
+      "종합: " + $("overall-label").textContent + " — " + $("verdict-title").textContent,
       $("verdict-text").textContent];
     if (scored) {
+      lines.push("결론: " + ($("wrong-answer").checked ? "기준 정답과 다름" : ref.status === "match" ? "기준 정답과 같음" : "자동으로 맞대지 못함") + " (읽은 결론: " + short60(state.analysis.finalAnswer) + ")");
+      if (rb) {
+        lines.push("근거: 필수 근거 " + rb.hit + "/" + rb.total + (rb.wrong.length ? ", 틀린 근거 " + rb.wrong.length + "개" : ", 틀린 근거 없음"));
+        rb.must.forEach(function (m) { lines.push("  " + (m.hit ? "✓ " : "✕ ") + m.label); });
+        rb.wrong.forEach(function (w) { lines.push("  ! " + w.label + ": “" + w.evidence + "”"); });
+      }
       lines.push("흔들림 신호: " + (ids.length ? ids.map(function (id) { return P.SIGNALS[id].title; }).join(", ") : "없음"));
-      lines.push("루브릭: " + P.RUBRIC.map(function (r) { return r.label + " " + s.parts[r.key] + "/" + r.max; }).join(", "));
+      lines.push("논문 루브릭 점수 " + s.total + "/100: " + P.RUBRIC.map(function (r) { return r.label + " " + s.parts[r.key] + "/" + r.max; }).join(", "));
     }
     [].forEach.call(document.querySelectorAll("#confidence li"), function (li) { lines.push("근거의 단단함 — " + li.textContent.replace(/\s+/g, " ").trim()); });
     lines.push("판정 근거:");
@@ -397,7 +447,7 @@
     if (!$("compare-body").hidden && !$("compare-body").classList.contains("stale")) {
       lines.push("다른 언어 답과 비교: " + $("pair-verdict").firstChild.textContent + " (1단계 답: " + $("meta-a").textContent + " / 다른 언어 답: " + $("meta-b").textContent + ")");
     }
-    lines.push("점검 도구: https://intro-my-nine.vercel.app/app/ (논문 P2-Bench의 100점 루브릭과 오류 유형으로 점검)");
+    lines.push("점검 도구: https://intro-my-nine.vercel.app/app/ (P2-Bench 기준 정답·해설과 논문의 100점 루브릭으로 점검)");
     return lines.join("\n");
   }
 
@@ -419,15 +469,118 @@
     });
   }
 
+  // 종합 판정: 결론(기준 정답) · 근거(필수 근거·틀린 근거) · 흔들림(번복·과잉추론·모순)을 따로 보고 하나로 묶는다
+  // level: good(좋음) · check(확인 필요) · bad(문제 있음) · hold(보류: 평가할 수 없음)
+  var LEVEL_LABEL = { good: "좋음", check: "확인 필요", bad: "문제 있음", hold: "보류" };
+
+  function judge(a, rel, ids, wrong) {
+    var rb = state.rubricCheck, ref = state.refCheck || {};
+    var offTopic = rel.status !== "related" && !$("relevance-ok").checked;
+    var cut = !offTopic && !!a.cut && !wrong;
+    // 결론 표시도, 필수 근거도, 흔들림 신호도 하나 없으면 평가할 대상이 없다
+    var noConclusion = !offTopic && !cut && !a.hasConclusion && !ids.length && !wrong && !(rb && rb.hit > 0);
+    var j = { offTopic: offTopic, cut: cut, noConclusion: noConclusion, hold: offTopic || cut || noConclusion };
+    var missing = rb ? rb.must.filter(function (m) { return !m.hit; }).map(function (m) { return m.label; }) : [];
+    if (offTopic) {
+      j.level = "hold";
+      if (rel.status === "unrelated" && rel.reason === "other") {
+        var other = rel.other ? rel.other[0] : "";
+        j.title = "다른 질문에 대한 답으로 보여 평가하지 않았습니다";
+        j.text = "이 답은 고른 문항보다 P2-Bench의 다른 문항 “" + short60(other) + "”과 숫자·수식·핵심 낱말이 훨씬 많이 겹칩니다. AI에게 물은 문항을 골랐는지 확인하세요.";
+      } else if (rel.status === "unrelated") {
+        j.title = "질문과 관련 없는 답으로 보여 평가하지 않았습니다";
+        j.text = "고른 문항의 숫자·수식·핵심 낱말이 답에 거의 나오지 않습니다. 다른 문항의 답을 넣지 않았는지 확인하세요. 이 문항의 답이 맞다면 아래 확인 칸을 체크하세요.";
+      } else {
+        j.title = "답의 언어로는 관련성을 확인하지 못했습니다";
+        j.text = "이 앱은 한국어·영어 답을 점검합니다. 숫자·수식·개념 단서만으로는 판단할 수 없어 평가를 보류했습니다. 고른 문항의 답이 맞다면 아래 확인 칸을 체크하세요.";
+      }
+    } else if (cut) {
+      j.level = "hold";
+      j.title = "답이 중간에 끊긴 것 같아 평가하지 않았습니다";
+      j.text = "답이 문장 중간(“…" + String(a.text || "").replace(/\s+$/, "").slice(-24) + "”)에서 끝납니다. 끊긴 부분에 결론이나 흔들림이 있을 수 있습니다. AI 답을 끝까지 복사해 붙여 넣으세요.";
+    } else if (noConclusion) {
+      j.level = "hold";
+      j.title = "결론도 근거도 찾지 못해 평가하지 않았습니다";
+      j.text = "답을 내린 문장(‘답:’, ‘따라서 …’, 판정어)도, 이 문항의 답이 짚어야 할 근거도 보이지 않습니다. AI 답을 끝까지 넣었는지 확인하세요.";
+    } else if (wrong) {
+      j.level = "bad";
+      j.title = $("wrong-auto").hidden ? "최종 답이 틀렸다고 표시했습니다" : "결론이 기준 정답과 다릅니다";
+      j.text = $("wrong-auto").hidden ? "흔들림이나 근거를 따지기 전에 답 자체를 쓰면 안 됩니다. 기준 자료로 정답을 확인하세요."
+        : "P2-Bench 기준 정답(" + state.reference + ")과 최종 답이 달라 ‘최종 답 자체가 틀렸다’를 자동으로 체크했습니다. 자동 추출이 틀렸다면 직접 확인한 뒤 체크를 끄세요.";
+    } else if (rb && rb.wrong.length) {
+      j.level = "bad";
+      j.title = "틀린 근거가 들어 있습니다";
+      j.text = "답 속에서 이 문항의 흔한 오류를 단정한 문장을 찾았습니다(" + rb.wrong.map(function (w) { return "‘" + w.evidence + "’"; }).join(", ") + "). 결론이 맞아도 이 근거는 그대로 옮기면 안 됩니다.";
+    } else if (ids.length) {
+      j.level = "check";
+      j.title = "답 속에서 흔들렸습니다";
+      j.text = "논문의 감점 4건과 같은 모양입니다. 이런 답을 그대로 옮기면 틀린 첫 줄이나 근거 없는 추측까지 함께 옮기게 됩니다. 아래 표시된 문장을 확인하세요.";
+    } else if (rb && rb.hit < rb.total) {
+      j.level = "check";
+      j.title = "근거가 부족합니다 (" + rb.hit + "/" + rb.total + ")";
+      j.text = (ref.status === "match" ? "결론은 기준 정답과 같지만, " : "") + "맞는 답이 짚어야 할 근거 가운데 " + missing.length + "개가 답에 없습니다: " + missing.join(" / ") + ".";
+    } else if (ref.status !== "match" && !rb) {
+      j.level = "check";
+      j.title = "흔들림은 없고, 결론은 직접 확인하세요";
+      j.text = "결론 문장을 기준 정답(" + state.reference + ")과 자동으로 맞대지 못했습니다.";
+    } else if (ref.status !== "match") {
+      // 결론 문장은 못 맞댔어도, 기준 정답의 핵심 주장이 필수 근거에 들어 있어 근거를 모두 짚었으면 같은 답을 낸 것이다
+      j.level = "good";
+      j.title = "근거를 모두 짚었고, 흔들림이 없습니다";
+      j.text = "결론 문장을 따로 찾아 맞대지는 못했지만, 기준 정답(" + state.reference + ")의 핵심을 담은 필수 근거 " + rb.total + "개를 모두 짚었고 틀린 근거와 흔들림 신호가 없습니다. 근거는 표현으로 찾은 것이라, 설명이 정확한지는 직접 읽어 확인하세요.";
+    } else {
+      j.level = "good";
+      j.title = rb ? "결론·근거 모두 기준과 맞고, 흔들림이 없습니다" : "결론이 기준 정답과 같고, 흔들림이 없습니다";
+      j.text = rb ? "기준 정답과 같은 결론을 냈고, 필수 근거 " + rb.total + "개를 모두 짚었으며, 틀린 근거와 흔들림 신호가 없습니다. 근거는 표현으로 찾은 것이라, 설명이 정확한지는 직접 읽어 확인하세요."
+        : "이 문항은 근거 기준이 없어 결론과 흔들림만 봤습니다.";
+    }
+    return j;
+  }
+
+  function axisHtml(kind, title, level, state_, detail) {
+    return '<section class="axis axis-' + level + '" aria-label="' + title + '"><h3>' + title + '</h3><p class="axis-state">' + state_ + "</p>" + detail + "</section>";
+  }
+
+  // 결론·근거·흔들림 세 칸
+  function renderAxes(a, ids, wrong, s) {
+    var ref = state.refCheck || {}, rb = state.rubricCheck;
+    var concl = wrong ? ["bad", "기준 정답과 다름"] : ref.status === "match" ? ["good", "기준 정답과 같음"]
+      : rb && rb.hit === rb.total && !rb.wrong.length ? ["good", "근거로 확인함"] : ["none", "자동으로 맞대지 못함"];
+    var cd = '<p class="axis-line"><span>기준 정답</span>' + escapeHtml(state.reference || "") + "</p>" +
+      '<p class="axis-line"><span>읽은 결론</span>' + escapeHtml(short60(a.finalAnswer) || "찾지 못함") + "</p>";
+    var html = axisHtml("conclusion", "결론", concl[0], concl[1], cd);
+    if (rb) {
+      var rl = rb.wrong.length ? "bad" : rb.hit === rb.total ? "good" : "warn";
+      var rd = '<ul class="reason-list">' + rb.must.map(function (m) {
+        return '<li class="' + (m.hit ? "hit" : "miss") + '"><span class="mark" aria-hidden="true">' + (m.hit ? "✓" : "✕") + '</span><span class="sr-only">' + (m.hit ? "짚음: " : "빠짐: ") + "</span>" + escapeHtml(m.label) + "</li>";
+      }).join("") + rb.wrong.map(function (w) {
+        return '<li class="wrong"><span class="mark" aria-hidden="true">!</span><span class="sr-only">틀린 근거: </span>' + escapeHtml(w.label) + "<q>" + escapeHtml(w.evidence) + "</q></li>";
+      }).join("") + "</ul>";
+      html += axisHtml("reasoning", "근거", rl, "필수 근거 " + rb.hit + "/" + rb.total + (rb.wrong.length ? " · 틀린 근거 " + rb.wrong.length + "개" : ""), rd);
+    } else {
+      html += axisHtml("reasoning", "근거", "none", "근거 기준 없음", '<p class="axis-line">이 문항은 근거 기준이 아직 없습니다.</p>');
+    }
+    var wl = ids.length ? "warn" : "good";
+    var wd = '<p class="axis-line"><span>논문 루브릭 점수</span>' + s.total + " / 100</p>" +
+      '<p class="axis-line"><span>신호</span>' + (ids.length ? ids.map(function (id) { return escapeHtml(P.SIGNALS[id].title); }).join(", ") : "없음") + "</p>";
+    html += axisHtml("wavering", "흔들림", wl, ids.length ? "신호 " + ids.length + "개" : "흔들림 없음", wd);
+    $("axes").innerHTML = html;
+  }
+
   function renderResult() {
     var a = state.analysis;
     var ids = checkedIds();
     var wrong = $("wrong-answer").checked;
     var s = P.score(ids, wrong);
+    var rel = state.relevance || { status: "related" };
+    var j = judge(a, rel, ids, wrong);
 
     $("score-total").textContent = s.total;
-    var scoreBox = $("score-total").parentNode;
-    scoreBox.className = "score " + (wrong ? "bad" : s.total === 100 ? "ok" : "warn");
+    var ring = $("overall");
+    ring.className = "score " + { good: "ok", check: "warn", bad: "bad", hold: "" }[j.level];
+    $("overall-label").textContent = LEVEL_LABEL[j.level];
+    ring.style.setProperty("--pct", { good: 100, check: 66, bad: 100, hold: 0 }[j.level]);
+    ring.setAttribute("aria-label", "종합 평가: " + LEVEL_LABEL[j.level]);
 
     $("rubric").innerHTML = P.RUBRIC.map(function (r) {
       var v = s.parts[r.key];
@@ -435,73 +588,31 @@
       return '<div class="bar ' + cls + '"><span>' + r.label + '</span><span class="track"><span class="fill" style="width:' + (v / r.max * 100) + '%"></span></span><span class="pts">' + v + " / " + r.max + "</span></div>";
     }).join("");
 
-    var title, text;
-    var rel = state.relevance || { status: "related" };
-    var offTopic = rel.status !== "related" && !$("relevance-ok").checked;
-    // 문장 중간에서 끝난 답(복사하다 만 답)은 끊긴 곳에 결론이나 흔들림이 있을 수 있어 점수를 보류한다
-    var cutHold = !offTopic && !!a.cut && !wrong;
-    var noConclusion = !offTopic && (cutHold || (!a.hasConclusion && ids.length === 0 && !wrong));
     $("relevance-box").hidden = rel.status === "related";
-    $("rubric").hidden = noConclusion || offTopic;
-    $("scored-part").hidden = offTopic || noConclusion;
-    if (offTopic) {
-      $("score-total").textContent = "—";
-      scoreBox.className = "score";
-      if (rel.status === "unrelated" && rel.reason === "other") {
-        var other = rel.other ? rel.other[0] : "";
-        title = "다른 질문에 대한 답으로 보여 점수를 매기지 않았습니다";
-        text = "이 답은 고른 문항보다 P2-Bench의 다른 문항 “" + (other.length > 60 ? other.slice(0, 60) + "…" : other) + "”과 숫자·수식·핵심 낱말이 훨씬 많이 겹칩니다. AI에게 물은 문항을 골랐는지 확인하세요.";
-      } else if (rel.status === "unrelated") {
-        title = "질문과 관련 없는 답으로 보여 점수를 매기지 않았습니다";
-        text = "고른 문항의 숫자·수식·핵심 낱말이 답에 거의 나오지 않습니다. 흔들림이 없다고 100점을 주면 엉뚱한 글도 만점이 되므로 점수를 보류했습니다. 다른 문항의 답을 넣지 않았는지 확인하세요.";
-      } else {
-        title = "답의 언어로는 관련성을 확인하지 못했습니다";
-        text = "이 앱은 한국어·영어 답을 점검합니다. 숫자·수식·개념 단서만으로는 판단할 수 없어 점수를 보류했습니다. 고른 문항의 답이 맞다면 아래 확인 칸을 체크하세요.";
-      }
-    } else if (cutHold) {
-      $("score-total").textContent = "—";
-      scoreBox.className = "score";
-      title = "답이 중간에 끊긴 것 같아 점수를 매기지 않았습니다";
-      text = "답이 문장 중간(“…" + String(a.text || "").replace(/\s+$/, "").slice(-24) + "”)에서 끝납니다. 끊긴 부분에 결론이나 흔들림이 있을 수 있어 점수를 보류했습니다. AI 답을 끝까지 복사해 붙여 넣으세요.";
-    } else if (noConclusion) {
-      $("score-total").textContent = "—";
-      scoreBox.className = "score";
-      title = "결론을 찾지 못해 점수를 매기지 않았습니다";
-      text = "질문과 관련은 있지만, 답을 내린 문장(‘답:’, ‘따라서 …’, 등식, ‘타당하다’ 같은 판정)이 없어 흔들림을 따질 대상이 없습니다. AI 답을 끝까지 넣었는지 확인하세요.";
-    } else if (wrong && !$("wrong-auto").hidden) {
-      title = "최종 답이 기준 정답과 다릅니다";
-      text = "P2-Bench 기준 정답(" + state.reference + ")과 최종 답이 달라 ‘최종 답 자체가 틀렸다’를 자동으로 체크했습니다. 자동 추출이 틀렸다면 직접 확인한 뒤 체크를 끄세요.";
-    } else if (wrong) {
-      title = "최종 답이 틀렸습니다";
-      text = "흔들림을 따지기 전에 답 자체를 쓰면 안 됩니다. 기준 자료로 정답을 확인하세요.";
-    } else if (ids.length === 0) {
-      title = "흔들림 신호가 없습니다";
-      text = "논문 240개 중 236개가 이런 답이었습니다. 그래도 점수는 ‘흔들림이 없다’는 뜻일 뿐, 정답 확인을 대신하지는 않습니다.";
-    } else {
-      title = "최종 답은 맞아도 흔들린 답입니다";
-      text = "논문의 감점 4건과 같은 모양입니다. 평균 점수로는 0.18점 차이지만, 이런 답을 그대로 옮기면 틀린 첫 줄이나 근거 없는 추측까지 함께 옮기게 됩니다.";
-    }
-    $("verdict-title").textContent = title;
-    $("verdict-text").textContent = text;
-    var shown = $("score-total").textContent;
-    // 점수 고리를 점수만큼 채운다(보류면 비움)
-    scoreBox.style.setProperty("--pct", shown === "—" ? 0 : Number(shown));
-    $("result-live").textContent = "2단계 결과: " + (shown === "—" ? "점수 보류" : shown + "점") + ". " + title;
-    $("why").innerHTML = whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s).map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
+    $("axes").hidden = j.hold;
+    $("scored-part").hidden = j.hold;
+    if (!j.hold) renderAxes(a, ids, wrong, s);
+    $("verdict-title").textContent = j.title;
+    $("verdict-text").textContent = j.text;
+    $("result-live").textContent = "2단계 결과: " + LEVEL_LABEL[j.level] + ". " + j.title;
+    $("why").innerHTML = whyStep2(a, rel, j.offTopic, j.hold && !j.offTopic, ids, wrong, s).map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("");
 
     var next = [];
-    if (cutHold) next.push("AI 답을 처음부터 끝까지 모두 선택해 복사한 뒤 다시 붙여 넣으세요. 끝까지 넣은 답인데도 이렇게 나오면 마지막 문장이 마침표 없이 끝났는지 보세요.");
-    else if (noConclusion) next.push("AI 답의 마지막 결론 부분까지 붙여 넣었는지 확인하세요. 답이 결론 없이 끝났다면 AI에게 ‘최종 답을 한 줄로 말해 줘’라고 다시 물어보세요.");
-    if (offTopic) next.push("AI에게 실제로 물은 문항을 골랐는지, 답 칸에 그 문항의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 점수를 매깁니다.");
+    var rb = state.rubricCheck;
+    if (j.cut) next.push("AI 답을 처음부터 끝까지 모두 선택해 복사한 뒤 다시 붙여 넣으세요. 끝까지 넣은 답인데도 이렇게 나오면 마지막 문장이 마침표 없이 끝났는지 보세요.");
+    else if (j.noConclusion) next.push("AI 답의 마지막 결론 부분까지 붙여 넣었는지 확인하세요. 답이 결론 없이 끝났다면 AI에게 ‘최종 답을 한 줄로 말해 줘’라고 다시 물어보세요.");
+    if (j.offTopic) next.push("AI에게 실제로 물은 문항을 골랐는지, 답 칸에 그 문항의 답을 넣었는지 확인하세요. 맞다면 위의 확인 칸을 체크하면 평가합니다.");
     if (wrong) next.push("기준 정답이나 교재·공식 자료로 답을 다시 확인하세요.");
+    if (!j.hold && rb && rb.wrong.length) next.push("틀린 근거로 표시된 문장을 AI에게 보여 주고 ‘이 부분이 맞는지 다시 확인해 줘’라고 물어보세요.");
+    if (!j.hold && rb && rb.hit < rb.total) next.push("빠진 근거(" + rb.must.filter(function (m) { return !m.hit; }).map(function (m) { return m.label; }).join(" / ") + ")를 AI에게 설명해 달라고 하거나, 답에 다른 말로 들어 있는지 직접 확인하세요.");
     ids.forEach(function (id) { next.push(P.SIGNALS[id].next); });
     var item = currentItem();
-    if (item && item.errorType && !offTopic) next.push("이 문항에서 AI가 흔히 하는 실수(" + errorTypeText(ERROR_KO[item.id] || item.errorType) + ")를 답이 하지 않았는지 위 원문에서 직접 보세요.");
-    if (state.reference && !wrong && !(state.refCheck && state.refCheck.status === "match")) next.push("기준 정답(" + state.reference + ")과 최종 답이 같은지 직접 보세요. 다르면 위의 ‘최종 답 자체가 틀렸다’를 체크하세요.");
+    if (item && item.errorType && !j.offTopic) next.push("이 문항에서 AI가 흔히 하는 실수(" + errorTypeText(ERROR_KO[item.id] || item.errorType) + ")를 답이 하지 않았는지 위 원문에서 직접 보세요.");
+    if (state.reference && !wrong && !j.hold && !(state.refCheck && state.refCheck.status === "match")) next.push("기준 정답(" + state.reference + ")과 결론이 같은지 직접 보세요. 다르면 아래의 ‘최종 답 자체가 틀렸다’를 체크하세요.");
     next.push("3단계: 같은 질문을 다른 언어로 물어 두 답을 비교하세요. 논문에서는 흔들림이 한쪽 언어에서만 나왔습니다.");
     $("next").innerHTML = next.map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("");
     renderAnnotated();
-    renderConfidence(rel, offTopic, noConclusion, ids);
+    renderConfidence(rel, j.offTopic, j.hold && !j.offTopic, ids);
   }
 
   function short60(t) { t = String(t || ""); return t.length > 60 ? t.slice(0, 60) + "…" : t; }
@@ -511,7 +622,11 @@
   // 2단계 판정 근거: 관련성 → 결론 → 흔들림 신호 → 점수 순서로 무엇을 보고 어떻게 판단했는지 적는다
   function whyStep2(a, rel, offTopic, noConclusion, ids, wrong, s) {
     var w = [];
-    if (rel.status === "related" && rel.byReference) {
+    if (rel.status === "related" && rel.byShort) {
+      w.push("답이 한두 줄이라 질문의 단서로 관련성을 잴 수 없어, 고른 문항의 답으로 보고 평가했습니다. 다른 문항을 물었다면 문항을 다시 고르세요.");
+    } else if (rel.status === "related" && rel.byRubric) {
+      w.push("질문의 단서만 보면 다른 문항과 더 비슷했지만(관련성 점수 " + rel.score + "), 고른 문항의 맞는 답이 짚어야 할 근거를 모두 짚어 이 질문의 답으로 봤습니다.");
+    } else if (rel.status === "related" && rel.byReference) {
       w.push("질문의 단서는 답에 적게 나왔지만(관련성 점수 " + rel.score + "), 최종 답이 P2-Bench 기준 정답과 같아 이 질문의 답으로 봤습니다: " + state.refCheck.why.join(", ") + ".");
     } else if (rel.status === "related") {
       w.push("질문과 관련 있음: 질문의 단서 가운데 답에서 찾은 것 — " + list(rel.found) + " (관련성 점수 " + rel.score + ", 2.5 이상이면 관련 있음).");
@@ -530,7 +645,7 @@
       w.push("근거 없이 단정하면 엉뚱한 답을 통과시키거나 맞는 답을 막게 되므로 판정을 보류했습니다. 한국어나 영어로 받은 답을 넣거나, 직접 확인했다면 위 확인 칸을 체크하면 됩니다.");
     }
     if (offTopic) {
-      w.push("관련성이 확인되지 않은 글에 흔들림 점수를 주면 엉뚱한 글도 100점이 되므로, 점수와 흔들림 신호를 감췄습니다. 위 확인 칸을 체크하면 점수를 매깁니다.");
+      w.push("관련성이 확인되지 않은 글을 평가하면 엉뚱한 글도 좋은 답이 되므로, 결론·근거·흔들림 평가를 감췄습니다. 위 확인 칸을 체크하면 평가합니다.");
       return w;
     }
     if (noConclusion && a.cut) {
@@ -539,7 +654,7 @@
       return w;
     }
     if (noConclusion) {
-      w.push("결론을 밝힌 흔적을 다음과 같이 찾아봤지만 하나도 없었습니다: ‘답:’, ‘결론’, ‘정리’, ‘따라서·그러므로·therefore·so’, 등식(=), 판정어(타당·참·거짓·틀림·결정할 수 없음 등), 핵심 개념 3개 이상.");
+      w.push("결론을 밝힌 흔적을 다음과 같이 찾아봤지만 하나도 없었습니다: ‘답:’, ‘결론’, ‘정리’, ‘따라서·그러므로·therefore·so’, 등식(=), 판정어(타당·참·거짓·틀림·결정할 수 없음 등), 핵심 개념 3개 이상. 이 문항의 필수 근거도 하나도 찾지 못했습니다.");
       w.push("답의 마지막 문장: “" + (a.lastSentence || "없음") + "”.");
       return w;
     }
@@ -549,32 +664,39 @@
     else if (ref && ref.status === "mismatch") w.push("기준 정답(" + state.reference + ")과 대조: 다름 — " + ref.why.join(", ") + ". 그래서 ‘최종 답 자체가 틀렸다’를 자동으로 체크했습니다(직접 확인 후 끌 수 있음).");
     else if (ref && ref.cut) w.push("기준 정답(" + state.reference + ")과 맞대지 않았습니다: " + ref.why[0] + ". 답을 끝까지 붙여 넣었는지 확인하세요.");
     else if (ref) w.push("기준 정답(" + state.reference + ")과 자동으로 맞대지 못했습니다. 최종 답과 직접 비교하세요.");
+    var rb = state.rubricCheck;
+    if (rb) {
+      w.push("근거: 이 문항의 맞는 답이 짚어야 할 근거 " + rb.total + "개를 답에서 찾았습니다(P2-Bench 해설을 바탕으로 정한 기준, 한·영 표현 목록으로 찾음).");
+      rb.must.forEach(function (m) { w.push((m.hit ? "  ✓ " : "  ✕ ") + m.label + (m.hit ? " — 찾은 표현: “" + m.evidence + "”" : " — 답에서 찾지 못함")); });
+      if (rb.wrong.length) rb.wrong.forEach(function (x) { w.push("  ! 틀린 근거 — " + x.label + ": “" + x.evidence + "”"); });
+      else w.push("  틀린 근거(이 문항의 흔한 오류를 부정·오류 표시 없이 단정한 문장)는 없습니다.");
+    }
     if (a.signals.length) {
       a.signals.forEach(function (sg) { w.push("자동 탐지 — " + P.SIGNALS[sg.id].title + ": “" + sg.evidence + "”"); });
     } else {
       w.push("흔들림 규칙 세 가지에 걸린 문장이 없습니다: ① 앞의 답을 스스로 고친다는 표현(‘my initial … was premature’, ‘정정합니다’ 등)이나 첫 답과 마지막 답의 예/아니오가 다름, ② ‘알 수 없다’고 한 뒤 ‘probably·아마’ 같은 확신 표현과 숫자를 붙인 추정, ③ ‘모두 맞다’고 한 바로 뒤의 틀림 표시.");
     }
     var lost = P.RUBRIC.filter(function (r) { return s.parts[r.key] < r.max; }).map(function (r) { return r.label + " −" + (r.max - s.parts[r.key]); });
-    w.push(lost.length ? "점수 " + s.total + " = 100 − (" + lost.join(", ") + "). 감점 크기는 논문 표 6의 실제 채점과 같습니다." : "100점 = 루브릭 다섯 칸에서 깎인 것이 없다는 뜻입니다. 최종 답이 맞는지는 따로 확인해야 합니다.");
+    w.push(lost.length ? "논문 루브릭 점수 " + s.total + " = 100 − (" + lost.join(", ") + "). 감점 크기는 논문 표 6의 실제 채점과 같습니다." : "논문 루브릭 점수 100 = 루브릭 다섯 칸에서 깎인 것이 없다는 뜻입니다. 결론과 근거는 위에서 따로 봤습니다.");
     if (wrong) w.push("‘최종 답 자체가 틀렸다’가 체크되어 최종 답 정확성 40점을 0점으로 했습니다.");
     return w;
   }
 
   // ---------- 3단계: 비교 ----------
   // ids: 켜진 신호(1단계 답은 사용자가 고친 체크), wrong: 최종 답이 틀렸다는 체크
-  function describe(an, rel, confirmed, ids, wrong) {
+  function describe(an, rel, confirmed, ids, wrong, rb) {
     ids = ids || an.signals.map(function (x) { return x.id; });
-    if (rel && rel.status !== "related" && !confirmed) return rel.status === "unrelated" ? "질문과 관련 없어 보임 · 점수 보류" : "질문과 언어가 달라 관련성 미확인";
-    if (an.cut && !wrong) return "답이 중간에 끊긴 듯함 · 점수 보류";
-    if (!an.hasConclusion && !ids.length && !wrong) return "결론을 찾지 못함 · 점수 보류";
+    if (rel && rel.status !== "related" && !confirmed) return rel.status === "unrelated" ? "질문과 관련 없어 보임 · 평가 보류" : "질문과 언어가 달라 관련성 미확인";
+    if (an.cut && !wrong) return "답이 중간에 끊긴 듯함 · 평가 보류";
+    if (!an.hasConclusion && !ids.length && !wrong && !(rb && rb.hit > 0)) return "결론도 근거도 찾지 못함 · 평가 보류";
     var s = P.score(ids, !!wrong);
-    var head = wrong ? "최종 답 틀림 · " : "";
-    if (!ids.length) return head + "흔들림 신호 없음 · " + s.total + "점";
-    return head + "신호 " + ids.length + "개(" + ids.map(function (id) { return P.SIGNALS[id].title; }).join(", ") + ") · " + s.total + "점";
+    var head = (wrong ? "최종 답 틀림 · " : "") + (rb ? "근거 " + rb.hit + "/" + rb.total + (rb.wrong.length ? "(틀린 근거 " + rb.wrong.length + ")" : "") + " · " : "");
+    if (!ids.length) return head + "흔들림 신호 없음 · 루브릭 " + s.total + "점";
+    return head + "흔들림 신호 " + ids.length + "개(" + ids.map(function (id) { return P.SIGNALS[id].title; }).join(", ") + ") · 루브릭 " + s.total + "점";
   }
 
   function describeA() {
-    return describe(state.analysis, state.relevance, $("relevance-ok").checked, checkedIds(), $("wrong-answer").checked);
+    return describe(state.analysis, state.relevance, $("relevance-ok").checked, checkedIds(), $("wrong-answer").checked, state.rubricCheck);
   }
 
   // 2단계 체크를 바꾸면 3단계 비교도 같은 기준으로 다시 보여 준다
@@ -601,16 +723,18 @@
       if (textB === null) { $("compare-body").hidden = true; return; }
       state.analysisB = P.analyze(textB);
       var itemB = currentItem();
+      state.rubricB = itemB ? P.checkRubric(textB, RUBRICS[itemB.id] || null) : null;
       if (itemB) trustIfMatched(state.analysisB, P.matchReference(state.analysisB, itemB.answer, CLAIMS[itemB.id] || null));
       state.relevanceB = P.relevance(questionForRelevance(), textB, DECOYS);
+      if (state.relevanceB.status !== "related" && (rubricVouches(textB, state.rubricB, state.relevanceB) || shortTrust(textB, state.rubricB, state.relevanceB))) state.relevanceB.status = "related";
       $("final-a").value = state.analysis.finalAnswer || "";
       $("final-b").value = state.analysisB.finalAnswer || "";
       $("meta-a").textContent = describeA();
-      $("meta-b").textContent = describe(state.analysisB, state.relevanceB, false);
+      $("meta-b").textContent = describe(state.analysisB, state.relevanceB, false, null, false, state.rubricB);
       $("compare-body").hidden = false;
       $("compare-body").classList.remove("stale");
       renderPair();
-      if (state.analysisB.finalReliable === false) setNote("compare-note", "다른 언어 답에서 결론 문장을 찾지 못했습니다. 답이 중간에 끊긴 것 같으니 AI 답을 끝까지 복사해 붙여 넣었는지 확인하세요.", true);
+      if (state.analysisB.cut) setNote("compare-note", "다른 언어 답이 문장 중간에서 끝납니다. AI 답을 끝까지 복사해 붙여 넣었는지 확인하세요.", true);
       if (!silent) $("compare-body").scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (e) {
       setNote("compare-note", "비교 중 문제가 생겼습니다. 두 답을 다시 넣어 주세요.", true);
@@ -623,9 +747,9 @@
     var untouched = $("final-a").value === state.analysis.finalAnswer && $("final-b").value === state.analysisB.finalAnswer;
     // 최종 답 칸을 직접 고쳤으면 사용자가 적은 결론을 믿는다(끊긴 답 판정을 하지 않음)
     var a = { finalAnswer: $("final-a").value, lead: untouched ? state.analysis.lead : "", topics: untouched ? state.analysis.topics : [], text: untouched ? state.analysis.text : "",
-      signals: checkedIds().map(function (id) { return { id: id }; }), finalReliable: untouched ? state.analysis.finalReliable : true };
+      signals: checkedIds().map(function (id) { return { id: id }; }), finalReliable: untouched ? state.analysis.finalReliable : true, cut: untouched && state.analysis.cut };
     var b = { finalAnswer: $("final-b").value, lead: untouched ? state.analysisB.lead : "", topics: untouched ? state.analysisB.topics : [], text: untouched ? state.analysisB.text : "", signals: state.analysisB.signals,
-      finalReliable: untouched ? state.analysisB.finalReliable : true };
+      finalReliable: untouched ? state.analysisB.finalReliable : true, cut: untouched && state.analysisB.cut };
     // 결론 칸을 고치지 않았으면, 단서가 부족해 보류할 때 두 답을 각각 기준 정답과도 맞대 본다
     var item = currentItem();
     var c = untouched && item ? P.comparePair(a, b, item.answer, CLAIMS[item.id] || null) : P.compare(a, b);
@@ -696,6 +820,23 @@
       cls = "bad";
       head = "1단계 답은 최종 답이 틀렸다고 표시되어 있습니다. " + head;
       body += c.sameAnswer === true ? " 다른 언어 답도 같은 답을 냈으니 함께 틀렸을 가능성이 큽니다. 두 답 모두 기준 자료로 확인하세요." : " 다른 언어 답도 그대로 믿지 말고 기준 자료로 확인하세요.";
+    }
+    // 두 답의 근거를 같은 기준으로 맞댄다(결론이 같아도 한쪽만 근거가 빠졌거나 틀린 근거를 냈을 수 있다)
+    var ra = untouched ? state.rubricCheck : null, rbb = untouched ? state.rubricB : null;
+    if (!aOff && !bOff && ra && rbb) {
+      var side = function (r) { return r.hit + "/" + r.total + (r.wrong.length ? ", 틀린 근거 " + r.wrong.length + "개" : ""); };
+      why.push("근거: 1단계 답 " + side(ra) + " · 다른 언어 답 " + side(rbb) + ".");
+      var onlyIn = function (x, y) { return x.must.filter(function (m, i) { return m.hit && !y.must[i].hit; }).map(function (m) { return m.label; }); };
+      var oa = onlyIn(ra, rbb), ob = onlyIn(rbb, ra);
+      if (oa.length) why.push("1단계 답에만 있는 근거: " + oa.join(" / ") + ".");
+      if (ob.length) why.push("다른 언어 답에만 있는 근거: " + ob.join(" / ") + ".");
+      var wa = ra.wrong.length > 0, wb = rbb.wrong.length > 0;
+      if (wa !== wb) {
+        if (cls === "ok") cls = "warn";
+        body += " 다만 " + (wa ? "1단계 답" : "다른 언어 답") + "에만 틀린 근거가 있습니다(“" + (wa ? ra : rbb).wrong[0].evidence + "”). 이 언어에서 근거가 흔들린 것이니 그 답의 설명은 쓰지 마세요.";
+      } else if (!wa && (oa.length || ob.length) && cls === "ok") {
+        body += " 결론은 같지만 근거의 양은 다릅니다. 근거를 더 짚은 쪽(" + (ra.hit >= rbb.hit ? "1단계 답" : "다른 언어 답") + ")의 설명을 쓰세요.";
+      }
     }
     $("pair-verdict").className = "pair-verdict " + cls;
     if (!aOff && !bOff) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="P2-Bench 논문의 루브릭과 오류 유형으로 AI 답의 흔들림(첫 줄 번복·과잉추론·설명 모순)을 찾아 주는 앱" />
+  <meta name="description" content="P2-Bench 60문항에 대한 AI 답을 기준 정답·필수 근거·논문의 흔들림 루브릭으로 점검하는 앱. 결론이 맞는지, 근거를 짚었는지, 답 속에서 흔들렸는지를 따로 보여 줍니다." />
   <meta name="theme-color" content="#0e0f2b" />
   <title>답 흔들림 점검기 | P2-Bench</title>
   <link rel="stylesheet" href="app.css" />
@@ -29,8 +29,8 @@
         </p>
         <p class="helps" id="helps">
           <strong>이 앱은</strong> AI 답을 과제나 업무에 옮겨 쓰는 사람이, 최종 답은 맞아 보여도
-          속에서 흔들린 답(첫 줄 번복 · 정보 부족 뒤 과잉추론 · 설명 속 모순)을 논문의 100점 루브릭으로
-          찾아 <strong>믿기 전에 걸러 내도록 돕습니다.</strong>
+          근거가 빠졌거나 틀렸거나 속에서 흔들린 답(첫 줄 번복 · 정보 부족 뒤 과잉추론 · 설명 속 모순)을
+          문항별 기준 정답·필수 근거와 논문의 루브릭으로 찾아 <strong>믿기 전에 걸러 내도록 돕습니다.</strong>
         </p>
 
         <ul class="facts" aria-label="논문 결과">
@@ -38,11 +38,11 @@
           <li><b>4</b><span>나머지 답도 최종 답은 모두 맞았습니다. 대신 풀이 중에 흔들렸습니다.</span></li>
           <li><b>4 / 4</b><span>흔들림은 모두 같은 질문의 영어 쪽에서만 나왔습니다(Sonnet). 한국어 짝 답은 만점.</span></li>
         </ul>
-        <p class="lesson">그래서 이 앱은 <b>점수 대신 흔들림의 모양</b>을 보고, <b>같은 질문을 다른 언어로 물은 답과 짝지어</b> 확인하게 합니다.</p>
+        <p class="lesson">그래서 이 앱은 점수 하나 대신 <b>결론 · 근거 · 흔들림</b>을 따로 보고, <b>같은 질문을 다른 언어로 물은 답과 짝지어</b> 확인하게 합니다.</p>
 
         <ol class="steps" aria-label="할 일 세 가지">
           <li><a href="#step-1"><span>1</span>문항 고르고 AI 답 붙여 넣기</a></li>
-          <li><a href="#step-2"><span>2</span>흔들림 신호와 점수 확인</a></li>
+          <li><a href="#step-2"><span>2</span>결론·근거·흔들림 확인</a></li>
           <li><a href="#step-3"><span>3</span>다른 언어 답과 비교</a></li>
         </ol>
       </div>
@@ -116,8 +116,8 @@
         <div class="step-head">
           <span class="num">2</span>
           <div>
-            <h2 id="s2-title">흔들림 신호와 점수를 확인하세요</h2>
-            <p>자동으로 찾은 신호는 미리 체크됩니다. 답을 직접 읽고 맞지 않으면 끄고, 놓친 것이 있으면 켜세요. 점수가 바로 바뀝니다.</p>
+            <h2 id="s2-title">결론·근거·흔들림을 확인하세요</h2>
+            <p>결론이 기준 정답과 같은지, 맞는 답이 짚어야 할 근거를 짚었는지, 답 속에서 말을 바꾸지 않았는지를 따로 봅니다. 자동으로 찾은 흔들림 신호는 직접 끄고 켤 수 있습니다.</p>
           </div>
         </div>
 
@@ -128,28 +128,31 @@
 
           <div id="result-body" hidden>
             <div class="score-row">
-              <div class="score">
-                <b id="score-total">100</b><span>/ 100</span>
+              <div class="score" id="overall" role="img" aria-label="종합 평가">
+                <b id="overall-label">—</b><span>종합</span>
               </div>
               <div class="verdict">
                 <p class="verdict-title" id="verdict-title"></p>
                 <p id="verdict-text"></p>
                 <ul class="confidence" id="confidence" aria-label="판정의 근거가 얼마나 단단한가"></ul>
-                <details class="why" open>
-                  <summary>왜 이렇게 판정했나요?</summary>
-                  <ul id="why"></ul>
-                </details>
               </div>
             </div>
 
+            <div class="axes" id="axes" aria-label="결론·근거·흔들림을 따로 본 결과"></div>
+
+            <details class="why">
+              <summary>왜 이렇게 판정했나요? (판정 근거 전체)</summary>
+              <ul id="why"></ul>
+            </details>
+
             <label class="check relevance" id="relevance-box" hidden>
               <input type="checkbox" id="relevance-ok" />
-              <span><b>이 답은 위 질문에 대한 답이 맞습니다</b> — 직접 확인했다면 체크하세요. 그때부터 흔들림 점수를 매깁니다.</span>
+              <span><b>이 답은 위 질문에 대한 답이 맞습니다</b> — 직접 확인했다면 체크하세요. 그때부터 결론·근거·흔들림을 평가합니다.</span>
             </label>
 
-            <div class="rubric" id="rubric" aria-label="루브릭 다섯 항목"></div>
-
             <div id="scored-part">
+            <h3 class="sub">논문 루브릭 점수 <b class="sub-score"><span id="score-total">100</span> / 100</b></h3>
+            <div class="rubric" id="rubric" aria-label="논문 100점 루브릭 다섯 항목"></div>
             <h3 class="sub">흔들림 신호 (논문 7장 오류 분석의 세 유형)</h3>
             <div class="signals" id="signals"></div>
 
@@ -159,7 +162,7 @@
             </label>
 
             <h3 class="sub">답 원문에서 본 곳</h3>
-            <p class="legend"><mark class="m-final">최종 답으로 읽은 곳</mark> <mark class="m-signal">흔들림 신호가 걸린 곳</mark></p>
+            <p class="legend"><mark class="m-final">최종 답으로 읽은 곳</mark> <mark class="m-signal">흔들림 신호가 걸린 곳</mark> <mark class="m-wrong">틀린 근거</mark></p>
             <div class="annotated" id="annotated" tabindex="0" aria-label="답 원문(최종 답과 흔들림 신호 위치 표시)"></div>
             <p class="note" id="annotated-note"></p>
             </div>
@@ -227,8 +230,12 @@
         <h2>이 앱이 쓰는 논문의 결과</h2>
         <div class="about-grid">
           <div>
+            <h3>문항별 근거 기준 (60문항)</h3>
+            <p>P2-Bench 자료의 정답·해설·오류 유형을 바탕으로, 맞는 답이 반드시 짚어야 할 근거 2~4개와 단정하면 안 되는 틀린 근거를 문항마다 정했습니다. 논문 답 240개는 모두 필수 근거를 짚었고, 틀린 근거는 흔들린 답 2개에서만 찾았습니다.</p>
+          </div>
+          <div>
             <h3>100점 루브릭 (논문 표 2)</h3>
-            <p>최종 답 정확성 40 · 추론 과정 25 · 조건 검토 15 · 오류 인정·검증 10 · 설명 명확성 10. 2단계 점수는 이 다섯 칸에서 깎습니다.</p>
+            <p>최종 답 정확성 40 · 추론 과정 25 · 조건 검토 15 · 오류 인정·검증 10 · 설명 명확성 10. 2단계의 ‘논문 루브릭 점수’는 이 다섯 칸에서 깎습니다.</p>
           </div>
           <div>
             <h3>신호별 감점 (논문 표 6)</h3>
@@ -240,7 +247,7 @@
           </div>
           <div>
             <h3>한계도 그대로</h3>
-            <p>논문의 차이는 p = 0.125로 통계적으로 확정되지 않았습니다. 그래서 이 앱은 “어느 모델·언어가 낫다”가 아니라 “이 답에 흔들림이 있나”만 알려 줍니다. 자동 신호는 논문 240개 답에서 감점 4건을 모두 논문과 같은 점수로 찾고, 만점 236건은 잘못 짚지 않습니다.</p>
+            <p>논문의 차이는 p = 0.125로 통계적으로 확정되지 않았습니다. 그래서 이 앱은 “어느 모델·언어가 낫다”가 아니라 “이 답을 믿어도 되나”만 알려 줍니다. 근거는 문항별 표현 목록으로 찾으므로, 근거를 말했는지는 알아도 제대로 설명했는지는 직접 읽어 확인해야 합니다. 자동 신호는 논문 240개 답에서 감점 4건을 모두 논문과 같은 점수로 찾고, 만점 236건은 잘못 짚지 않습니다.</p>
           </div>
         </div>
         <p class="foot">모든 계산은 이 브라우저 안에서만 합니다. 넣은 답은 어디에도 보내지 않습니다. 새로고침해도 남도록 이 탭 안에만 임시로 보관하며, 탭을 닫거나 ‘모두 지우기’를 누르면 지워집니다. 예시는 논문 본실험의 실제 AI 답이며 개인정보는 없습니다.</p>

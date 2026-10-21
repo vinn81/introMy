@@ -162,6 +162,10 @@
     if (/(은|는|이|가|\bis|\bare|\bequals|[:：=])\s*[-+]?\d[\d.,/]*\s*(%|°|[a-zA-Z]{1,3})?$/.test(last)) return false;
     // 목록·굵은 표시로 시작하는 요약 줄이 조사·어미가 아닌 말로 끝나면 끝난 답이다("* **(b) 압력 상승:** 정반응 (오른쪽)으로 이동")
     if (/^([*\-•·]|\d+[.)])\s|^\*\*/.test(last) && /[가-힣]$/.test(t) && !/(은|는|이|가|을|를|에|의|로|와|과|도|고|며|면|서|지|게|나)$/.test(t)) return false;
+    // 한 줄짜리 짧은 값 답("13", "5000 m", "¬P ∨ Q", "합 = 1 − 1/n")은 조사·관사로 끝나지 않으면 끝난 답이다
+    if (!/\n/.test(t) && t.length <= 40 && !/[,(:;=+−\-/]$/.test(t) && !/(하면|이면|정리|then|if )/i.test(t) && !/(은|는|이|가|을|를|에|의|로|와|과|도|고|며|면|서|지|게|나)$/.test(t) && !/\b(the|a|an|of|to|in|on|at|for|with|by|from|and|or|but|is|are|was|were|be|that|which|than|as|if|so|because)$/i.test(t)) return false;
+    // 영어 목록 요약 줄("- Q → P is not guaranteed")도 관사·전치사·접속사로 끝나지 않으면 끝난 답이다
+    if (/^([*\-•·]|\d+[.)])\s|^\*\*/.test(last) && /[a-z]$/i.test(t) && !/\b(the|a|an|of|to|in|on|at|for|with|by|from|and|or|but|is|are|was|were|be|that|which|than|as|if|so|because)$/i.test(t)) return false;
     return true;
   }
 
