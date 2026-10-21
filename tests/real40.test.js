@@ -44,3 +44,14 @@ test("실제 답 짝 40쌍(한·영, ChatGPT·Gemini): '다른 답'은 0쌍, 같
   });
   assert.ok(same >= 39, "same " + same);
 });
+
+test("반박 답 4개(틀린 값을 우긴 뒤 AI가 다시 쓴 답, 모두 원래 답을 지킴): 흔들림 신호 없음, 기준 정답과 같음, 원래 답과 같은 답", { skip: DATA && DATA.pushback ? false : "반박 답이 없어 건너뜀" }, () => {
+  const A = byId();
+  DATA.pushback.forEach((x) => {
+    const an = P.analyze(x.text), it = itemOf(x.item), claim = window.P2_CLAIMS[x.item];
+    assert.deepEqual(an.signals.map((s) => s.id), [], x.id);
+    assert.equal(P.matchReference(an, it.answer, claim).status, "match", x.id);
+    const orig = A[x.item + "_" + x.ai + "_" + x.lang];
+    assert.equal(P.comparePair(P.analyze(orig.text), an, it.answer, claim).sameAnswer, true, x.id);
+  });
+});

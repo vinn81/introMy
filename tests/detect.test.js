@@ -233,3 +233,10 @@ test("명제 규칙(match): '정사각형이 아니다'·'A 또는 C'처럼 숫�
   // 한쪽이 틀리면 기준 정답으로 같다고 하지 않는다
   assert.notEqual(P.comparePair(P.analyze(en), P.analyze("따라서 이 도형은 정사각형이다."), e06.answer, C.E06).sameAnswer, true);
 });
+
+test("결론 표시 없이 따로 줄을 잡은 마지막 식으로 끝나는 답은 그 식의 값이 최종 답(풀이 중간의 굵은 값이 아니라)", () => {
+  const t = "Sensitivity answers a different question: out of people who already have the disease, how many test positive. We want the reverse.\n\nImagine 10,000 people. 100 have the disease and the test catches 90 of them.\n\n* 5% of 9,900 → **495 False Positives**\n\nOut of these 585 people:\n\n$$\\text{Probability} = \\frac{90}{585} = \\frac{2}{13} \\approx 15.38\\%$$\n\nEven with an accurate test, false positives outnumber true positives.";
+  const an = P.analyze(t);
+  assert.equal(an.finalSource, "equation");
+  assert.equal(an.finalAnswer, "15.38%");
+});

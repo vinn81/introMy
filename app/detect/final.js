@@ -98,7 +98,7 @@
     return "";
   }
 
-  // source: 최종 답을 어디서 찾았는지("boxed" | "label" | "phrase" | "bold" | "concluding" | "last-line")
+  // source: 최종 답을 어디서 찾았는지("boxed" | "label" | "phrase" | "equation" | "bold" | "concluding" | "last-line")
   function findFinal(raw) {
     var boxed = [];
     String(raw).replace(/\\boxed\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g, function (m, inner) { boxed.push(inner); return m; });
@@ -107,6 +107,18 @@
     var lines = text.split(/\n+/).filter(function (l) { return l.trim() && !/^[\s|:-]+$/.test(l); });
     var a = labeled(lines, ANSWER_LABEL) || labeled(lines, CONCLUSION_LABEL), source = "label";
     if (!a) { a = answerPhrase(lines); source = "phrase"; }
+    if (!a) {
+      // 답 뒤쪽(마지막 40%)에 따로 줄을 잡은 식($$…$$, \[…\])이 있으면 마지막 식의 '= 값'이 결론이다
+      // ("$$\frac{90}{585} = \frac{2}{13} \approx 15.38\%$$" 뒤에 해설 한 문단). 풀이 중간의 굵은 값보다 먼저 본다
+      var disp = null, dre = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, dm;
+      while ((dm = dre.exec(raw))) disp = { at: dm.index, body: dm[1] || dm[2] };
+      if (disp && disp.at >= String(raw).length * 0.6) {
+        var eq = plainMath("$$" + disp.body.replace(/\\approx/g, " ≈ ").replace(/\\%/g, "%") + "$$").replace(/\s+/g, " ").trim();
+        var cut = Math.max(eq.lastIndexOf("="), eq.lastIndexOf("≈"));
+        var val = cut >= 0 ? eq.slice(cut + 1).replace(/[.,]\s*$/, "").trim() : "";
+        if (/\d/.test(val)) { a = val; source = "equation"; }
+      }
+    }
     if (!a) {
       source = "bold";
       // 숫자가 든 굵은 글씨 중 마지막 것. "Step 1." "2단계" "(3) 이중 맹검" 같은 순서 제목은 뺀다
@@ -151,7 +163,7 @@
   // 결론 접속어로 찾았으면 답이 끊기지 않았을 때만, 마지막 줄로 대신했으면 한 문단짜리 짧은 답일 때만 믿는다
   // (여러 문단으로 풀어 가다 멈춘 답의 마지막 줄은 결론이 아니라 풀이 중간이다)
   function finalReliable(raw, source, cut) {
-    if (source === "boxed" || source === "label" || source === "bold" || source === "flip") return true;
+    if (source === "boxed" || source === "label" || source === "bold" || source === "equation" || source === "flip") return true;
     if (cut) return false;
     if (source === "last-line") return String(raw).split(/\n+/).filter(function (l) { return l.trim(); }).length <= 1;
     return true;
