@@ -55,3 +55,11 @@ test("반박 답 4개(틀린 값을 우긴 뒤 AI가 다시 쓴 답, 모두 원�
     assert.equal(P.comparePair(P.analyze(orig.text), an, it.answer, claim).sameAnswer, true, x.id);
   });
 });
+
+test("근거 기준(시범 10문항): 실제 답 40개와 반박 답 4개 모두 필수 근거를 다 짚고, 틀린 근거 없음", { skip }, () => {
+  DATA.answers.concat(DATA.pushback || []).forEach((a) => {
+    const r = P.checkRubric(a.text, window.P2_RUBRIC[a.item]);
+    assert.equal(r.hit, r.total, a.id + " " + r.must.filter((m) => !m.hit).map((m) => m.label).join(" / "));
+    assert.deepEqual(r.wrong, [], a.id);
+  });
+});

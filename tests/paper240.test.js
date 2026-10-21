@@ -111,3 +111,15 @@ test("반대말 바꿈: 실제 짝은 하나도 '반대'로 걸지 않고, 같�
   assert.ok(sameEn >= sameEnN - 1, "같은 언어(영어)로 고친 답 " + sameEn + "/" + sameEnN);
   assert.ok(cross >= 9, "언어가 다른 답 " + cross + "/" + crossN);
 });
+
+test("근거 기준(시범 10문항): 논문 답 40개 모두 필수 근거를 짚고, 틀린 근거는 흔들린 2개(처음 단정한 답)에서만", { skip }, () => {
+  const rows = ANSWERS.filter((a) => window.P2_RUBRIC[a.qid]);
+  assert.equal(rows.length, 40);
+  const flagged = [];
+  rows.forEach((a) => {
+    const r = P.checkRubric(a.text, window.P2_RUBRIC[a.qid]);
+    assert.equal(r.hit, r.total, a.run);
+    if (r.wrong.length) flagged.push(a.run);
+  });
+  assert.deepEqual(flagged.sort(), ["P2M-02-052", "P2M-02-100"]);
+});

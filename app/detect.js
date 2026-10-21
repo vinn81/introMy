@@ -16,7 +16,7 @@
   "use strict";
 
   if (typeof module !== "undefined" && module.exports) {
-    ["./detect/text.js", "./detect/clues.js", "./detect/signals.js", "./detect/final.js", "./detect/compare.js", "./detect/reference.js", "./detect/relevance.js"].forEach(function (f) { require(f); });
+    ["./detect/text.js", "./detect/clues.js", "./detect/signals.js", "./detect/final.js", "./detect/compare.js", "./detect/reference.js", "./detect/rubric.js", "./detect/relevance.js"].forEach(function (f) { require(f); });
   }
   var P2 = root.P2Lib;
   if (!P2 || !P2.relevance) throw new Error("detect/의 규칙 파일을 먼저 읽어야 합니다.");
@@ -44,6 +44,7 @@
     compare = P2.compare,
     matchReference = P2.matchReference,
     comparePair = P2.comparePair,
+    checkRubric = P2.checkRubric,
     relevance = P2.relevance;
 
   function analyze(text) {
@@ -68,7 +69,7 @@
       conclusionBy: conclusionBy(clean, tp), lastSentence: lastSentence(clean) };
   }
 
-  var api = { relevance: relevance, matchReference: matchReference, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare, comparePair: comparePair };
+  var api = { relevance: relevance, matchReference: matchReference, RUBRIC: RUBRIC, SIGNALS: SIGNALS, checkInput: checkInput, analyze: analyze, score: score, compare: compare, comparePair: comparePair, checkRubric: checkRubric };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.P2Check = api;
 })(typeof window !== "undefined" ? window : globalThis);

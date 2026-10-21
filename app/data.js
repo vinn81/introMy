@@ -146,3 +146,109 @@ window.P2_ERROR_KO = {
   "E09": "SELF", "E10": "UNC; HALL", "E11": "CALC", "E12": "PREM; 기저율 무시",
   "E13": "HALL 또는 사실 오류", "E14": "COND", "E15": "PREM; HALL"
 };
+
+// 문항별 근거 기준(시범 10문항). 출처: P2-Bench Master Dataset의 answer·target·explanation·errorType을 판정할 수 있는 단위로 쪼갬.
+// AI가 초안을 쓰고 사람이 검토함(2026-10-21). must: 맞는 답이 짚어야 할 근거, wrong: 부정·오류 표시 없이 단정하면 틀린 근거.
+// any의 원소 하나가 표현 하나다. 문자열이면 그 정규식, 배열이면 그 안의 정규식이 모두 답에 있어야 한다(대소문자 무시).
+window.P2_RUBRIC = {
+  "M01": {
+    must: [
+      { label: "세 조건을 모두 반영(두 조건을 x = 21k + 2로 묶어 나머지에 대입, 또는 후보를 세 조건으로 확인)",
+        any: ["21k ?\\+ ?2", "mod ?\\(?21|≡ ?2 ?\\(?mod ?21", ["23", "mod ?3|÷ ?3|3으로", "mod ?5|÷ ?5|5로", "mod ?7|÷ ?7|7로"]] },
+      { label: "23보다 작은 해가 없다는 근거(작은 k·후보부터 확인, 또는 해가 105마다 반복)",
+        any: ["k ?= ?1", "k ?≡ ?1", "smallest (non-?negative |positive )?(integer )?(solution for )?k", "k의 최솟값", "2, ?9, ?16, ?23", "2, ?23, ?44", "작은 순서", "105"] }
+    ],
+    wrong: [
+      { label: "23이 아닌 값(2, 38 등)을 답으로 단정", any: ["(정답|답)은 ?(2|38)(이|입)", "answer is (2|38)\\b", "x ?= ?38\\b", "x는 38"] }
+    ]
+  },
+  "M05": {
+    must: [
+      { label: "위양성률 = 1 − 특이도 = 5%", any: ["(?<![\\d.])0\\.05\\b", "1 ?[-−] ?0\\.95", "(?<![\\d.])5 ?%"] },
+      { label: "전체 양성 확률 = 0.009 + 0.0495 = 0.0585(참양성 + 위양성)", any: ["0\\.0585", "5\\.85 ?%", "(?<!\\d)585(?!\\d)"] },
+      { label: "참양성 ÷ 전체 양성 = 0.009 ÷ 0.0585", any: ["0\\.009 ?(/|÷)", "90 ?/ ?585", "9 ?/ ?58\\.5", "2 ?/ ?13", "0\\.1538", "15\\.38?"] }
+    ],
+    wrong: [
+      { label: "민감도(90%)나 특이도(95%)를 답으로 단정(기저율 무시)", any: ["(확률은|probability is|answer is|정답은)[^.\\n]{0,25}(?<![\\d.])(90|95) ?%"] }
+    ]
+  },
+  "M13": {
+    must: [
+      { label: "연속분포에서 한 점의 확률은 0(구간 길이·적분이 0)", any: [["연속|continuous", "(=|은|는|is|are) ?\\*?0\\b"]] },
+      { label: "1/2은 표본공간 [0,1]에 속하는 값", any: ["표본공간|sample space|가질 수 있는 값|possible (outcome|value)|valid outcome|belongs to"] },
+      { label: "확률 0은 불가능과 다름", any: ["불가능[^.\\n]{0,15}(뜻|의미)[^.\\n]{0,10}(아니|아닙)", "not (mean|imply)[^.\\n]{0,30}impossible", "does not mean", "is possible", "(발생 )?가능한 (사건|결과)", "almost surely", "배제되지는 않"] }
+    ],
+    wrong: [
+      { label: "확률이 0이므로 불가능한 사건이라고 단정", any: ["(1/2|확률이 0이므로|확률이 0이라서)[^.\\n]{0,25}불가능한 사건(이다|입니다|임을 의미)", "(1/2|this event|the event|probability (of )?(0|zero)( means)?)[^.\\n]{0,25}(is|means) (an )?impossible"] }
+    ]
+  },
+  "L03": {
+    must: [
+      { label: "'~해야만(only if)'은 합격 → 제출", any: ["(pass|합격)[^.\\n]{0,15}(→|⇒|=>|implies)", "합격했다면|합격하려면", "if (you )?pass", "without submitting", "제출 없이|제출하지 않으면", "p only if q"] },
+      { label: "제출은 필요조건", any: ["필요 ?조건", "necessary"] },
+      { label: "제출만으로 합격이 보장되지 않아 충분조건은 아님", any: ["충분 ?조건(은|이)? ?(아니|아님|아닙|아닌)", "not (a |stated to be )?sufficient", "does not (guarantee|establish)", "not enough", "합격하는 것은 아니", "보장(하지|되지) ?(않|못)"] }
+    ],
+    wrong: [
+      { label: "충분조건·필요충분조건이라고 단정", any: ["(보고서 )?제출(은|이)[^.\\n]{0,15}충분 ?조건(입니다|이다)", "필요충분", "(submitting|submission|the report)[^.\\n]{0,30}is (a |both )?(necessary and )?sufficient"] }
+    ]
+  },
+  "L15": {
+    must: [
+      { label: "B가 범인인 경우는 참인 진술이 2개라 탈락(B는 범인이 아님)", any: ["b(는|가)? ?범인이 (아니|아닙|될 수 없)", "b is (innocent|not guilty)", "b는 범인이 아닙", "true count: 2|참인 진술이 2|two true|2 true"] },
+      { label: "A가 범인인 경우와 C가 범인인 경우 모두 조건을 만족", any: ["a ?(또는|or|와|나|이거나) ?c", "a일 수도 있고 ?c", "both a and c", "a, c 모두|a와 c 모두", "a is guilty[^\\n]{0,80}c is guilty", "a guilty or c guilty", "two (consistent|valid) (scenarios|cases|possibilities)", "두 (가지 )?경우 모두"] },
+      { label: "범인을 유일하게 정할 수 없음", any: ["유일하게 (결정|정)할 수 없", "cannot (be )?uniquely", "결정할 수 없", "not unique"] }
+    ],
+    wrong: [
+      { label: "범인을 한 명으로 단정", any: ["^(따라서 |그러므로 )?범인은 (a|c)(이다|입니다|다)[.!]?$", "^(therefore,? |so,? )?(a|c) is (the )?guilty[.!]?$", "^(the )?(guilty (person|one)|culprit) is (a|c)[.!]?$"] }
+    ]
+  },
+  "S05": {
+    must: [
+      { label: "몰비 H₂ : O₂ : H₂O = 2 : 1 : 2", any: ["2 ?: ?1", "per 1 mol o2", "2 mol (of )?h2 (per|to) 1", "2 ?(×|\\*) ?2", "consumes 4 mol"] },
+      { label: "O₂ 2 mol에 H₂ 4 mol이 필요해 O₂가 제한 반응물", any: [["제한 반응물|limiting", "o2"]] },
+      { label: "H₂O 4 mol 생성, H₂ 5 − 4 = 1 mol 남음", any: [["4 ?mol", "1 ?mol|5 ?[-−] ?4"]] }
+    ],
+    wrong: [
+      { label: "H₂를 제한 반응물로, H₂O 5 mol, O₂가 남는다고 단정", any: ["h2(가|는|이)? ?(제한|is (the )?limiting)", "limiting (reactant|reagent)(:| is) ?h2", "h2o[^./()\\n]{0,15}(:|는|은|is|=) ?5 ?mol", "o2(가|는|이)? ?남(습|는|아)", "o2 remains"] }
+    ]
+  },
+  "S07": {
+    must: [
+      { label: "정반응이 발열이라 온도를 올리면 흡열인 역반응(왼쪽)으로 이동", any: [["발열|exotherm|흡열|endotherm|absorbs? (the )?(added |excess )?heat|열을 (흡수|소비)", "왼쪽|left|역반응|reverse|reactant"]] },
+      { label: "기체 몰수가 왼쪽 4, 오른쪽 2라 압력을 올리면 오른쪽으로 이동", any: [["\\b4\\b|4 ?mol|4몰", "\\b2\\b|2 ?mol|2몰", "오른쪽|right|정반응|forward|product", "몰|mole"]] }
+    ],
+    wrong: [
+      { label: "온도를 올리면 오른쪽으로 이동한다고 단정", any: ["온도[^.\\n]{0,20}(올리|증가|상승|높)[^.\\n]{0,30}오른쪽", "temperature[^.\\n]{0,40}(shifts?|moves?)[^.\\n]{0,15}right"] }
+    ]
+  },
+  "S11": {
+    must: [
+      { label: "무작위 배정 → 교란 변수·선택 편향 감소", any: [["무작위|random", "교란|confound|선택 편향|selection bias|특성|differences|균등|evenly|치우"]] },
+      { label: "구분 안 되는 위약 → 기대(플라시보) 효과 감소", any: [["위약|placebo", "기대|expect|플라시보|심리"]] },
+      { label: "맹검(참가자, 가능하면 평가자도) → 기대·관찰자 편향 감소", any: [["맹검|blind", "편향|bias|기대|expect|채점|scoring|관찰"]] },
+      { label: "같은 검사를 같은 조건에서", any: ["같은 (조건|검사|기억력 검사|난이도)", "동일한 (조건|난이도|검사)", "same (memory )?test", "same (conditions|word list|time)", "standardi[sz]ed", "controlled conditions", "같은 조건|같게 맞춥", "표준화된|사전 통제|통일"] }
+    ],
+    wrong: [
+      { label: "대조군 없이 비교하거나 참가자가 집단을 고르게 함", any: ["참가자가 (스스로|직접) (그룹|집단)", "participants (choose|select) (their|which) (group|condition)"] }
+    ]
+  },
+  "E06": {
+    must: [
+      { label: "올바른 결론은 '정사각형이 아니다'", any: ["정사각형이 아니|정사각형일 수 없|정사각형이 될 수 없|not a square|cannot be a square|can't be a square"] },
+      { label: "근거: 후건 부정(modus tollens)·대우", any: ["modus tollens|후건 ?부정|대우|contrapositive", "¬ ?[ps]\\b", "직사각형이 아닌 (도형|것)은 정사각형", "not a rectangle cannot be a square|lacks the broader property"] }
+    ],
+    wrong: [
+      { label: "원래 결론('정사각형이다')이 맞다고 단정", any: ["(따라서|그러므로|therefore)[^.\\n]{0,15}(이 도형은 )?정사각형이다", "(it|the shape|this shape) is a square\\b"] }
+    ]
+  },
+  "E15": {
+    must: [
+      { label: "AI의 결론에 근거가 없음", any: ["근거(가)? ?(부족|없)", "unsupported|not justified|unjustified|unsubstantiated", "입증(되지|할 수) ?(않|없)", "비약|성급|추측|not (a )?proven", "invalid"] },
+      { label: "졸업 연도만으로는 출생연도를 정할 수 없음", any: ["(결정|확정|계산|단정|특정|알)(할)? 수(는)? 없", "cannot be determined|can't be determined", "one of many possibilities"] },
+      { label: "AI가 말하지 않은 가정(22세 졸업 등)을 넣음", any: ["가정|assum", "나이를 모르|age at graduation|졸업 (당시 )?나이", "22세|age 22|about 22|typical|전형적"] }
+    ],
+    wrong: [
+      { label: "1988년생(또는 다른 연도)이 맞다고 단정", any: ["1988년생(이다|입니다|이 맞)", "(was|is) born in 19\\d\\d\\b"] }
+    ]
+  }
+};
