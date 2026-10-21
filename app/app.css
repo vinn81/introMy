@@ -335,6 +335,17 @@ mark.m-signal { background: var(--warn-soft); color: #6b3f00; box-shadow: inset 
   background: var(--accent-soft); color: var(--accent-deep); font-size: 0.75rem; font-weight: 850;
 }
 .copy-result { margin-top: 18px; }
+
+/* 판정의 근거가 얼마나 단단한가 */
+.confidence { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
+.conf { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; font-size: 0.8rem; border: 1px solid var(--line); background: #fff; color: var(--text); }
+.conf b { font-weight: 800; }
+.conf-level { padding: 1px 8px; border-radius: 99px; font-size: 0.72rem; font-weight: 800; }
+.conf-high .conf-level { background: var(--ok-soft); color: #0b4f49; }
+.conf-medium .conf-level { background: var(--warn-soft); color: #6b3f00; }
+.conf-low .conf-level { background: var(--surface-soft); color: var(--muted); border: 1px solid var(--line); }
+.conf[title] { cursor: help; }
+.conf-line { margin: 0 0 8px !important; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 .limit-note { margin: -4px 0 14px; padding: 10px 14px; border-radius: 12px; background: var(--surface-soft); color: var(--muted); font-size: 0.84rem; }
 .limit-note b { color: var(--text); }
 .result-text { margin-top: 10px; }

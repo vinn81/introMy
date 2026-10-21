@@ -286,6 +286,36 @@
     }).join("");
   }
 
+  // 판정마다 근거가 얼마나 단단한지 보여 준다(근거 강함 · 근거 보통 · 판정 안 함)
+  var CONF_LABEL = { high: "근거 강함", medium: "근거 보통", low: "판정 안 함" };
+
+  function confChip(name, level, text, title) {
+    return '<li class="conf conf-' + level + '"' + (title ? ' title="' + escapeHtml(title) + '"' : "") + "><b>" + escapeHtml(name) + "</b> " +
+      escapeHtml(text) + ' <span class="conf-level">' + CONF_LABEL[level] + "</span></li>";
+  }
+
+  function relevanceConfidence(rel) {
+    if ($("relevance-ok").checked) return ["high", "직접 확인함"];
+    if (rel.status === "related") {
+      if (rel.byReference) return ["medium", "질문 단서는 적지만 기준 정답 값과 맞음"];
+      return rel.score >= 5 && rel.best < rel.score ? ["high", "고른 문항의 답"] : ["medium", "고른 문항의 답(단서가 많지 않음)"];
+    }
+    if (rel.status === "unrelated") return rel.reason === "weak" && rel.score === 0 ? ["high", "관련 없음"] : ["medium", rel.reason === "other" ? "다른 문항의 답으로 보임" : "관련 없어 보임"];
+    return ["low", "확인하지 못함"];
+  }
+
+  function renderConfidence(rel, offTopic, noConclusion, ids) {
+    var rc = relevanceConfidence(rel);
+    var items = [confChip("관련성", rc[0], rc[1])];
+    if (!offTopic && !noConclusion) {
+      var ref = state.refCheck;
+      if (ref) items.push(confChip("최종 답 대조", ref.confidence || "low", ref.status === "match" ? "기준 정답과 같음" : ref.status === "mismatch" ? "기준 정답과 다름" : "맞대지 못함"));
+      items.push(confChip("흔들림 신호", "medium", ids.length ? "신호 " + ids.length + "개" : "신호 없음",
+        "흔들림 규칙은 논문의 감점 4건으로 만들어, 다른 AI의 실제 답에서 얼마나 맞는지는 아직 재지 않았습니다. 신호를 직접 켜고 끌 수 있습니다."));
+    }
+    $("confidence").innerHTML = items.join("");
+  }
+
   // 최종 답 칸의 글은 굵은 글씨 표시(**)를 걷어낸 것이라, 원문에서는 표시를 건너뛰며 찾는다(마지막으로 나온 곳)
   function findLast(text, piece, from) {
     var p = String(piece).replace(/\s+/g, " ").trim().slice(0, 200);
@@ -352,6 +382,7 @@
       lines.push("흔들림 신호: " + (ids.length ? ids.map(function (id) { return P.SIGNALS[id].title; }).join(", ") : "없음"));
       lines.push("루브릭: " + P.RUBRIC.map(function (r) { return r.label + " " + s.parts[r.key] + "/" + r.max; }).join(", "));
     }
+    [].forEach.call(document.querySelectorAll("#confidence li"), function (li) { lines.push("근거의 단단함 — " + li.textContent.replace(/\s+/g, " ").trim()); });
     lines.push("판정 근거:");
     [].forEach.call(document.querySelectorAll("#why li"), function (li) { lines.push("- " + li.textContent); });
     if (!$("compare-body").hidden && !$("compare-body").classList.contains("stale")) {
@@ -461,6 +492,7 @@
     next.push("3단계: 같은 질문을 다른 언어로 물어 두 답을 비교하세요. 논문에서는 흔들림이 한쪽 언어에서만 나왔습니다.");
     $("next").innerHTML = next.map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("");
     renderAnnotated();
+    renderConfidence(rel, offTopic, noConclusion, ids);
   }
 
   function short60(t) { t = String(t || ""); return t.length > 60 ? t.slice(0, 60) + "…" : t; }
@@ -658,7 +690,14 @@
       if (!untouched) why.unshift("최종 답 칸을 직접 고쳐서, 고친 두 칸끼리만 비교했습니다.");
     }
     var whyHtml = why.length ? '<details class="why" open><summary>왜 이렇게 판정했나요?</summary><ul>' + why.map(function (w) { return "<li>" + escapeHtml(w) + "</li>"; }).join("") + "</ul></details>" : "";
-    $("pair-verdict").innerHTML = escapeHtml(head) + "<p>" + escapeHtml(body) + "</p>" + extra + whyHtml;
+    // 비교 판정의 근거가 얼마나 단단한가
+    var level = aOff || bOff ? "low" : c.confidence || "low";
+    var confWhy = level === "low" ? "같다·다르다를 정하지 않았습니다" :
+      c.mode === "topics" || c.mode === "whole" ? "핵심 개념·답 전체 단서로 판단했습니다" :
+      level === "medium" ? "언어가 다른 두 답의 방향 낱말 수로 판단했습니다(이런 바뀜은 일부만 잡습니다)" :
+      c.direction && c.direction.length ? "같은 자리의 낱말이 반대말로 바뀐 것을 찾았습니다" : "최종 답의 값·식·판정어로 판단했습니다";
+    var confHtml = '<p class="conf-line conf-' + level + '"><span class="conf-level">' + CONF_LABEL[level] + "</span> " + escapeHtml(confWhy) + "</p>";
+    $("pair-verdict").innerHTML = confHtml + escapeHtml(head) + "<p>" + escapeHtml(body) + "</p>" + extra + whyHtml;
   }
 
   // ---------- 연결 ----------

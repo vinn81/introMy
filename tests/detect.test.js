@@ -173,3 +173,15 @@ test("여러 AI 말투의 결론 찾기(형식 견본): 이모지 제목·한 �
   // 답의 성질만 말하는 문장("the answer is determinate")은 답을 밝힌 문장이 아니므로 굵게 쓴 답을 이기지 못한다
   assert.equal(P.analyze("17 × 24 = **408**\n\nThe problem gives enough information, and the answer is determinate.").finalAnswer, "408");
 });
+
+test("판정의 근거 표시: 값·식으로 갈리면 강함, 개념·방향 낱말 수면 보통, 판정하지 않으면 '판정 안 함'", () => {
+  const ex = window.P2_EXAMPLES.find((e) => e.id === "M01");
+  assert.equal(P.compare(P.analyze(ex.en.text), P.analyze(ex.kr.text)).confidence, "high");
+  assert.equal(P.compare(P.analyze("따라서 답은 4입니다."), P.analyze("Therefore the answer is 5.")).confidence, "high");
+  const kr = "온도를 높이면 생성물이 증가한다.\n압력을 높여도 수득률이 증가한다.\n따라서 생성물이 증가한다.";
+  const en = "Raising the temperature decreases the product.\nRaising the pressure also decreases the yield.\nTherefore the product decreases.";
+  assert.equal(P.compare(P.analyze(kr), P.analyze(en)).confidence, "medium");
+  const m01 = ITEMS.find((it) => it.id === "M01");
+  assert.equal(P.matchReference(P.analyze("따라서 답은 38입니다. 조건을 확인했습니다."), m01.answer, null).confidence, "high");
+  assert.equal(P.matchReference(P.analyze("k = 0이면 x = 2인데,\n\n2를 5로 나눈 나머지는"), m01.answer, null).confidence, "low");
+});

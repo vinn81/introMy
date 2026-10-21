@@ -153,11 +153,26 @@
   function compare(a, b) {
     var r = compareCore(a, b);
     var cutA = a.finalReliable === false, cutB = b.finalReliable === false;
-    if (r.sameAnswer === true || !(cutA || cutB)) return r;
-    var who = cutA && cutB ? "두 답 모두" : cutA ? "1단계 답" : "다른 언어 답";
-    return { sameAnswer: null, mode: "cut", cutA: cutA, cutB: cutB, aSignals: r.aSignals, bSignals: r.bSignals,
-      why: [who + "에서 결론 문장을 찾지 못했습니다. 끝이 문장 중간이거나, 여러 줄 풀이의 마지막 줄만 있고 ‘답:’·‘따라서’ 같은 결론 표시가 없습니다.",
-        "이 상태로 맞대면 풀이 중간의 값(예: k = 0일 때의 x = 2)을 최종 답으로 읽게 되므로 같다·다르다를 정하지 않았습니다."] };
+    if (!(r.sameAnswer === true || !(cutA || cutB))) {
+      var who = cutA && cutB ? "두 답 모두" : cutA ? "1단계 답" : "다른 언어 답";
+      r = { sameAnswer: null, mode: "cut", cutA: cutA, cutB: cutB, aSignals: r.aSignals, bSignals: r.bSignals, direction: [],
+        why: [who + "에서 결론 문장을 찾지 못했습니다. 끝이 문장 중간이거나, 여러 줄 풀이의 마지막 줄만 있고 ‘답:’·‘따라서’ 같은 결론 표시가 없습니다.",
+          "이 상태로 맞대면 풀이 중간의 값(예: k = 0일 때의 x = 2)을 최종 답으로 읽게 되므로 같다·다르다를 정하지 않았습니다."] };
+    }
+    r.confidence = compareConfidence(r);
+    return r;
+  }
+
+  // 판정의 근거가 얼마나 단단한가: "high"(최종 답의 값·식·판정어, 같은 자리의 반대말),
+  // "medium"(핵심 개념·답 전체 단서, 언어가 다른 답의 방향 낱말 수), "low"(판정하지 않음)
+  function compareConfidence(r) {
+    if (r.sameAnswer === null) return "low";
+    if (r.mode === "topics" || r.mode === "whole" || r.sameAnswer === "partial") return "medium";
+    if (r.sameAnswer === false) {
+      var crossOnly = r.direction && r.direction.length && r.why.every(function (w) { return /^방향이 반대/.test(w); });
+      return crossOnly ? "medium" : "high";
+    }
+    return "high";
   }
 
   function compareCore(a, b) {

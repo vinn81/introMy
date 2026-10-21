@@ -32,11 +32,16 @@
   // 답의 최종 답이 P2-Bench 기준 정답과 같은지 본다.
   // 돌려주는 값: status("match" | "mismatch" | "unknown"), strong(숫자·식·특정 개념으로 맞았는지), why
   // 결론 문장을 찾지 못한 답은 기준 정답과 '다르다'고 단정하지 않는다(복사하다 만 답을 틀린 답으로 보지 않게)
+  // confidence: "high"(값·식·판정어·명제 규칙으로 갈림이나 일치가 분명), "medium"(간접 근거), "low"(맞대지 못함)
   function matchReference(an, reference, claim) {
     var r = matchReferenceCore(an, reference, claim);
     if (r.status === "mismatch" && an && an.finalReliable === false) {
-      return { status: "unknown", cut: true, why: ["결론 문장을 찾지 못해 기준 정답과 맞대지 않았습니다(답이 중간에 끊겼을 수 있음)"] };
+      r = { status: "unknown", cut: true, why: ["결론 문장을 찾지 못해 기준 정답과 맞대지 않았습니다(답이 중간에 끊겼을 수 있음)"] };
     }
+    if (r.status === "unknown") r.confidence = "low";
+    else if (r.status === "match") r.confidence = r.strong ? "high" : "medium";
+    // '결정 불가'인데 값을 단정함, 답 전체에 정답 값이 없음 → 간접 근거
+    else r.confidence = r.why.some(function (w) { return /그런 말 없이|답 어디에도/.test(w); }) ? "medium" : "high";
     return r;
   }
 
