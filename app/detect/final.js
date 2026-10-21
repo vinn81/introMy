@@ -8,7 +8,7 @@
     short = P2.short;
 
   // 결론을 밝힌 흔적: '답/결론' 표시, 결론 접속어, 등식, 판정 표현(타당·참·틀림·결정 불가 등)
-  var CONCLUSION_HINT = /(final answer|answer|verdict|conclusion|therefore|thus|hence|\bso\b|the result|in short|in summary|summary|최종|정답|정리|요약|답[은:：]|결론|따라서|그러므로|그래서|결과적으로|=|타당|부당|\b(in)?valid\b|\b(true|false|correct|incorrect|wrong)\b|참이|거짓|맞습니다|맞다|틀렸|틀린|옳|오류|fallacy|\berror\b|cannot be|불가능|결정할 수|알 수 없|^\s*(yes|no|예|아니오|아니요)\b)/im;
+  var CONCLUSION_HINT = /(final answer|answer|verdict|conclusion|therefore|thus|hence|\bso\b|the result|in short|in summary|summary|최종|정답|정리|요약|답[은:：]|결론|따라서|그러므로|그래서|결과적으로|=|타당|부당|\b(in)?valid\b|\b(true|false|correct|incorrect|wrong)\b|참이|거짓|맞습니다|맞다|틀렸|틀린|옳|오류|잘못(되|됐|된|이)|fallacy|\berror\b|cannot be|불가능|결정할 수|알 수 없|^\s*(yes|no|예|아니오|아니요)\b)/im;
 
   // 두 문장 이하의 짧은 답("프랑스의 수도는 파리입니다.")은 답 전체가 결론이다
   function isShortAnswer(text) {

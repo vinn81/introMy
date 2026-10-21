@@ -295,3 +295,17 @@ test("근거 기준 60문항: 회귀 견본의 맞는 답은 필수 근거를 �
     SAMPLES[id].bad.forEach((t, k) => { const r = P.checkRubric(t, R); assert.ok(r.hit < r.total || r.wrong.length > 0, id + " bad" + k); });
   });
 });
+
+test("사용자 테스트(E02): 결론만 맞고 근거가 빠진 답은 근거 부족, '논증은 건전하다·전제와 추론 모두 문제가 없다'는 틀린 근거", () => {
+  const R = window.P2_RUBRIC.E02;
+  const short = "이 AI 답변은 잘못되었습니다. 모든 포유류가 알을 낳는 것은 아닙니다. 대부분의 포유류는 새끼를 낳습니다.";
+  const r1 = P.checkRubric(short, R);
+  assert.equal(r1.hit, 1);
+  assert.equal(r1.wrong.length, 0);
+  assert.equal(P.analyze(short).hasConclusion, true);
+  const r2 = P.checkRubric("오리너구리는 실제로 알을 낳으므로 결론은 맞습니다. 따라서 이 논증은 건전하다. 전제와 추론 모두 문제가 없습니다.", R);
+  assert.ok(r2.wrong.length > 0);
+  // 맞는 답의 "두 번째 전제는 참", "…를 전제가 참이라는 증거로 여긴다"는 틀린 근거가 아니다
+  assert.equal(P.checkRubric("2. 두 번째 전제는 참입니다. 오리너구리는 실제로 포유류입니다.", R).wrong.length, 0);
+  assert.equal(P.checkRubric("It treats a true conclusion as evidence that the premise is true.", R).wrong.length, 0);
+});

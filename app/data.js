@@ -788,7 +788,7 @@ Object.assign(window.P2_RUBRIC, {
   "E02": {
     must: [
       { label: "‘모든 포유류는 알을 낳는다’는 전제가 거짓",
-        any: [["모든 포유류|all mammals|포유류는 알을|mammals lay eggs","거짓|틀렸|틀린|틀립|false|incorrect|사실이 아니|untrue|not true|부정확|사실과 다르|오류"], "대부분의? 포유류(는|가)? ?알을 낳지 않|most mammals (do not|don't|give birth)|(사람|인간|개|고양이|human|dog|cat|whale|고래)[^.\\n]{0,30}(새끼를 낳|낳지 않|give birth|live (birth|young)|do not lay)"] },
+        any: [["모든 포유류|all mammals|포유류는 알을|mammals lay eggs","거짓|틀렸|틀린|틀립|false|incorrect|사실이 아니|untrue|not true|부정확|사실과 다르|오류"], "모든 포유류가 알을 낳(는 (것은|건)|지는) 아니|not all mammals lay eggs|대부분의? 포유류(는|가)? ?(새끼를 낳|알을 낳지 않)|most mammals (do not|don't|give birth|bear live)|(사람|인간|개|고양이|human|dog|cat|whale|고래)[^.\\n]{0,30}(새끼를 낳|낳지 않|give birth|live (birth|young)|do not lay)"] },
       { label: "추론 형식(삼단논법)은 타당",
         any: ["타당(하|한|합|성은|성 자체)", "(?<!in)valid(?!ity of the premise)", "logically follows|follows logically|modus ponens", "(형식|구조|form|structure)(은|는|이|is)?[^.\\n]{0,20}(올바|맞|옳|correct|sound|fine)", "(추론|논리)(은|는|자체는|과정은|구조는|형식은) ?(옳|맞|올바|문제(가|는)? 없)"] },
       { label: "결론(오리너구리는 알을 낳음)은 참이지만 우연히 맞았을 뿐 전제를 정당화하지 못함",
@@ -796,7 +796,9 @@ Object.assign(window.P2_RUBRIC, {
     ],
     wrong: [
       { label: "추론과 전제가 모두 옳다(전제가 참)고 단정",
-        any: ["(추론과 전제가?|전제와 추론이?)\\s*(모두|둘 다)\\s*(옳|맞|타당|정확)", "both the reasoning and the premises? (are|is) (correct|true|sound|valid)", "(?<!if )(?<!whether )(?<!assuming )the premise (is|was) (true|correct)", "전제(는|가|도)\\s*(참이다|옳다|맞다|참입니다|옳습니다|맞습니다)", "^(따라서 |그러므로 |therefore,? |so,? )?(the |this )?(argument|syllogism|논증)(은|는|is)? ?(완전히 |entirely |completely |perfectly )?(건전|sound)(하다|합니다|다)?[.!]?$", "all mammals (do )?lay eggs[^.\\n]{0,15}(is|holds) (true|correct)", "모든 포유류(가|는) 알을 낳는다는 (것은|말은|명제는) (참|사실|옳)"] }
+        any: ["(추론과 전제가?|전제와 추론이?)\\s*(모두|둘 다)\\s*(옳|맞|타당|정확)", "both the reasoning and the premises? (are|is) (correct|true|sound|valid)", "(?<!if )(?<!whether )(?<!assuming )(?<!second )the premise (is|was) (true|correct)", "(?<!(두 번째|둘째|second|minor|소) ?)전제(는|가|도)\\s*(참이다|옳다|맞다|참입니다|옳습니다|맞습니다)", "^(따라서 |그러므로 |therefore,? |so,? )?(the |this |이 )?(argument|syllogism|논증)(은|는|is)? ?(완전히 |entirely |completely |perfectly )?(건전|sound)(하다|합니다|다)?[.!]?$", "all mammals (do )?lay eggs[^.\\n]{0,15}(is|holds) (true|correct)", "모든 포유류(가|는) 알을 낳는다는 (것은|말은|명제는) (참|사실|옳)"] },
+      { label: "전제와 추론에 모두 문제가 없다고 단정", raw: true,
+        any: ["(전제|추론)(와|과|도)? ?(추론|전제)?[^.\\n]{0,8}(모두|둘 다|다) ?(문제(가)? ?없|옳|맞|타당)", "(premise|reasoning)s? and (the )?(premise|reasoning)s? (are|is) (both )?(fine|correct|sound|valid|ok)"] }
     ]
   },
   "E03": {

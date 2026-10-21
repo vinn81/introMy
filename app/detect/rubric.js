@@ -31,26 +31,30 @@
   }
 
   // 문제 속 주장을 다시 적은 줄("결론: 따라서 정사각형이다. ❌ 오류", "Let P = The shape is a square")은 답의 주장이 아니다
-  var RESTATED = /(^|[\s(])(let |전제|premise|결론\s*[:：]|conclusion\s*[:：]|주장|claim|ai(의|'s| )|잘못된|flawed|wrong|❌|✗)/i;
+  // (낱말 하나가 아니라 "전제 1:", "Conclusion:" 같은 이름표로 본다. "전제와 추론 모두 문제가 없다"는 답의 주장이다)
+  var RESTATED = /(^|[\s(*])(let |(전제|premise|결론|conclusion|주장|claim)\s*\d*\s*\**\s*[:：]|잘못된 (결론|추론)|flawed|❌|✗)/i;
+  // raw 표현(부정어가 들어 있어야 하는 틀린 주장, 예: "전제와 추론 모두 문제가 없다")에만 쓰는 좁은 부정·오류 표시
+  var NEGATED = /(\bnot\b|n't|wrong|incorrect|false|invalid|fallac|틀|잘못|오류|아니|않|거짓|부당)/i;
 
   // 주장을 단정하지 않고 전하거나 따지는 문장(“…를 입증하기에 불충분하다”, “…로 환원할 수도 있다”)
-  var HEDGED = /(insufficient|to establish|establish that|whether|하는지|인지(도)? |claims? that|concludes? that|reduc(e|ible|ed) to|equivalent to|불충분|입증하기|라는 (주장|결론)|라고 (주장|결론|단정)|환원|동치)/i;
+  var HEDGED = /(insufficient|to establish|establish that|whether|하는지|인지(도)? |claims? that|concludes? that|(as|is) evidence that|treats?|(으로|로) 여기|간주|reduc(e|ible|ed) to|equivalent to|불충분|입증하기|라는 (주장|결론)|라고 (주장|결론|단정)|환원|동치)/i;
 
   // 틀린 근거는 부정·오류 표시 없이 단정한 문장에서만 센다("90%는 민감도일 뿐 답이 아니다"는 틀린 근거가 아니다)
-  function findClaim(text, p) {
+  function findClaim(text, p, raw) {
     var lines = maskQuotes(text).split(/\n+/);
     for (var j = 0; j < lines.length; j++) {
       if (RESTATED.test(lines[j])) continue;
       var parts = sentences(lines[j]);
       for (var i = 0; i < parts.length; i++) {
         var sent = parts[i].trim(), m = new RegExp(p, "i").exec(sent);
-        if (m && !REPORTING.test(sent) && !HEDGED.test(sent)) return m[0].trim();
+        if (m && !(raw ? NEGATED : REPORTING).test(sent) && !HEDGED.test(sent)) return m[0].trim();
       }
     }
     return null;
   }
 
-  // rubric: { must: [{ label, any: [표현…] }], wrong: [{ label, any: [정규식…] }] } (data.js P2_RUBRIC)
+  // rubric: { must: [{ label, any: [표현…] }], wrong: [{ label, any: [정규식…], raw? }] } (data.js P2_RUBRIC)
+  // raw: 주장 자체에 '없다·no' 같은 말이 들어가는 틀린 근거. 넓은 부정어 목록 대신 NEGATED로만 거른다
   // 돌려주는 값: must(근거마다 hit·evidence), wrong(단정한 틀린 근거), hit·total
   function checkRubric(text, rubric) {
     if (!rubric) return null;
@@ -63,7 +67,7 @@
     var wrong = [];
     (rubric.wrong || []).forEach(function (w) {
       for (var i = 0; i < w.any.length; i++) {
-        var ev = findClaim(t, w.any[i]);
+        var ev = findClaim(t, w.any[i], w.raw);
         if (ev) { wrong.push({ label: w.label, evidence: ev }); break; }
       }
     });
