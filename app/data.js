@@ -176,10 +176,10 @@ window.P2_RUBRIC = {
     must: [
       { label: "연속분포에서 한 점의 확률은 0(구간 길이·적분이 0)", any: [["연속|continuous", "(=|은|는|is|are) ?\\*?0\\b"]] },
       { label: "1/2은 표본공간 [0,1]에 속하는 값", any: ["표본공간|sample space|가질 수 있는 값|possible (outcome|value)|valid outcome|belongs to"] },
-      { label: "확률 0은 불가능과 다름", any: ["불가능[^.\\n]{0,15}(뜻|의미)[^.\\n]{0,10}(아니|아닙)", "not (mean|imply)[^.\\n]{0,30}impossible", "does not mean", "is possible", "(발생 )?가능한 (사건|결과)", "almost surely", "배제되지는 않"] }
+      { label: "확률 0은 불가능과 다름", any: ["불가능[^.\\n]{0,15}(뜻|의미)[^.\\n]{0,10}(아니|아닙)", "not (mean|imply)[^.\\n]{0,30}impossible", "does not mean", "is possible", "(발생 )?(?<!불)가능한 (사건|결과)", "almost surely", "배제되지는 않"] }
     ],
     wrong: [
-      { label: "확률이 0이므로 불가능한 사건이라고 단정", any: ["(1/2|확률이 0이므로|확률이 0이라서)[^.\\n]{0,25}불가능한 사건(이다|입니다|임을 의미)", "(1/2|this event|the event|probability (of )?(0|zero)( means)?)[^.\\n]{0,25}(is|means) (an )?impossible"] }
+      { label: "확률이 0이므로 불가능한 사건이라고 단정", raw: true, any: ["(1/2|확률이 0이므로|확률이 0이라서)[^.\\n]{0,25}불가능한 사건(이다|입니다|임을 의미)", "(1/2|this event|the event|probability (of )?(0|zero)( means)?)[^.\\n]{0,25}(is|means) (an )?impossible"] }
     ]
   },
   "L03": {
@@ -199,7 +199,7 @@ window.P2_RUBRIC = {
       { label: "범인을 유일하게 정할 수 없음", any: ["유일하게 (결정|정)할 수 없", "cannot (be )?uniquely", "결정할 수 없", "not unique"] }
     ],
     wrong: [
-      { label: "범인을 한 명으로 단정", any: ["^(따라서 |그러므로 )?범인은 (a|c)(이다|입니다|다)[.!]?$", "^(therefore,? |so,? )?(a|c) is (the )?guilty[.!]?$", "^(the )?(guilty (person|one)|culprit) is (a|c)[.!]?$"] }
+      { label: "범인을 한 명으로 단정", any: ["^(따라서 |그러므로 )?범인은 (a|c)(이다|입니다|다)[.!]?$", "^(답 ?[:：] ?)?((예|네),? )?(a|c)(가|이) 범인(이다|입니다)[.!]?$", "^(therefore,? |so,? )?(a|c) is (the )?guilty[.!]?$", "^(the )?(guilty (person|one)|culprit) is (a|c)[.!]?$"] }
     ]
   },
   "S05": {

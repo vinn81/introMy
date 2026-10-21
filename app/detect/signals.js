@@ -76,6 +76,11 @@
       if (first && last && first !== last) {
         return { evidence: "첫 답: " + lines[0].replace(/\*/g, "") + " → 마지막 답: " + lastBold[lastBold.length - 1].replace(/\*/g, "") };
       }
+      // 첫 줄은 "예"로 단정했는데 마지막 문장은 "결정할 수 없다"로 끝남("답: 예, A가 범인입니다. … 따라서 유일하게 결정할 수 없습니다.")
+      var lastLine = lines[lines.length - 1].replace(/\*/g, "");
+      if (first === "yes" && INSUFFICIENT.test(lastLine)) {
+        return { evidence: "첫 답: " + lines[0].replace(/\*/g, "") + " → 마지막 답: " + lastLine };
+      }
     }
     return null;
   }

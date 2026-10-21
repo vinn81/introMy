@@ -309,3 +309,12 @@ test("사용자 테스트(E02): 결론만 맞고 근거가 빠진 답은 근거 
   assert.equal(P.checkRubric("2. 두 번째 전제는 참입니다. 오리너구리는 실제로 포유류입니다.", R).wrong.length, 0);
   assert.equal(P.checkRubric("It treats a true conclusion as evidence that the premise is true.", R).wrong.length, 0);
 });
+
+test("테스트 케이스 준비 중 찾은 오류: '예, A가 범인' 뒤 '결정할 수 없다'로 바꾼 답은 번복, '확률이 0이므로 불가능한 사건'은 틀린 근거", () => {
+  const l15 = "답: 예, A가 범인입니다.\n\nA가 범인이면 참인 진술이 하나입니다.\n\n다시 확인해 보니 C가 범인인 경우에도 조건을 만족합니다. 따라서 범인은 A 또는 C이고, 유일하게 결정할 수 없습니다.";
+  assert.ok(P.analyze(l15).signals.some((s) => s.id === "flip"));
+  assert.ok(P.checkRubric(l15, window.P2_RUBRIC.L15).wrong.length > 0);
+  const m13 = P.checkRubric("P(X=1/2) = 0입니다. 확률이 0이므로 X=1/2은 일어날 수 없는 불가능한 사건입니다.", window.P2_RUBRIC.M13);
+  assert.ok(m13.wrong.length > 0);
+  assert.equal(m13.must[2].hit, false);
+});
