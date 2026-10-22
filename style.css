@@ -1103,13 +1103,7 @@ mark.ab {
 }
 .site-footer .container { padding-top: clamp(40px, 6vw, 64px); border-top: 1px solid var(--orange); }
 .thanks { font-size: clamp(4.4rem, 15vw, 12rem); }
-.thanks-line {
-  margin: 24px 0 8px;
-  color: var(--orange);
-  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
-}
-.thanks-line b { color: var(--orange-deep); font-weight: 800; }
-.thanks-contact { margin: 0; color: var(--orange-deep); font-size: 0.95rem; }
+.thanks-contact { margin: 24px 0 0; color: var(--orange-deep); font-size: 0.95rem; }
 .thanks-contact span { margin-right: 6px; font-weight: 800; letter-spacing: 0.04em; }
 .thanks-contact a { text-decoration: none; }
 .thanks-contact a:hover { text-decoration: underline; }
