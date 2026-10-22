@@ -425,7 +425,7 @@
 
   // 과제·보고서에 붙일 수 있게 점검 결과를 글로 묶는다
   function resultText() {
-    var it = currentItem(), ids = checkedIds(), s = P.score(ids, $("wrong-answer").checked);
+    var it = currentItem(), ids = checkedIds(), s = P.score(ids, $("wrong-answer").checked, state.rubricCheck);
     var scored = !$("scored-part").hidden, rb = state.rubricCheck, ref = state.refCheck || {};
     var lines = ["[답 흔들림 점검기 · P2-Bench " + it.id + " · " + it.category + "]",
       "질문: " + it.kr, "기준 정답: " + it.answer,
@@ -571,7 +571,7 @@
     var a = state.analysis;
     var ids = checkedIds();
     var wrong = $("wrong-answer").checked;
-    var s = P.score(ids, wrong);
+    var s = P.score(ids, wrong, state.rubricCheck);
     var rel = state.relevance || { status: "related" };
     var j = judge(a, rel, ids, wrong);
 
@@ -676,8 +676,13 @@
     } else {
       w.push("흔들림 규칙 세 가지에 걸린 문장이 없습니다: ① 앞의 답을 스스로 고친다는 표현(‘my initial … was premature’, ‘정정합니다’ 등)이나 첫 답과 마지막 답의 예/아니오가 다름, ② ‘알 수 없다’고 한 뒤 ‘probably·아마’ 같은 확신 표현과 숫자를 붙인 추정, ③ ‘모두 맞다’고 한 바로 뒤의 틀림 표시.");
     }
+    if (s.rubric && (s.rubric.missing || s.rubric.wrong)) {
+      w.push("추론 과정 감점에 근거 결과를 반영했습니다: " + [s.rubric.missing ? "빠진 필수 근거 " + (rb.total - rb.hit) + "/" + rb.total + " → −" + s.rubric.missing + "(빠진 비율 × " + P.REASONING_MISSING + "점)" : "", s.rubric.wrong ? "틀린 근거 → −" + s.rubric.wrong : ""].filter(Boolean).join(", ") + ". 이 감점 크기는 논문에 없는 값이라 앱이 정했습니다.");
+    } else if (rb && rb.wrong.length && ids.indexOf("flip") >= 0) {
+      w.push("틀린 근거는 답이 뒤에서 뒤집은 첫 주장이라, 번복 감점(논문 표 6)으로 이미 깎여 따로 깎지 않았습니다.");
+    }
     var lost = P.RUBRIC.filter(function (r) { return s.parts[r.key] < r.max; }).map(function (r) { return r.label + " −" + (r.max - s.parts[r.key]); });
-    w.push(lost.length ? "논문 루브릭 점수 " + s.total + " = 100 − (" + lost.join(", ") + "). 감점 크기는 논문 표 6의 실제 채점과 같습니다." : "논문 루브릭 점수 100 = 루브릭 다섯 칸에서 깎인 것이 없다는 뜻입니다. 결론과 근거는 위에서 따로 봤습니다.");
+    w.push(lost.length ? "논문 루브릭 점수 " + s.total + " = 100 − (" + lost.join(", ") + "). 감점 크기는 논문 표 6의 실제 채점과 같습니다." : "논문 루브릭 점수 100 = 결론이 맞고, 필수 근거를 모두 짚었고, 틀린 근거와 흔들림이 없어 다섯 칸에서 깎인 것이 없다는 뜻입니다.");
     if (wrong) w.push("‘최종 답 자체가 틀렸다’가 체크되어 최종 답 정확성 40점을 0점으로 했습니다.");
     return w;
   }
@@ -689,7 +694,7 @@
     if (rel && rel.status !== "related" && !confirmed) return rel.status === "unrelated" ? "질문과 관련 없어 보임 · 평가 보류" : "질문과 언어가 달라 관련성 미확인";
     if (an.cut && !wrong) return "답이 중간에 끊긴 듯함 · 평가 보류";
     if (!an.hasConclusion && !ids.length && !wrong && !(rb && rb.hit > 0)) return "결론도 근거도 찾지 못함 · 평가 보류";
-    var s = P.score(ids, !!wrong);
+    var s = P.score(ids, !!wrong, rb);
     var head = (wrong ? "최종 답 틀림 · " : "") + (rb ? "근거 " + rb.hit + "/" + rb.total + (rb.wrong.length ? "(틀린 근거 " + rb.wrong.length + ")" : "") + " · " : "");
     if (!ids.length) return head + "흔들림 신호 없음 · 루브릭 " + s.total + "점";
     return head + "흔들림 신호 " + ids.length + "개(" + ids.map(function (id) { return P.SIGNALS[id].title; }).join(", ") + ") · 루브릭 " + s.total + "점";

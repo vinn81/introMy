@@ -326,3 +326,21 @@ test("사용자 테스트(M09·M05): 문장 끝 숫자('x = 4.')와 10,000명 �
   const m05 = P.checkRubric("Out of 10,000 people, 90 true positives and 495 false positives, so 90/585 ≈ 15.38%.", R.M05);
   assert.equal(m05.hit, m05.total);
 });
+
+test("논문 루브릭 점수에 근거 결과 반영: 빠진 근거는 비율 × 15점, 틀린 근거는 10점(번복이 켜져 있으면 번복 감점만)", () => {
+  const R = window.P2_RUBRIC;
+  const b6 = "P(X=1/2) = 0입니다. 확률이 0이므로 X=1/2은 일어날 수 없는 불가능한 사건입니다.";
+  const s6 = P.score([], false, P.checkRubric(b6, R.M13));
+  assert.equal(s6.parts.reasoning, 0);           // 25 − 15(0/3) − 10(틀린 근거)
+  assert.equal(s6.total, 75);
+  const s2 = P.score([], false, P.checkRubric("보고서 제출은 합격의 필요조건입니다.", R.L03));
+  assert.equal(s2.parts.reasoning, 15);          // 25 − round(15 × 2/3)
+  assert.equal(P.score(["flip"], false, { total: 3, hit: 3, wrong: [{}] }).parts.reasoning, 23);
+  assert.equal(P.score([], false, null).total, 100);
+  // 논문 예시 5개는 근거를 반영해도 논문 점수 그대로
+  window.P2_EXAMPLES.forEach((ex) => {
+    const it = ITEMS.find((i) => i.en === ex.questionEN);
+    const an = P.analyze(ex.en.text);
+    assert.equal(P.score(an.signals.map((x) => x.id), false, P.checkRubric(ex.en.text, R[it.id])).total, ex.en.score, ex.id);
+  });
+});

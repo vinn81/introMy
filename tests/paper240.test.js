@@ -138,3 +138,11 @@ test("근거 기준: 질문 글만 넣으면 어느 문항도 통과하지 않�
   ANSWERS.forEach((a) => Object.keys(R).forEach((id) => { if (id === a.qid) return; n++; const r = P.checkRubric(a.text, R[id]); if (r.hit === r.total) full++; }));
   assert.ok(full / n <= 0.005, full + "/" + n);
 });
+
+test("근거 결과를 반영한 논문 루브릭 점수: 만점 236개는 그대로 100점, 감점 4건은 논문 점수 그대로", { skip }, () => {
+  ANSWERS.forEach((a) => {
+    const an = P.analyze(a.text), ids = an.signals.map((x) => x.id);
+    const s = P.score(ids, false, P.checkRubric(a.text, window.P2_RUBRIC[a.qid])).total;
+    assert.equal(s, a.score, a.run);
+  });
+});

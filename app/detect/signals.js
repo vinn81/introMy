@@ -132,7 +132,20 @@
     return { index: m.index, length: m[0].length + b.index + b[0].length };
   }
 
-  function score(signalIds, wrongAnswer) {
+  // 근거 대조 결과를 '추론 과정'(25점)에 반영하는 감점. 논문에 정해진 값이 없어 앱이 정한 값이다(RULES.md)
+  // 빠진 필수 근거: 빠진 비율 × 15점(반올림), 틀린 근거: 10점. 단, 번복 신호가 켜져 있으면 틀린 근거는
+  // 뒤에서 뒤집은 첫 주장이므로 번복 감점(논문 표 6)으로 이미 깎였다고 보고 다시 깎지 않는다
+  var REASONING_MISSING = 15, REASONING_WRONG = 10;
+
+  function rubricDeduction(rb, signalIds) {
+    if (!rb || !rb.total) return { missing: 0, wrong: 0 };
+    var missing = Math.round(REASONING_MISSING * (rb.total - rb.hit) / rb.total);
+    var wrong = rb.wrong.length && signalIds.indexOf("flip") < 0 ? REASONING_WRONG : 0;
+    return { missing: missing, wrong: wrong };
+  }
+
+  // rb: 근거 대조 결과(detect/rubric.js checkRubric). 없으면 논문 표 6의 흔들림 감점과 최종 답 정확성만 본다
+  function score(signalIds, wrongAnswer, rb) {
     var parts = {};
     RUBRIC.forEach(function (r) { parts[r.key] = r.max; });
     signalIds.forEach(function (id) {
@@ -140,10 +153,12 @@
       if (!d) return;
       Object.keys(d).forEach(function (k) { parts[k] = Math.max(0, parts[k] - d[k]); });
     });
+    var rd = rubricDeduction(rb, signalIds);
+    parts.reasoning = Math.max(0, parts.reasoning - rd.missing - rd.wrong);
     if (wrongAnswer) parts.accuracy = 0;
     var total = 0;
     Object.keys(parts).forEach(function (k) { total += parts[k]; });
-    return { parts: parts, total: total };
+    return { parts: parts, total: total, rubric: rd };
   }
 
   P2.RUBRIC = RUBRIC;
@@ -161,4 +176,7 @@
   P2.BAD = BAD;
   P2.detectContradiction = detectContradiction;
   P2.score = score;
+  P2.rubricDeduction = rubricDeduction;
+  P2.REASONING_MISSING = REASONING_MISSING;
+  P2.REASONING_WRONG = REASONING_WRONG;
 })((typeof window !== "undefined" ? window : globalThis).P2Lib = (typeof window !== "undefined" ? window : globalThis).P2Lib || {});
