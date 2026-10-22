@@ -253,7 +253,7 @@ window.P2_RUBRIC = {
   }
 };
 
-// 나머지 50문항의 근거 기준. 위와 같은 방식(Master Dataset 바탕, AI 초안·사람 검토). 논문 답은 보지 않고 쓴 뒤 논문 답 200개로 처음 잰 값을 RULES.md에 남김
+// 나머지 50문항의 근거 기준. 위와 같은 방식(Master Dataset 바탕, AI 초안·사람 검토 2026-10-22). 논문 답은 보지 않고 쓴 뒤 논문 답 200개로 처음 잰 값을 RULES.md에 남김
 Object.assign(window.P2_RUBRIC, {
   "M02": {
     must: [
