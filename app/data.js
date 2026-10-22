@@ -176,7 +176,7 @@ window.P2_RUBRIC = {
     must: [
       { label: "연속분포에서 한 점의 확률은 0(구간 길이·적분이 0)", any: [["연속|continuous", "(=|은|는|is|are) ?\\*?0\\b"]] },
       { label: "1/2은 표본공간 [0,1]에 속하는 값", any: ["표본공간|sample space|가질 수 있는 값|possible (outcome|value)|valid outcome|belongs to"] },
-      { label: "확률 0은 불가능과 다름", any: ["불가능[^.\\n]{0,15}(뜻|의미)[^.\\n]{0,10}(아니|아닙)", "not (mean|imply)[^.\\n]{0,30}impossible", "does not mean", "is possible", "(발생 )?(?<!불)가능한 (사건|결과)", "almost surely", "배제되지는 않"] }
+      { label: "확률 0은 불가능과 다름", any: ["불가능[^.\\n]{0,15}(뜻|의미)[^.\\n]{0,10}(아니|아닙)", "not (mean|imply)[^.\\n]{0,30}impossible", "does not mean", "is possible", "(발생 )?(?<!불)가능한 (사건|결과)", "almost surely", "배제되지는 않", "(구분|구별)(되는|된다|됩니다|해야|되어야)", "(같은|동일한) (것|개념|상태)이 아니", "distinct|not the same as"] }
     ],
     wrong: [
       { label: "확률이 0이므로 불가능한 사건이라고 단정", raw: true, any: ["(1/2|확률이 0이므로|확률이 0이라서)[^.\\n]{0,25}불가능한 사건(이다|입니다|임을 의미)", "(1/2|this event|the event|probability (of )?(0|zero)( means)?)[^.\\n]{0,25}(is|means) (an )?impossible"] }
@@ -189,7 +189,8 @@ window.P2_RUBRIC = {
       { label: "제출만으로 합격이 보장되지 않아 충분조건은 아님", any: ["충분 ?조건(은|이)? ?(아니|아님|아닙|아닌)", "not (a |stated to be )?sufficient", "does not (guarantee|establish)", "not enough", "합격하는 것은 아니", "보장(하지|되지) ?(않|못)"] }
     ],
     wrong: [
-      { label: "충분조건·필요충분조건이라고 단정", any: ["(보고서 )?제출(은|이)[^.\\n]{0,15}충분 ?조건(입니다|이다)", "필요충분", "(submitting|submission|the report)[^.\\n]{0,30}is (a |both )?(necessary and )?sufficient"] }
+      { label: "충분조건·필요충분조건이라고 단정", any: ["(보고서 )?제출(은|이)[^.\\n]{0,15}충분 ?조건(입니다|이다)", "필요충분", "(submitting|submission|the report)[^.\\n]{0,30}is (a |both )?(necessary and )?sufficient"] },
+      { label: "답 표시 줄에서 충분조건이라고 단정", raw: "anchored", any: ["^(final answer|answer|최종 답|정답|답)\\s*[:：]\\s*(a |it is a |it's a )?(sufficient|충분 ?조건)"] }
     ]
   },
   "L15": {
@@ -472,7 +473,7 @@ Object.assign(window.P2_RUBRIC, {
       { label: "타당한 논증",
         any: ["타당(하다|합니다|함|한 (논증|추론|삼단)|하며|하고)|유효(하다|합니다|한 (논증|추론|삼단))", "(예|네)[,.]? ?(이 논증은 )?타당", "(is|it's|are) (logically |deductively )?valid(?![a-z])", "valid (argument|syllogism|inference|form|deduction)", "yes,? (it is |the argument is )?valid"] },
       { label: "뱀 ⊂ 파충류이고 파충류와 온혈동물은 겹치지 않으므로 뱀도 온혈동물과 겹치지 않음",
-        any: [["부분 ?집합|포함(되|된|돼)|속(하|한|함|해)|subset|contained|⊂|⊆|within|inside|members? of|belongs?","공집합|∅|겹치|disjoint|overlap|교집합|intersection|share no|배제|exclu|분리|cannot be warm|온혈(동물)?일 수 없|온혈(동물)?이 될 수 없"], "celarent|eae(-1)?(?![a-z])"] }
+        any: [["부분 ?집합|포함(되|된|돼)|속(하|한|함|해)|subset|contained|⊂|⊆|within|inside|members? of|belongs?","공집합|∅|겹치|disjoint|overlap|교집합|intersection|share no|배제|exclu|분리|cannot be warm|온혈(동물)?일 수 없|온혈(동물)?이 될 수 없"], "celarent|eae(-1)?(?![a-z])", ["belongs?|subset|⊂|포함|속(하|한|함|해)|members? of","(necessarily|must) (follow|be)|it follows|따라서 반드시|반드시 (따라|성립)"]] }
     ],
     wrong: [
       { label: "전칭 부정을 잘못 읽어 일부 뱀은 온혈일 수 있다고 하거나 형식 오류라고 단정",
@@ -508,7 +509,7 @@ Object.assign(window.P2_RUBRIC, {
   "L08": {
     must: [
       { label: "A가 기사라고 가정하면 B는 거짓말쟁이가 되어 B의 말이 참이 되므로 모순",
-        any: [["a(가|는|이)? ?기사|(?<![a-z])a (is|were|was|must be|would be|=) (a )?knight|(?<![a-z])a ?[:=] ?(a )?knight","모순|contradict|impossible|불가능|inconsisten|성립(하지|할 수)|cannot|can't"], ["b(가|는|이)? ?(거짓말쟁이|knave)인 경우|(?<![a-z])(if|suppose|assume) b (is|were) (a )?knave","모순|contradict|impossible|불가능"]] },
+        any: [["a(가|는|이)? ?기사|(?<![a-z])a (is|were|was|must be|would be|=) (a )?knight|(?<![a-z])a ?[:=] ?(a )?knight","모순|contradict|impossible|불가능|inconsisten|성립(하지|할 수)|cannot|can't"], ["b(가|는|이)? ?(거짓말쟁이|knave)인 경우|(?<![a-z])(if|suppose|assume) b (is|were) (a )?knave","모순|contradict|impossible|불가능"], "(b의 말|b가 한 말|b.s statement)[^.\\n]{0,40}(무조건|항상|always|반드시|must)[^.\\n]{0,10}(참|true)"] },
       { label: "A가 거짓말쟁이이면 B는 기사이고 B의 말(서로 다른 유형)이 참이라 일관됨",
         any: [["a(가|는|이)? ?거짓말쟁이|(?<![a-z])a (is|were|was|must be|would be|=) (a )?knave|(?<![a-z])a ?[:=] ?(a )?knave","b(가|는|이)? ?기사|(?<![a-z])b (is|were|was|must be|would be|=) (a )?knight|(?<![a-z])b ?[:=] ?(a )?knight","일관|consistent|참(이|입|이므로|이고|이다)|(is|be|are|statement is) true|만족|works|성립(한|합|하)|checks out|no contradiction|모순이 없|모순 없"]] }
     ],

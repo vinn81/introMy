@@ -37,7 +37,7 @@
   var NEGATED = /(\bnot\b|n't|wrong|incorrect|false|invalid|fallac|틀|잘못|오류|아니|않|거짓|부당)/i;
 
   // 주장을 단정하지 않고 전하거나 따지는 문장(“…를 입증하기에 불충분하다”, “…로 환원할 수도 있다”)
-  var HEDGED = /(insufficient|to establish|establish that|whether|하는지|인지(도)? |claims? that|concludes? that|(as|is) evidence that|treats?|(으로|로) 여기|간주|reduc(e|ible|ed) to|equivalent to|불충분|입증하기|라는 (주장|결론)|라고 (주장|결론|단정)|환원|동치)/i;
+  var HEDGED = /(insufficient|to establish|establish that|whether|하는지|인지(도)? |claims? that|concludes? that|(as|is) evidence that|treats?|(으로|로) 여기|간주|reduc(e|ible|ed) to|equivalent to|불충분|입증하기|라는 (주장|결론)|라고 (주장|결론|단정)|환원|동치|바꾸면|바뀌면|가정하면|(이)?라면|다고 하면|if (we|you) (change|rephrase)|if the question)/i;
 
   // 틀린 근거는 부정·오류 표시 없이 단정한 문장에서만 센다("90%는 민감도일 뿐 답이 아니다"는 틀린 근거가 아니다)
   function findClaim(text, p, raw) {

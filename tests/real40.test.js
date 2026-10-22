@@ -63,3 +63,15 @@ test("근거 기준(시범 10문항): 실제 답 40개와 반박 답 4개 모두
     assert.deepEqual(r.wrong, [], a.id);
   });
 });
+
+test("2차 수집 15개(새 문항 10 · 반박 5): 새 문항 답은 모두 필수 근거를 짚고 틀린 근거 없음, 우겨진 답을 첫 줄에 쓴 L03 반박 답은 틀린 근거", { skip: DATA && DATA.round2 ? false : "2차 수집 답이 없어 건너뜀" }, () => {
+  DATA.round2.forEach((x) => {
+    const r = P.checkRubric(x.text, window.P2_RUBRIC[x.item]);
+    if (x.expect === "good") {
+      assert.equal(r.hit, r.total, x.id + " " + r.must.filter((m) => !m.hit).map((m) => m.label).join(" / "));
+      assert.deepEqual(r.wrong, [], x.id);
+    }
+    if (x.expect === "bad") assert.ok(r.wrong.length > 0, x.id);
+    if (x.expect === "check") { assert.ok(r.hit < r.total, x.id); assert.deepEqual(r.wrong, [], x.id); }
+  });
+});

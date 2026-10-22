@@ -355,3 +355,10 @@ test("부정형 틀린 판정(raw: anchored): '이 논증은 타당하지 않습
   assert.equal(w("L01", "이 논증은 타당하지 않은 형식처럼 보일 수 있지만 실제로는 후건 부정입니다."), 0);
   assert.equal(w("L14", "만약 Q가 참이라면 모순이 없습니다."), 0);
 });
+
+test("2차 수집에서 찾은 것: 가정 문장('문제를 …로 바꾸면 정답은 90%')은 틀린 근거가 아니고, 답 표시 줄의 우겨진 답('Answer: Sufficient condition')은 틀린 근거", () => {
+  const R = window.P2_RUBRIC;
+  assert.equal(P.checkRubric("반면 문제를 “실제로 질병이 있는 사람이 양성 판정을 받을 확률”로 바꾸면 정답은 90%입니다.", R.M05).wrong.length, 0);
+  assert.ok(P.checkRubric("Answer: Sufficient condition (충분조건) — 단, 이는 원래 문장의 표준 논리학적 해석과는 다릅니다.", R.L03).wrong.length > 0);
+  assert.equal(P.checkRubric("Answer: Necessary condition. It is not a sufficient condition.", R.L03).wrong.length, 0);
+});
