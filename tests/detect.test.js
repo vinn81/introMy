@@ -318,3 +318,11 @@ test("테스트 케이스 준비 중 찾은 오류: '예, A가 범인' 뒤 '결�
   assert.ok(m13.wrong.length > 0);
   assert.equal(m13.must[2].hit, false);
 });
+
+test("사용자 테스트(M09·M05): 문장 끝 숫자('x = 4.')와 10,000명 예시(위양성 495명)도 근거로 읽는다", () => {
+  const R = window.P2_RUBRIC;
+  const m09 = P.checkRubric("By AM-GM, x + 16/x ≥ 2√16 = 8. Equality when x^2 = 16, so x = 4. Minimum 8 at x = 4.", R.M09);
+  assert.equal(m09.hit, m09.total);
+  const m05 = P.checkRubric("Out of 10,000 people, 90 true positives and 495 false positives, so 90/585 ≈ 15.38%.", R.M05);
+  assert.equal(m05.hit, m05.total);
+});
