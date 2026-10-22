@@ -4,19 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="김가빈 — 끊임없이 노력한 사람. 이야기, 13주 기록의 숫자, 대표작, 강점과 학습 기록, 지원 서류" />
-  <meta name="theme-color" content="#f4f5fb" />
+  <meta name="theme-color" content="#fbf3ea" />
   <title>김가빈 | Portfolio</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+KR:wght@300;400;500;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="brand.css" />
 </head>
 
 <body>
   <a class="skip-link" href="#main-content">본문 바로가기</a>
 
   <header class="site-header">
+    <div class="container topbar">
+      <a class="brand" href="#about">KIM GABIN</a>
+      <span class="topbar-mid">2026 PORTFOLIO</span>
+      <span class="topbar-end">AI · SECURITY · INFRA</span>
+    </div>
     <div class="container nav">
-      <div class="brand">김가빈</div>
 
       <nav class="nav-links" aria-label="주요 메뉴">
         <a href="#story">이야기</a>
@@ -34,13 +40,14 @@
   <main id="main-content">
     <!-- Intro -->
     <section class="hero" id="about">
-      <div class="container hero-grid hero-split">
+      <div class="container">
+        <p class="display hero-word" aria-hidden="true">PORTFOLIO</p>
+      </div>
+      <div class="container hero-grid">
         <div class="hero-copy">
-          <p class="eyebrow">Personal Portfolio</p>
-
           <h1>
-            안녕하세요<br />
-            김가빈입니다.
+            <span class="h-light">안녕하세요</span>
+            <span class="h-bold">김가빈입니다.</span>
           </h1>
           <p class="oneliner">끊임없이 노력한 사람</p>
           <p class="lead">
@@ -68,11 +75,19 @@
 <aside class="glance" aria-label="한눈에 보기"><p class="glance-title">13주 중 9주차 · 한눈에</p><ul><li><b>36<small>/37일</small></b><span>실천 또는 일부 실천</span><em>리추얼 기록</em></li><li><b>37<small>/38일</small></b><span>확정된 훈련일 중 출석</span><em>내 출석 기록</em></li><li><b>11<small>/11건</small></b><span>과제 최종 확인 완료</span><em>내 제출 현황</em></li></ul><a class="glance-link" href="#numbers">기록 자세히 보기</a></aside>
 <!-- /renew:glance -->
       </div>
+      <div class="container hero-foot">
+        <div>
+          <p class="foot-label">CONTACT</p>
+          <p><a href="https://github.com/vinn81">github.com/vinn81</a></p>
+        </div>
+        <p class="foot-desc">13주 동안 남긴 기록으로, 실패한 날까지 그대로 보여 주는 포트폴리오입니다.</p>
+      </div>
     </section>
 
     <!-- Story -->
     <section class="section story-section" id="story">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">STORY</p>
         <div class="section-header">
           <div class="section-index">01 · Story</div>
 
@@ -152,6 +167,7 @@
     <!-- Numbers -->
     <section class="section numbers-section" id="numbers">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">NUMBERS</p>
         <div class="section-header">
           <div class="section-index">02 · Numbers</div>
 
@@ -173,6 +189,7 @@
     <!-- Works -->
     <section class="section works-section" id="works">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">WORKS</p>
         <div class="section-header">
           <div class="section-index">03 · Works</div>
 
@@ -184,6 +201,8 @@
 
         <div class="work-grid">
           <article class="work">
+            <div class="work-visual" aria-hidden="true"><span class="display">PAPER</span><em>P2-Bench · 240 answers</em></div>
+            <div class="work-text">
             <p class="tag">논문 · 2026-10-06 최종본</p>
             <h3>다국어 입력 환경에서 동일 LLM 패밀리의 추론 안정성과 오류 유형 비교 분석</h3>
             <ul class="work-stats">
@@ -191,10 +210,14 @@
               <li><b>240</b><span>분석한 응답</span></li>
               <li><b>98.3%</b><span>만점 비율 (천장 효과)</span></li>
             </ul>
+            <p class="overview-label">OVERVIEW</p>
             <p>Claude Opus 5.5와 Sonnet 5.5를 P2-Bench로 평가했습니다. 응답 240개 중 236개가 만점인 강한 천장 효과를 확인했고, 평균 점수보다 언어 간 짝 비교와 실패·회복 패턴을 함께 봐야 한다고 결론지었습니다.</p>
             <p class="links"><a href="works/paper.pdf">논문 PDF 보기</a> · <a href="works/paper.docx">원본 DOCX</a></p>
+            </div>
           </article>
           <article class="work">
+            <div class="work-visual" aria-hidden="true"><span class="display">APP</span><em>답 흔들림 점검기</em></div>
+            <div class="work-text">
             <p class="tag">앱 · 위 논문을 반영</p>
             <h3>답 흔들림 점검기</h3>
             <ul class="work-stats">
@@ -202,8 +225,10 @@
               <li><b>4 / 4</b><span>논문 감점 사례 탐지</span></li>
               <li><b>100점</b><span>논문 루브릭 그대로</span></li>
             </ul>
+            <p class="overview-label">OVERVIEW</p>
             <p><b>이 앱은 AI 답을 과제나 업무에 옮겨 쓰는 사람이, 최종 답은 맞아 보여도 속에서 흔들린 답(첫 줄 번복 · 과잉추론 · 설명 모순)을 논문의 루브릭으로 찾아 믿기 전에 걸러 내도록 돕습니다.</b> 같은 질문을 한국어·영어로 물은 두 답을 짝지어 어느 쪽을 써야 할지도 알려 줍니다.</p>
             <p class="links"><a href="app/">앱 열기</a> · 로그인 없음 · 브라우저 안에서만 계산</p>
+            </div>
           </article>
         </div>
       </div>
@@ -212,6 +237,7 @@
     <!-- Profile -->
     <section class="section profile-section" id="profile">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">PROFILE</p>
         <div class="section-header">
           <div class="section-index">04 · Profile</div>
 
@@ -221,6 +247,8 @@
           </div>
         </div>
 
+        <div class="profile-split">
+        <figure class="profile-photo"><img src="assets/profile-study.png" alt="책상에서 코드를 보며 공부하는 모습을 그린 일러스트" loading="lazy" decoding="async" /></figure>
         <aside class="summary" aria-label="핵심 정보">
           <div class="summary-item">
             <div class="summary-label">Who</div>
@@ -242,12 +270,14 @@
             <p class="summary-value">정보처리기사 · Notion 학습 필기</p>
           </div>
         </aside>
+        </div>
       </div>
     </section>
 
     <!-- Strengths -->
     <section class="section strengths-section" id="strengths">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">STRENGTHS</p>
         <div class="section-header">
           <div class="section-index">05 · Strengths</div>
 
@@ -402,6 +432,7 @@
     <!-- SKT ALEPH -->
     <section class="section aleph-section" id="aleph">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">ALEPH</p>
         <div class="section-header">
           <div class="section-index">06 · SKT ALEPH</div>
 
@@ -414,6 +445,7 @@
           </div>
         </div>
 
+        <figure class="band-photo"><img src="assets/aleph-bg.png" alt="" loading="lazy" decoding="async" /><figcaption>SKT ALEPH · AI 보안·인프라 과정</figcaption></figure>
         <div class="aleph-intro">
           <article class="aleph-course-card">
             <div class="aleph-kicker">Current Learning</div>
@@ -502,6 +534,7 @@
     <!-- Evidence -->
     <section class="section evidence-section" id="evidence">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">EVIDENCE</p>
         <div class="section-header">
           <div class="section-index">07 · Evidence</div>
 
@@ -545,6 +578,7 @@
     <!-- Documents -->
     <section class="section docs-section" id="docs">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">DOCUMENTS</p>
         <div class="section-header">
           <div class="section-index">08 · Documents</div>
 
@@ -579,6 +613,7 @@
     <!-- Private Space -->
     <section class="section private-section" id="private">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">PRIVATE</p>
         <div class="section-header">
           <div class="section-index">09 · Private Space</div>
 
@@ -590,7 +625,7 @@
 
         <div class="private-area" data-private-area>
           <div class="private-lock-card" data-auth-state="locked">
-            <div class="private-lock-icon" aria-hidden="true">⌑</div>
+            <div class="private-lock-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div>
               <p class="private-status" data-auth-status>잠금 상태</p>
               <h3>나만의 공간</h3>
@@ -644,6 +679,7 @@
     <!-- Public Scope -->
     <section class="section" id="scope">
       <div class="container">
+        <p class="display section-word" aria-hidden="true">SCOPE</p>
         <div class="section-header">
           <div class="section-index">10 · Public Scope</div>
 
@@ -682,7 +718,9 @@
 
   <footer class="site-footer">
     <div class="container">
-      김가빈 · Personal Portfolio
+      <p class="display thanks" aria-hidden="true">THANK YOU!</p>
+      <p class="thanks-line">지금까지 끊임없이 노력한 사람, <b>김가빈</b>이었습니다.</p>
+      <p class="thanks-contact"><span>CONTACT</span> <a href="https://github.com/vinn81">github.com/vinn81</a></p>
     </div>
   </footer>
 
