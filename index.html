@@ -84,6 +84,25 @@
       </div>
     </section>
 
+    <!-- Index -->
+    <section class="index-section" aria-labelledby="index-title">
+      <div class="container">
+        <h2 class="display index-title" id="index-title">CONTENTS</h2>
+        <ol class="index-list">
+          <li><a href="#story"><span class="i-no">01</span><span class="i-name">이야기</span><span class="i-en">Story</span></a></li>
+          <li><a href="#numbers"><span class="i-no">02</span><span class="i-name">숫자</span><span class="i-en">Numbers</span></a></li>
+          <li><a href="#works"><span class="i-no">03</span><span class="i-name">대표작</span><span class="i-en">Works</span></a></li>
+          <li><a href="#profile"><span class="i-no">04</span><span class="i-name">프로필</span><span class="i-en">Profile</span></a></li>
+          <li><a href="#strengths"><span class="i-no">05</span><span class="i-name">강점</span><span class="i-en">Strengths</span></a></li>
+          <li><a href="#aleph"><span class="i-no">06</span><span class="i-name">SKT ALEPH</span><span class="i-en">Course</span></a></li>
+          <li><a href="#evidence"><span class="i-no">07</span><span class="i-name">학습 증거</span><span class="i-en">Evidence</span></a></li>
+          <li><a href="#docs"><span class="i-no">08</span><span class="i-name">이력서</span><span class="i-en">Documents</span></a></li>
+          <li><a href="#private"><span class="i-no">09</span><span class="i-name">나만의 공간</span><span class="i-en">Private</span></a></li>
+          <li><a href="#scope"><span class="i-no">10</span><span class="i-name">공개 범위</span><span class="i-en">Scope</span></a></li>
+        </ol>
+      </div>
+    </section>
+
     <!-- Story -->
     <section class="section story-section" id="story">
       <div class="container">
@@ -210,6 +229,10 @@
               <li><b>240</b><span>분석한 응답</span></li>
               <li><b>98.3%</b><span>만점 비율 (천장 효과)</span></li>
             </ul>
+            <dl class="work-meta">
+              <div><dt>대상</dt><dd><span>Claude Opus 5.5</span><span>Claude Sonnet 5.5</span></dd></div>
+              <div><dt>자료</dt><dd><span>P2-Bench</span><span>한국어</span><span>영어</span></dd></div>
+            </dl>
             <p class="overview-label">OVERVIEW</p>
             <p>Claude Opus 5.5와 Sonnet 5.5를 P2-Bench로 평가했습니다. 응답 240개 중 236개가 만점인 강한 천장 효과를 확인했고, 평균 점수보다 언어 간 짝 비교와 실패·회복 패턴을 함께 봐야 한다고 결론지었습니다.</p>
             <p class="links"><a href="works/paper.pdf">논문 PDF 보기</a> · <a href="works/paper.docx">원본 DOCX</a></p>
@@ -225,6 +248,10 @@
               <li><b>4 / 4</b><span>논문 감점 사례 탐지</span></li>
               <li><b>100점</b><span>논문 루브릭 그대로</span></li>
             </ul>
+            <dl class="work-meta">
+              <div><dt>만든 방식</dt><dd><span>HTML</span><span>CSS</span><span>JavaScript</span></dd></div>
+              <div><dt>배포</dt><dd><span>Vercel</span><span>로그인 없음</span></dd></div>
+            </dl>
             <p class="overview-label">OVERVIEW</p>
             <p><b>이 앱은 AI 답을 과제나 업무에 옮겨 쓰는 사람이, 최종 답은 맞아 보여도 속에서 흔들린 답(첫 줄 번복 · 과잉추론 · 설명 모순)을 논문의 루브릭으로 찾아 믿기 전에 걸러 내도록 돕습니다.</b> 같은 질문을 한국어·영어로 물은 두 답을 짝지어 어느 쪽을 써야 할지도 알려 줍니다.</p>
             <p class="links"><a href="app/">앱 열기</a> · 로그인 없음 · 브라우저 안에서만 계산</p>
@@ -247,26 +274,26 @@
           </div>
         </div>
 
-        <div class="profile-split">
+        <div class="profile-split frame">
         <figure class="profile-photo"><img src="assets/profile-study.png" alt="책상에서 코드를 보며 공부하는 모습을 그린 일러스트" loading="lazy" decoding="async" /></figure>
         <aside class="summary" aria-label="핵심 정보">
           <div class="summary-item">
-            <div class="summary-label">Who</div>
+            <div class="summary-label">[ WHO <span>_ 소개</span> ]</div>
             <p class="summary-value">김가빈 · 컴퓨터공학전공</p>
           </div>
 
           <div class="summary-item">
-            <div class="summary-label">Interest</div>
+            <div class="summary-label">[ INTEREST <span>_ 관심 분야</span> ]</div>
             <p class="summary-value">네트워크 · 보안 · AI · 인프라</p>
           </div>
 
           <div class="summary-item">
-            <div class="summary-label">Now</div>
+            <div class="summary-label">[ NOW <span>_ 지금</span> ]</div>
             <p class="summary-value">SKT ALEPH AI 보안·인프라 과정 수강 중</p>
           </div>
 
           <div class="summary-item">
-            <div class="summary-label">Evidence</div>
+            <div class="summary-label">[ EVIDENCE <span>_ 증거</span> ]</div>
             <p class="summary-value">정보처리기사 · Notion 학습 필기</p>
           </div>
         </aside>
@@ -303,13 +330,13 @@
             <button
               class="strength-toggle"
               type="button"
-              aria-expanded="false"
+              aria-expanded="true"
               aria-controls="strength-detail-1"
             >
-              자세히 보기
+              접기
             </button>
 
-            <div class="strength-detail" id="strength-detail-1" hidden>
+            <div class="strength-detail" id="strength-detail-1">
               <div class="detail-item">
                 <strong>상황</strong>
                 <p>
@@ -348,13 +375,13 @@
             <button
               class="strength-toggle"
               type="button"
-              aria-expanded="false"
+              aria-expanded="true"
               aria-controls="strength-detail-2"
             >
-              자세히 보기
+              접기
             </button>
 
-            <div class="strength-detail" id="strength-detail-2" hidden>
+            <div class="strength-detail" id="strength-detail-2">
               <div class="detail-item">
                 <strong>상황</strong>
                 <p>
@@ -393,13 +420,13 @@
             <button
               class="strength-toggle"
               type="button"
-              aria-expanded="false"
+              aria-expanded="true"
               aria-controls="strength-detail-3"
             >
-              자세히 보기
+              접기
             </button>
 
-            <div class="strength-detail" id="strength-detail-3" hidden>
+            <div class="strength-detail" id="strength-detail-3">
               <div class="detail-item">
                 <strong>상황</strong>
                 <p>

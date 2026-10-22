@@ -365,38 +365,49 @@ img { max-width: 100%; display: block; }
 h3, h4 { letter-spacing: -0.03em; }
 
 /* ───────── 01 이야기 ───────── */
+/* 면접 포트폴리오 템플릿의 경력 타임라인: 선 위의 점 */
 .journey {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0 0 48px;
+  gap: 16px;
+  margin: 0 0 56px;
   padding: 0;
   list-style: none;
 }
-.journey a {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  height: 100%;
-  padding: 18px;
-  text-decoration: none;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-top: 4px solid var(--amber);
-  border-radius: 12px;
-  transition: transform 160ms ease, box-shadow 160ms ease;
+.journey::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #c9b8aa 0%, var(--amber) 30%, var(--red) 100%);
 }
-.journey .j-low a { border-top-color: #a8988b; }
-.journey .j-top a { border-top-color: var(--red); }
-.journey a:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.journey li { position: relative; padding-top: 34px; }
+.journey li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--cream);
+  border: 4px solid var(--orange);
+  border-radius: 50%;
+}
+.journey .j-low::before { border-color: #a8988b; }
+.journey .j-top::before { background: var(--red); border-color: var(--red); box-shadow: 0 0 0 6px rgba(255, 61, 32, 0.15); }
+.journey a { display: flex; flex-direction: column; gap: 2px; text-decoration: none; }
+.journey a:hover strong { color: var(--orange-deep); }
 .j-date {
   color: var(--orange);
   font-family: var(--display);
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   line-height: 1.1;
 }
 .journey .j-low .j-date { color: #8a776a; }
-.journey strong { font-size: 1.05rem; }
+.journey strong { font-size: 1.05rem; transition: color 160ms ease; }
 .journey em { color: var(--subtle); font-size: 0.86rem; font-style: normal; line-height: 1.45; }
 
 .timeline { display: grid; gap: 28px; }
@@ -746,25 +757,25 @@ mark.ab {
 .summary-value { margin: 2px 0 0; color: var(--orange); font-size: 1.05rem; line-height: 1.5; }
 
 /* ───────── 05 강점 ───────── */
-.strength-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-  align-items: start;
-}
+/* STAR기법 템플릿: 상황 → 행동 → 결과 흐름 */
+.strength-grid { display: grid; gap: 18px; }
 .strength-card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 26px;
+  display: grid;
+  grid-template-columns: minmax(200px, 0.32fr) minmax(0, 1fr);
+  grid-template-areas: "main detail" "toggle detail";
+  gap: 14px clamp(24px, 4vw, 48px);
+  align-items: start;
+  padding: clamp(22px, 3vw, 32px);
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
+.strength-main { grid-area: main; }
 .strength-number {
   font-family: var(--display);
   font-size: 3.4rem;
   line-height: 1;
+  width: fit-content;
   background: var(--grad);
   -webkit-background-clip: text;
   background-clip: text;
@@ -773,10 +784,11 @@ mark.ab {
 .strength-main h3 { margin: 6px 0 6px; font-size: 1.35rem; }
 .strength-main p { margin: 0; color: var(--muted); }
 .strength-toggle {
-  align-self: flex-start;
-  padding: 8px 16px;
+  grid-area: toggle;
+  justify-self: start;
+  padding: 7px 14px;
   color: var(--orange-deep);
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   font-weight: 800;
   background: transparent;
   border: 1px solid var(--orange);
@@ -784,13 +796,49 @@ mark.ab {
   cursor: pointer;
   transition: background 160ms ease, color 160ms ease;
 }
-.strength-toggle:hover,
-.strength-toggle[aria-expanded="true"] { color: #fff; background: var(--orange-deep); }
-.strength-detail { display: grid; gap: 12px; }
+.strength-toggle:hover { color: #fff; background: var(--orange-deep); }
+.strength-detail {
+  grid-area: detail;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 30px;
+}
 .strength-detail[hidden] { display: none; }
-.detail-item { padding-top: 12px; border-top: 1px solid var(--line); }
-.detail-item strong { color: var(--orange); font-size: 0.82rem; }
-.detail-item p { margin: 2px 0 0; color: #44362b; font-size: 0.93rem; }
+.strength-detail::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: var(--grad-x);
+}
+.detail-item {
+  position: relative;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid rgba(240, 201, 168, 0.8);
+  border-radius: 12px;
+}
+.detail-item::before {
+  content: "";
+  position: absolute;
+  top: -27px;
+  left: 16px;
+  width: 14px;
+  height: 14px;
+  background: var(--cream);
+  border: 3px solid var(--orange);
+  border-radius: 50%;
+}
+.detail-item:last-child { color: #fff; background: var(--grad-x); border: 0; }
+.detail-item:last-child::before { background: var(--red); border-color: var(--red); }
+.detail-item strong { color: var(--orange); font-size: 0.82rem; letter-spacing: 0.04em; }
+.detail-item p { margin: 4px 0 0; color: #44362b; font-size: 0.93rem; }
+.detail-item:last-child strong,
+.detail-item:last-child p { color: #fff; }
 
 /* ───────── 06 ALEPH (위 사진 · 아래 띠) ───────── */
 .band-photo {
@@ -1065,6 +1113,69 @@ mark.ab {
 .thanks-contact a { text-decoration: none; }
 .thanks-contact a:hover { text-decoration: underline; }
 
+/* ───────── 목차 (Contents 템플릿) ───────── */
+.index-section { padding: clamp(72px, 10vw, 120px) 0 0; }
+.index-title { font-size: clamp(3.2rem, 9vw, 7rem); margin-bottom: 18px; }
+.index-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+.index-list a {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 22px;
+  text-decoration: none;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.i-no { font-family: var(--display); font-size: 1.7rem; line-height: 1.1; color: var(--orange); }
+.i-name { font-size: 1.15rem; font-weight: 800; }
+.i-en { color: var(--subtle); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.index-list a:hover { color: #fff; background: var(--orange-deep); border-color: var(--orange-deep); }
+.index-list a:hover .i-no,
+.index-list a:hover .i-en { color: #fff; }
+
+/* 프로필 틀 (HELLO 템플릿의 격자 + 모서리 마름모) */
+.frame {
+  position: relative;
+  padding: clamp(20px, 3vw, 36px);
+  border: 1px solid var(--orange);
+}
+.frame::before,
+.frame::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--orange);
+  transform: rotate(45deg);
+}
+.frame::before { top: -6px; left: -6px; }
+.frame::after { right: -6px; bottom: -6px; }
+.profile-photo { border-radius: 4px; }
+.summary-label span { color: var(--subtle); font-size: 0.82rem; font-weight: 600; text-transform: none; }
+
+/* 대표작 메타 알약 (Period / Program 형식) */
+.work-meta { display: grid; gap: 10px; margin: 0 0 20px; }
+.work-meta div { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 10px; }
+.work-meta dt { font-size: 0.86rem; font-weight: 800; }
+.work-meta dd { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.work-meta dd span {
+  padding: 2px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+}
+
 /* 스크롤하면 나타나기 (brand.js) */
 .reveal-ready :is(.journey li, .chapter, .pull, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card):not(.is-visible) {
   opacity: 0;
@@ -1081,7 +1192,6 @@ mark.ab {
   .profile-photo { max-width: 420px; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ability-grid,
-  .strength-grid,
   .docs-grid { grid-template-columns: 1fr; }
   .work,
   .work + .work { grid-template-columns: 1fr; }
@@ -1092,6 +1202,15 @@ mark.ab {
 
 @media (max-width: 720px) {
   .container { width: calc(100% - 32px); }
+  .index-list { grid-template-columns: 1fr; }
+  .strength-card { grid-template-columns: 1fr; grid-template-areas: "main" "detail" "toggle"; }
+  .strength-detail { grid-template-columns: 1fr; padding: 0 0 0 26px; }
+  .strength-detail::before { top: 8px; bottom: 8px; left: 6px; right: auto; width: 2px; height: auto; background: linear-gradient(180deg, #f0a81e, #ff3d20); }
+  .detail-item::before { top: 18px; left: -27px; }
+  .journey { grid-template-columns: 1fr; gap: 20px; padding-left: 34px; }
+  .journey::before { top: 0; bottom: 0; left: 9px; right: auto; width: 2px; height: auto; background: linear-gradient(180deg, #c9b8aa, var(--amber) 30%, var(--red)); }
+  .journey li { padding-top: 0; }
+  .journey li::before { left: -34px; top: 4px; }
   html { scroll-padding-top: 108px; }
   .topbar { grid-template-columns: 1fr auto; font-size: 0.8rem; padding: 14px 0 10px; }
   .topbar-mid { display: none; }
@@ -1099,7 +1218,6 @@ mark.ab {
   .chapter { grid-template-columns: 1fr; }
   .chapter-kicker { grid-row: auto; margin-bottom: 4px; }
   .chapter > * { grid-column: 1; }
-  .journey { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hero-foot { flex-direction: column; align-items: flex-start; }
   .foot-desc { text-align: left; }
   .summary,
