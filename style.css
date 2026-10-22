@@ -148,10 +148,15 @@ img { max-width: 100%; display: block; }
 /* ───────── 표지 ───────── */
 .hero { padding: clamp(28px, 5vw, 64px) 0 0; }
 
-.hero-word {
-  font-size: clamp(5rem, 19.5vw, 15.5rem);
-  text-align: center;
-  padding-bottom: 0.04em;
+.hero-art { margin: 0; }
+.hero-art img {
+  width: 100%;
+  height: auto;
+  /* 그림 가장자리를 배경에 녹여 네모 테두리가 보이지 않게 */
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
+  mask-composite: intersect;
 }
 
 .hero-grid {
@@ -1235,6 +1240,7 @@ mark.ab {
   html { scroll-padding-top: 108px; }
   .topbar { grid-template-columns: 1fr auto; font-size: 0.8rem; padding: 14px 0 10px; }
   .topbar-mid { display: none; }
+  .hero-art { margin-inline: -16px; }
   .section-header,
   .chapter { grid-template-columns: 1fr; }
   .chapter-kicker { grid-row: auto; margin-bottom: 4px; }
