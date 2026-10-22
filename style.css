@@ -779,6 +779,58 @@ mark.ab {
 .lab-feature .lab-body { align-self: center; padding: clamp(24px, 3vw, 40px); }
 .lab-feature h3 { font-size: clamp(1.5rem, 2.4vw, 2rem); }
 
+/* 실습에서 다룬 기술 스택 */
+.stack {
+  margin-top: 20px;
+  padding: clamp(24px, 4vw, 40px);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.stack-head { margin-bottom: 20px; }
+.stack-kicker {
+  margin: 0;
+  color: var(--orange);
+  font-family: var(--display);
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+.stack-head h3 { margin: 2px 0 8px; font-size: clamp(1.4rem, 2.4vw, 1.9rem); }
+.stack-note { max-width: 46rem; margin: 0; color: var(--muted); font-size: 0.94rem; }
+.stack-grid { display: grid; gap: 0; margin: 0; }
+.stack-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.22fr) minmax(0, 1fr);
+  gap: 10px clamp(18px, 3vw, 36px);
+  align-items: baseline;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.stack-row:last-of-type { border-bottom: 1px solid var(--line); }
+.stack-row dt {
+  color: var(--orange-deep);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.stack-row dd { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.stack-row dd span {
+  padding: 3px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+}
+.stack-row-blue dt { color: #1f6f8b; }
+.stack-row-blue dd span { color: #124f66; background: #eaf4f8; border-color: #9fcad9; }
+.stack-src { margin: 16px 0 0; color: var(--subtle); font-size: 0.82rem; }
+
+@media (max-width: 720px) {
+  .stack-row { grid-template-columns: 1fr; gap: 8px; }
+}
+
 /* ───────── 05 프로필 (사진 + 두 칸 목록) ───────── */
 .profile-split {
   display: grid;
