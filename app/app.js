@@ -136,8 +136,12 @@
 
   // 한두 줄짜리 답("s = 7", "Valid modus tollens.")은 질문 단서가 거의 없어 관련성을 잴 수 없으므로, 사용자가 고른 문항을 믿는다.
   // 다른 문항의 근거를 더 많이 짚었을 때만 예외. 엉뚱한 짧은 글은 근거 0개라 '좋음'이 되지 않는다
-  function shortTrust(text, rb, rel) {
+  // 질문의 단서·필수 근거·기준 정답 값 가운데 하나라도 걸려야 한다("오늘 점심은 김밥이었다"는 믿지 않는다)
+  function shortTrust(text, rb, rel, ref) {
     if (String(text).trim().length > 200 || rel.status === "unknown") return false;
+    // 기준 정답과의 대조는 맞았거나, 답에 숫자가 있는데 달랐을 때만 단서로 본다("답 어디에도 23이 없음"은 단서가 아니다)
+    var refClue = ref && (ref.status === "match" || (ref.status === "mismatch" && /\d/.test(text)));
+    if (!(rel.score > 0 || (rb && rb.hit > 0) || refClue)) return false;
     var other = rel.other ? ITEMS.filter(function (it) { return it.kr === rel.other[0]; })[0] : null;
     var orb = other ? P.checkRubric(text, RUBRICS[other.id] || null) : null;
     return !(orb && rb && orb.hit > rb.hit);
@@ -274,7 +278,7 @@
       if (state.relevance.status !== "related" && rubricVouches(text, state.rubricCheck, state.relevance)) {
         state.relevance.status = "related";
         state.relevance.byRubric = true;
-      } else if (state.relevance.status !== "related" && shortTrust(text, state.rubricCheck, state.relevance)) {
+      } else if (state.relevance.status !== "related" && shortTrust(text, state.rubricCheck, state.relevance, state.refCheck)) {
         state.relevance.status = "related";
         state.relevance.byShort = true;
       }
@@ -310,7 +314,8 @@
   function renderSignals() {
     var detected = {};
     state.analysis.signals.forEach(function (sg) { detected[sg.id] = sg; });
-    $("signals").innerHTML = Object.keys(P.SIGNALS).map(function (id) {
+    // 켜진(자동 탐지된) 신호만 바로 보여 주고, 나머지는 접어 둔 칸에서 직접 켤 수 있게 한다
+    var card = function (id) {
       var sig = P.SIGNALS[id];
       var hit = detected[id];
       var on = !!state.checked[id];
@@ -322,7 +327,11 @@
         '<p class="paper">' + sig.paper + "</p>" +
         (hit ? "<blockquote>" + escapeHtml(hit.evidence) + "</blockquote>" : "") +
         "</span></label></div>";
-    }).join("");
+    };
+    var ids = Object.keys(P.SIGNALS);
+    var shown = ids.filter(function (id) { return state.checked[id]; }), rest = ids.filter(function (id) { return !state.checked[id]; });
+    $("signals").innerHTML = (shown.length ? shown.map(card).join("") : '<p class="note">자동으로 찾은 흔들림 신호가 없습니다.</p>') +
+      (rest.length ? '<details class="fold"><summary>' + (shown.length ? "다른" : "") + " 흔들림 신호 직접 켜기 (" + rest.length + "개)</summary>" + rest.map(card).join("") + "</details>" : "");
   }
 
   // 판정마다 근거가 얼마나 단단한지 보여 준다(근거 강함 · 근거 보통 · 판정 안 함)
@@ -561,7 +570,9 @@
       html += axisHtml("reasoning", "근거", "none", "근거 기준 없음", '<p class="axis-line">이 문항은 근거 기준이 아직 없습니다.</p>');
     }
     var wl = ids.length ? "warn" : "good";
-    var wd = '<p class="axis-line"><span>논문 루브릭 점수</span>' + s.total + " / 100</p>" +
+    // 흔들림 칸에는 흔들림 신호로 깎인 점수만(결론·근거 감점까지 합친 루브릭 점수는 아래 접힌 칸에)
+    var waver = 100 - P.score(ids, false, null).total;
+    var wd = '<p class="axis-line"><span>흔들림 감점(논문 표 6)</span>' + (waver ? "−" + waver + "점" : "없음") + "</p>" +
       '<p class="axis-line"><span>신호</span>' + (ids.length ? ids.map(function (id) { return escapeHtml(P.SIGNALS[id].title); }).join(", ") : "없음") + "</p>";
     html += axisHtml("wavering", "흔들림", wl, ids.length ? "신호 " + ids.length + "개" : "흔들림 없음", wd);
     $("axes").innerHTML = html;
@@ -731,7 +742,7 @@
       state.rubricB = itemB ? P.checkRubric(textB, RUBRICS[itemB.id] || null) : null;
       if (itemB) trustIfMatched(state.analysisB, P.matchReference(state.analysisB, itemB.answer, CLAIMS[itemB.id] || null));
       state.relevanceB = P.relevance(questionForRelevance(), textB, DECOYS);
-      if (state.relevanceB.status !== "related" && (rubricVouches(textB, state.rubricB, state.relevanceB) || shortTrust(textB, state.rubricB, state.relevanceB))) state.relevanceB.status = "related";
+      if (state.relevanceB.status !== "related" && (rubricVouches(textB, state.rubricB, state.relevanceB) || shortTrust(textB, state.rubricB, state.relevanceB, itemB ? P.matchReference(state.analysisB, itemB.answer, CLAIMS[itemB.id] || null) : null))) state.relevanceB.status = "related";
       $("final-a").value = state.analysis.finalAnswer || "";
       $("final-b").value = state.analysisB.finalAnswer || "";
       $("meta-a").textContent = describeA();

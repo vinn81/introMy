@@ -151,8 +151,11 @@
             </label>
 
             <div id="scored-part">
-            <h3 class="sub">논문 루브릭 점수 <b class="sub-score"><span id="score-total">100</span> / 100</b></h3>
-            <div class="rubric" id="rubric" aria-label="논문 100점 루브릭 다섯 항목"></div>
+            <h3 class="sub">답 원문에서 본 곳</h3>
+            <p class="legend"><mark class="m-final">최종 답으로 읽은 곳</mark> <mark class="m-signal">흔들림 신호가 걸린 곳</mark> <mark class="m-wrong">틀린 근거</mark></p>
+            <div class="annotated" id="annotated" tabindex="0" aria-label="답 원문(최종 답·흔들림 신호·틀린 근거 위치 표시)"></div>
+            <p class="note" id="annotated-note"></p>
+
             <h3 class="sub">흔들림 신호 (논문 7장 오류 분석의 세 유형)</h3>
             <div class="signals" id="signals"></div>
 
@@ -161,10 +164,10 @@
               <span><b>최종 답 자체가 틀렸다</b><span class="auto" id="wrong-auto" hidden>기준 정답과 다름 · 자동 체크</span> — 기준 정답이나 믿을 만한 자료와 다르면 체크하세요. 최종 답 정확성 40점이 0점이 됩니다.</span>
             </label>
 
-            <h3 class="sub">답 원문에서 본 곳</h3>
-            <p class="legend"><mark class="m-final">최종 답으로 읽은 곳</mark> <mark class="m-signal">흔들림 신호가 걸린 곳</mark> <mark class="m-wrong">틀린 근거</mark></p>
-            <div class="annotated" id="annotated" tabindex="0" aria-label="답 원문(최종 답과 흔들림 신호 위치 표시)"></div>
-            <p class="note" id="annotated-note"></p>
+            <details class="fold">
+              <summary>논문 루브릭 점수 <b class="sub-score"><span id="score-total">100</span> / 100</b></summary>
+              <div class="rubric" id="rubric" aria-label="논문 100점 루브릭 다섯 항목"></div>
+            </details>
             </div>
 
             <h3 class="sub">다음에 할 일</h3>

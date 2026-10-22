@@ -47,7 +47,8 @@
       var parts = sentences(lines[j]);
       for (var i = 0; i < parts.length; i++) {
         var sent = parts[i].trim(), m = new RegExp(p, "i").exec(sent);
-        if (m && !(raw ? NEGATED : REPORTING).test(sent) && !HEDGED.test(sent)) return m[0].trim();
+        var neg = raw === "anchored" ? null : raw ? NEGATED : REPORTING;
+        if (m && !(neg && neg.test(sent)) && !HEDGED.test(sent)) return m[0].trim();
       }
     }
     return null;
@@ -55,6 +56,8 @@
 
   // rubric: { must: [{ label, any: [표현…] }], wrong: [{ label, any: [정규식…], raw? }] } (data.js P2_RUBRIC)
   // raw: 주장 자체에 '없다·no' 같은 말이 들어가는 틀린 근거. 넓은 부정어 목록 대신 NEGATED로만 거른다
+  // raw: "anchored": 주장 자체가 부정형("타당하지 않다", "Q는 정해지지 않는다")이라 부정어로 거를 수 없는 틀린 판정.
+  //   표현을 문장 전체(^…$)에 맞춰 짧은 단정문만 잡는다
   // 돌려주는 값: must(근거마다 hit·evidence), wrong(단정한 틀린 근거), hit·total
   function checkRubric(text, rubric) {
     if (!rubric) return null;

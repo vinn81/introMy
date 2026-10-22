@@ -303,8 +303,11 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .reason-list .miss .mark { color: var(--warn); }
 .reason-list .wrong { color: var(--bad); font-weight: 650; }
 .reason-list .wrong q { grid-column: 2; display: block; margin-top: 2px; font-weight: 500; color: #7a1d14; quotes: "“" "”"; }
-.sub-score { font-size: 0.9rem; font-weight: 800; color: var(--muted); order: 2; }
-.sub::after { order: 1; }
+.sub-score { margin-left: 8px; font-size: 0.9rem; font-weight: 800; color: var(--muted); }
+.fold { margin: 16px 0; }
+.fold > summary { cursor: pointer; font-weight: 800; color: var(--accent-deep); padding: 6px 0; }
+.fold[open] > summary { margin-bottom: 10px; }
+.fold .signal { margin-top: 10px; }
 mark.m-wrong { background: var(--bad-soft); color: #7a1d14; box-shadow: inset 0 -2px 0 var(--bad); border-radius: 3px; }
 
 .rubric { display: grid; gap: 10px; margin-bottom: 22px; padding: 16px 18px; border-radius: 16px; background: var(--surface-soft); }

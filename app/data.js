@@ -956,3 +956,16 @@ Object.assign(window.P2_RUBRIC, {
     ]
   }
 });
+
+// 정답이 "타당함·모순임·Q는 거짓"인데 틀린 판정이 부정형("타당하지 않다", "모순이 없다", "Q는 정해지지 않는다")인 문항.
+// 부정어로 거르면 이런 틀린 판정을 못 잡으므로, 문장 전체가 그 판정인 짧은 단정문만 잡는다(rubric.js의 raw: "anchored")
+(function (R) {
+  var verdict = "^(따라서 |그러므로 |결론적으로 |therefore,? |so,? |thus,? )?(이 |the |this )?(논증|추론|형식|argument|inference|reasoning)(은|는| is)? ?(타당하지 않(다|습니다|음)|부당(하다|합니다|함)|invalid|not valid)[.!]?$";
+  [["L01", "타당한 후건 부정을 부당하다고 단정"], ["L05", "타당한 추론을 부당하다고 단정"], ["L10", "타당한 선언 삼단논법을 부당하다고 단정"]].forEach(function (x) {
+    R[x[0]].wrong.push({ label: x[1], raw: "anchored", any: [verdict, "^(답 ?[:：] ?|answer:? )?(아니오|아니요|no)[,.]? ?(부당|invalid|타당하지 않)"] });
+  });
+  R.L14.wrong.push({ label: "세 문장이 동시에 참일 수 있다(모순이 없다)고 단정", raw: "anchored",
+    any: ["^(따라서 |그러므로 )?(세 (문장|명제|진술|전제)(은|이|는)? )?(모두 )?동시에 참일 수 있(다|습니다)[.!]?$", "^(따라서 |그러므로 )?(세 (문장|명제|진술|전제)(에는|에|은|는)? )?모순(이|은)? 없(다|습니다|음)[.!]?$", "^(yes,? )?(they|the (three )?(statements|premises|sentences)) (can all be true|are (jointly )?consistent)[.!]?$"] });
+  R.L13.wrong.push({ label: "Q의 진리값이 정해지지 않는다고 단정", raw: "anchored",
+    any: ["^(따라서 |그러므로 )?q(는|의 (진리)?값은)? ?(정해지지 않|결정되지 않|알 수 없)(는다|다|습니다|음)[.!]?$", "^(therefore,? |so,? )?(the truth value of )?q (is|cannot be) (undetermined|not determined|determined)[.!]?$"] });
+})(window.P2_RUBRIC);

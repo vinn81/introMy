@@ -344,3 +344,14 @@ test("논문 루브릭 점수에 근거 결과 반영: 빠진 근거는 비율 �
     assert.equal(P.score(an.signals.map((x) => x.id), false, P.checkRubric(ex.en.text, R[it.id])).total, ex.en.score, ex.id);
   });
 });
+
+test("부정형 틀린 판정(raw: anchored): '이 논증은 타당하지 않습니다'(L01·L05·L10), '모순이 없습니다'(L14), 'Q는 정해지지 않습니다'(L13)를 잡고, 조건문·양보문은 잡지 않는다", () => {
+  const R = window.P2_RUBRIC, w = (id, t) => P.checkRubric(t, R[id]).wrong.length;
+  assert.ok(w("L01", "따라서 이 논증은 타당하지 않습니다.") > 0);
+  assert.ok(w("L05", "Therefore, the argument is invalid.") > 0);
+  assert.ok(w("L10", "답: 아니오, 부당한 추론입니다.") > 0);
+  assert.ok(w("L14", "따라서 세 문장에는 모순이 없습니다.") > 0);
+  assert.ok(w("L13", "따라서 Q는 정해지지 않습니다.") > 0);
+  assert.equal(w("L01", "이 논증은 타당하지 않은 형식처럼 보일 수 있지만 실제로는 후건 부정입니다."), 0);
+  assert.equal(w("L14", "만약 Q가 참이라면 모순이 없습니다."), 0);
+});
