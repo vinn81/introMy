@@ -451,25 +451,46 @@ mark.ab {
   white-space: nowrap;
 }
 
-.pull {
-  margin: 12px 0;
-  padding: clamp(28px, 4vw, 44px);
-  text-align: center;
-  background: var(--paper);
-  border-top: 1px solid var(--orange);
-  border-bottom: 1px solid var(--orange);
+/* 그날의 마감 기록 한 칸 */
+.record {
+  max-width: 560px;
+  margin: 8px 0 8px auto;
+  padding: 18px 22px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
 }
-.pull p {
-  margin: 0 0 8px;
-  font-size: clamp(2.4rem, 6vw, 4.2rem);
-  font-weight: 800;
-  line-height: 1.1;
-  background: var(--grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.record figcaption {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  color: var(--subtle);
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-bottom: 1px dashed var(--line);
 }
-.pull cite { color: var(--subtle); font-size: 0.88rem; font-style: normal; }
+.record-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.record-key { font-size: 0.88rem; font-weight: 800; }
+.record-opts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.record-opts li {
+  padding: 3px 12px;
+  color: #b3a397;
+  font-size: 0.84rem;
+  border: 1px solid #eadfd4;
+  border-radius: 999px;
+}
+.record-opts .is-picked { color: #fff; font-weight: 800; background: #6b4f3e; border-color: #6b4f3e; }
+.record-note { margin: 12px 0 0; color: var(--subtle); font-size: 0.82rem; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 
 .abilities {
   margin-top: 20px;
@@ -1177,11 +1198,11 @@ mark.ab {
 }
 
 /* 스크롤하면 나타나기 (brand.js) */
-.reveal-ready :is(.journey li, .chapter, .pull, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card):not(.is-visible) {
+.reveal-ready :is(.journey li, .chapter, .record, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card):not(.is-visible) {
   opacity: 0;
   transform: translateY(18px);
 }
-.reveal-ready :is(.journey li, .chapter, .pull, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card) {
+.reveal-ready :is(.journey li, .chapter, .record, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card) {
   transition: opacity 600ms ease var(--reveal-delay, 0ms), transform 600ms ease var(--reveal-delay, 0ms);
 }
 
