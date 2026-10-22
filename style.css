@@ -34,9 +34,7 @@ body {
   min-width: 320px;
   overflow-x: hidden;
   color: var(--ink);
-  background:
-    radial-gradient(90% 1400px at 50% 0%, #fff6ec 0%, transparent 70%),
-    linear-gradient(180deg, var(--cream) 0%, var(--cream) 80%, var(--cream-deep) 100%);
+  background: linear-gradient(180deg, var(--cream) 0%, var(--cream) 85%, var(--cream-deep) 100%);
   font-family: "Noto Sans KR", "Pretendard", "Segoe UI", sans-serif;
   line-height: 1.75;
   letter-spacing: -0.015em;
@@ -146,25 +144,29 @@ img { max-width: 100%; display: block; }
 }
 
 /* ───────── 표지 ───────── */
-.hero { padding: clamp(28px, 5vw, 64px) 0 0; }
+.hero { padding: clamp(40px, 6vw, 80px) 0 0; overflow-x: clip; }
 
-.hero-art { margin: 0; }
+/* 네트워크 그림: 화면 끝까지 넓은 띠, 위아래는 배경으로 흐려짐 */
+.hero-art {
+  position: relative;
+  z-index: 0;
+  width: 100vw;
+  max-width: 2000px;
+  margin: clamp(8px, 2vw, 28px) 0 0 50%;
+  transform: translateX(-50%);
+}
 .hero-art img {
   width: 100%;
   height: auto;
-  /* 그림 가장자리를 배경에 녹여 네모 테두리가 보이지 않게 */
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
-  -webkit-mask-composite: source-in;
-  mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%), linear-gradient(180deg, transparent 0, #000 10%, #000 90%, transparent 100%);
-  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 82%, transparent 100%);
 }
 
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
   gap: clamp(28px, 5vw, 72px);
-  align-items: start;
-  margin-top: clamp(28px, 4vw, 52px);
+  align-items: end;
 }
 
 .hero h1 {
@@ -228,35 +230,6 @@ img { max-width: 100%; display: block; }
 }
 .hero-current strong { font-size: 0.95rem; }
 
-.hero-doors {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 22px;
-}
-.hero-doors a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 9px 16px;
-  color: var(--ink);
-  font-size: 0.92rem;
-  font-weight: 700;
-  text-decoration: none;
-  border: 1px solid var(--orange);
-  border-radius: 999px;
-  transition: background 160ms ease, color 160ms ease;
-}
-.hero-doors a span {
-  color: var(--orange);
-  font-family: var(--display);
-  font-size: 0.82rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-}
-.hero-doors a:hover { color: #fff; background: var(--orange-deep); }
-.hero-doors a:hover span { color: #fff; }
-
 /* 한눈에 */
 .glance {
   padding: 24px;
@@ -310,7 +283,9 @@ img { max-width: 100%; display: block; }
   justify-content: space-between;
   align-items: flex-end;
   gap: 24px;
-  margin-top: clamp(40px, 6vw, 72px);
+  position: relative;
+  z-index: 1;
+  margin-top: 0;
   padding: 16px 0 0;
   color: var(--orange-deep);
   border-top: 1px solid var(--orange);
@@ -1240,7 +1215,7 @@ mark.ab {
   html { scroll-padding-top: 108px; }
   .topbar { grid-template-columns: 1fr auto; font-size: 0.8rem; padding: 14px 0 10px; }
   .topbar-mid { display: none; }
-  .hero-art { margin-inline: -16px; }
+  .hero-art img { height: 230px; object-fit: cover; object-position: 50% 50%; }
   .section-header,
   .chapter { grid-template-columns: 1fr; }
   .chapter-kicker { grid-row: auto; margin-bottom: 4px; }
