@@ -729,7 +729,57 @@ mark.ab {
 .links { font-weight: 700; }
 .links a { color: var(--orange-deep); }
 
-/* ───────── 04 프로필 (사진 + 두 칸 목록) ───────── */
+/* ───────── 04 실습 (Labs) ───────── */
+.lab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.lab {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.lab-figure {
+  display: block;
+  padding: 10px;
+  background: #fffdf9;
+  border-bottom: 1px solid var(--line);
+  transition: background 160ms ease;
+}
+.lab-figure img { width: 100%; height: auto; }
+.lab-figure:hover { background: #fff3e6; }
+.lab-body { padding: 20px 24px 24px; }
+.lab-tag {
+  margin: 0 0 4px;
+  color: var(--orange);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.lab h3 { margin: 0 0 8px; font-size: 1.25rem; }
+.lab-body > p:not(.lab-tag) { margin: 0 0 14px; color: var(--muted); font-size: 0.94rem; }
+.lab-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.lab-chips li {
+  padding: 2px 11px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+}
+.lab-feature {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
+}
+.lab-feature .lab-figure { border-bottom: 0; border-right: 1px solid var(--line); }
+.lab-feature .lab-body { align-self: center; padding: clamp(24px, 3vw, 40px); }
+.lab-feature h3 { font-size: clamp(1.5rem, 2.4vw, 2rem); }
+
+/* ───────── 05 프로필 (사진 + 두 칸 목록) ───────── */
 .profile-split {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
@@ -1172,11 +1222,11 @@ mark.ab {
 }
 
 /* 스크롤하면 나타나기 (brand.js) */
-.reveal-ready :is(.journey li, .chapter, .record, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card):not(.is-visible) {
+.reveal-ready :is(.journey li, .chapter, .record, .ability-card, .tile, .calendar, .work, .lab, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card):not(.is-visible) {
   opacity: 0;
   transform: translateY(18px);
 }
-.reveal-ready :is(.journey li, .chapter, .record, .ability-card, .tile, .calendar, .work, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card) {
+.reveal-ready :is(.journey li, .chapter, .record, .ability-card, .tile, .calendar, .work, .lab, .doc-card, .summary-item, .strength-card, .aleph-task, .evidence-card, .scope-card) {
   transition: opacity 600ms ease var(--reveal-delay, 0ms), transform 600ms ease var(--reveal-delay, 0ms);
 }
 
@@ -1189,7 +1239,9 @@ mark.ab {
   .ability-grid,
   .docs-grid { grid-template-columns: 1fr; }
   .work,
-  .work + .work { grid-template-columns: 1fr; }
+  .work + .work,
+  .lab-feature { grid-template-columns: 1fr; }
+  .lab-feature .lab-figure { border-right: 0; border-bottom: 1px solid var(--line); }
   .work-visual { order: -1 !important; min-height: 180px; }
   .private-lock-card { grid-template-columns: auto 1fr; }
   .private-actions { grid-column: 1 / -1; justify-items: start; }
@@ -1198,6 +1250,7 @@ mark.ab {
 @media (max-width: 720px) {
   .container { width: calc(100% - 32px); }
   .index-list { grid-template-columns: 1fr; }
+  .lab-grid { grid-template-columns: 1fr; }
   .strength-card { grid-template-columns: 1fr; grid-template-areas: "main" "detail" "toggle"; }
   .strength-detail { grid-template-columns: 1fr; padding: 0 0 0 26px; }
   .strength-detail::before { top: 8px; bottom: 8px; left: 6px; right: auto; width: 2px; height: auto; background: linear-gradient(180deg, #f0a81e, #ff3d20); }

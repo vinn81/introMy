@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" width="1200" height="620" font-family="'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif" role="img" aria-label="Server Lab 구성도">
+<title>Server Lab 구성도</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#ff3d20"/></marker><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker><marker id="arrow-ms" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker></defs>
+<rect x="20" y="150" width="300" height="300" rx="20" fill="#fdebd3" stroke="#f0a81e" stroke-width="1.6" stroke-dasharray="6 6"/>
+<text x="38" y="176" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#fdebd3" stroke-width="5" stroke-linejoin="round">Host · Windows 11</text>
+<rect x="380" y="40" width="800" height="560" rx="20" fill="#f6eee6" stroke="#b9a594" stroke-width="1.6" stroke-dasharray="6 6"/>
+<text x="398" y="66" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#f6eee6" stroke-width="5" stroke-linejoin="round">Guest · Rocky Linux</text>
+<line x1="198.3" y1="299.9" x2="509.8" y2="409.4" stroke="#6e5d50" stroke-width="2" marker-end="url(#arrow-m)" marker-start="url(#arrow-ms)" fill="none"/>
+<text x="354.0565398603489" y="376.6685140049874" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Samba 공유</text>
+<line x1="200.0" y1="290.3" x2="1008.0" y2="299.6" stroke="#6e5d50" stroke-width="2" marker-end="url(#arrow-m)" marker-start="url(#arrow-ms)" fill="none"/>
+<text x="604.0000660523796" y="280.98850650634915" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">HTTPS · SFTP · FTP (도메인)</text>
+<line x1="824.5" y1="452.7" x2="978.0" y2="343.9" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="917.2314369346619" y="404.2943988379478" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">NFS</text>
+<line x1="770.5" y1="464.3" x2="571.4" y2="426.0" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="670.9820064469807" y="435.1888473936501" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">로그 전송</text>
+<line x1="733.8" y1="177.8" x2="560.0" y2="395.0" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<line x1="840.8" y1="162.1" x2="1013.7" y2="281.8" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<line x1="784.2" y1="193.9" x2="798.2" y2="438.1" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<rect x="144" y="270" width="52" height="34" rx="4" fill="#2a1d14"/><rect x="149" y="275" width="42" height="24" rx="2" fill="#f5741f" opacity=".85"/><path d="M136 304 H204 L198 312 H142 Z" fill="#2a1d14"/>
+<text x="170" y="331" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Windows 11</text>
+<text x="170" y="348" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Samba Client</text>
+<rect x="763" y="96" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="770" y="105" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="770" y="116" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="770" y="127" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="788" cy="137" r="2.4" fill="#f5741f"/>
+<text x="780" y="163" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">DNS</text>
+<text x="780" y="180" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Name Server</text>
+<rect x="523" y="396" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="530" y="405" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="530" y="416" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="530" y="427" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="548" cy="437" r="2.4" fill="#f5741f"/>
+<text x="540" y="463" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Web / DB</text>
+<text x="540" y="480" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Loganalyzer · Samba Server</text>
+<rect x="783" y="446" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="790" y="455" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="790" y="466" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="790" y="477" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="808" cy="487" r="2.4" fill="#f5741f"/>
+<text x="800" y="513" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">NFS Server</text>
+<text x="800" y="530" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Log Client</text>
+<rect x="1023" y="276" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="1030" y="285" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="1030" y="296" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="1030" y="307" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="1048" cy="317" r="2.4" fill="#f5741f"/>
+<text x="1040" y="343" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">FTP Server</text>
+<text x="1040" y="360" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">NFS Client</text>
+<text x="400" y="590" text-anchor="start" font-size="13" font-weight="700" fill="#e8461c" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">도메인으로 접속 · Loganalyzer에서 로그 확인 · 작업 내용을 웹페이지로 게시</text>
+</svg>

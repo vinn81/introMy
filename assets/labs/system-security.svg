@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" font-family="'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif" role="img" aria-label="System Security Lab 구성도">
+<title>System Security Lab 구성도</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#ff3d20"/></marker><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker><marker id="arrow-ms" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker></defs>
+<rect x="20" y="40" width="760" height="570" rx="20" fill="#fdebd3" stroke="#f0a81e" stroke-width="1.6" stroke-dasharray="6 6"/>
+<text x="38" y="66" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#fdebd3" stroke-width="5" stroke-linejoin="round">침투 테스트 · 탐지</text>
+<rect x="820" y="40" width="360" height="570" rx="20" fill="#f6eee6" stroke="#b9a594" stroke-width="1.6" stroke-dasharray="6 6"/>
+<text x="838" y="66" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#f6eee6" stroke-width="5" stroke-linejoin="round">팀</text>
+<line x1="141.4" y1="203.1" x2="175.1" y2="418.4" stroke="#ff3d20" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
+<line x1="177.2" y1="187.0" x2="399.6" y2="455.4" stroke="#ff3d20" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
+<text x="268.3983751597568" y="321.17045277901684" text-anchor="middle" font-size="12.5" font-weight="700" fill="#e8461c" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Ping</text>
+<line x1="193.3" y1="168.2" x2="632.6" y2="433.5" stroke="#ff3d20" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
+<text x="522.9773533507735" y="360.8542510797123" text-anchor="middle" font-size="12.5" font-weight="700" fill="#e8461c" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">/etc/passwd 접근</text>
+<line x1="940.4" y1="243.8" x2="685.8" y2="431.0" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="813.0813287343622" y="325.4401994600279" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">로그 · 관제</text>
+<line x1="970.0" y1="440.9" x2="692.0" y2="449.1" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="830.9995677544644" y="464.9706009483981" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">취약점 점검</text>
+<circle cx="130" cy="130" r="21" fill="#ff3d20"/><path d="M119 129 C119 116 141 116 141 129 C141 135 136 136 136 140 H124 C124 136 119 135 119 129 Z" fill="#fff"/><circle cx="125.5" cy="128" r="2.8" fill="#ff3d20"/><circle cx="134.5" cy="128" r="2.8" fill="#ff3d20"/>
+<text x="130" y="170" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Kali</text>
+<text x="130" y="187" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Attacker</text>
+<path d="M340 226 L361 235 V252 C361 264 351 271 340 275 C329 271 319 264 319 252 V235 Z" fill="#f5741f"/><path d="M332 250 L338 257 L349 244" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="340" y="294" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Suricata</text>
+<text x="340" y="311" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">차단 룰</text>
+<path d="M480 226 L501 235 V252 C501 264 491 271 480 275 C469 271 459 264 459 252 V235 Z" fill="#f5741f"/><path d="M472 250 L478 257 L489 244" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="480" y="294" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Snort</text>
+<text x="480" y="311" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">탐지 룰</text>
+<rect x="163" y="426" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="170" y="435" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="170" y="446" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="170" y="457" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="188" cy="467" r="2.4" fill="#f5741f"/>
+<text x="180" y="493" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">취약한 웹서버</text>
+<text x="180" y="510" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">HTTPS 로그</text>
+<rect x="403" y="456" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="410" y="465" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="410" y="476" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="410" y="487" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="428" cy="497" r="2.4" fill="#f5741f"/>
+<text x="420" y="523" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">CTF</text>
+<text x="420" y="540" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Fall · 플래그 획득</text>
+<rect x="643" y="426" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="650" y="435" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="650" y="446" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="650" y="457" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="668" cy="467" r="2.4" fill="#f5741f"/>
+<text x="660" y="493" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Rocky Linux</text>
+<text x="660" y="510" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">firewalld · iptables</text>
+<rect x="983" y="176" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="990" y="185" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="990" y="196" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="990" y="207" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="1008" cy="217" r="2.4" fill="#f5741f"/>
+<text x="1000" y="243" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Ubuntu</text>
+<text x="1000" y="260" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">보안관제 시스템</text>
+<rect x="974" y="420" width="52" height="34" rx="4" fill="#2a1d14"/><rect x="979" y="425" width="42" height="24" rx="2" fill="#f5741f" opacity=".85"/><path d="M966 454 H1034 L1028 462 H972 Z" fill="#2a1d14"/>
+<text x="1000" y="481" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">점검 스크립트</text>
+<text x="1000" y="498" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Shell Script</text>
+<text x="40" y="600" text-anchor="start" font-size="13" font-weight="700" fill="#e8461c" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">계정 정책: root 원격 접속 제한 · 패스워드 복잡도 · 만료 90일 · SetUID · Sticky Bit</text>
+</svg>

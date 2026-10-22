@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" width="1200" height="640" font-family="'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif" role="img" aria-label="보안 솔루션 확장 Lab 구성도">
+<title>보안 솔루션 확장 Lab 구성도</title>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#ff3d20"/></marker><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker><marker id="arrow-ms" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker></defs>
+<rect x="20" y="40" width="400" height="570" rx="20" fill="#fdebd3" stroke="#f0a81e" stroke-width="1.6" stroke-dasharray="6 6"/>
+<text x="38" y="66" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#fdebd3" stroke-width="5" stroke-linejoin="round">개인</text>
+<rect x="450" y="40" width="730" height="570" rx="20" fill="#fde0d6" stroke="#ff3d20" stroke-width="1.6" stroke-dasharray="6 6"/>
+<text x="468" y="66" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#fde0d6" stroke-width="5" stroke-linejoin="round">팀</text>
+<line x1="193.4" y1="229.1" x2="131.5" y2="390.1" stroke="#6e5d50" stroke-width="2" marker-end="url(#arrow-m)" marker-start="url(#arrow-ms)" fill="none"/>
+<line x1="246.6" y1="229.1" x2="308.5" y2="390.1" stroke="#6e5d50" stroke-width="2" marker-end="url(#arrow-m)" marker-start="url(#arrow-ms)" fill="none"/>
+<line x1="1040.3" y1="376.0" x2="731.7" y2="334.3" stroke="#ff3d20" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
+<text x="885.9909924304103" y="343.1339178960014" text-anchor="middle" font-size="12.5" font-weight="700" fill="#e8461c" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">ICMP · DDoS 테스트</text>
+<line x1="788.2" y1="201.1" x2="718.1" y2="303.6" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="735.1416377725682" y="252.33145248624646" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">탐지</text>
+<line x1="918.8" y1="181.6" x2="726.5" y2="312.0" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="842.623008737773" y="252.79152978508256" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">차단</text>
+<line x1="649.0" y1="491.4" x2="677.1" y2="402.5" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<text x="707.0739785374468" y="446.93240129808527" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">로그 수집</text>
+<line x1="633.5" y1="490.7" x2="576.5" y2="234.2" stroke="#6e5d50" stroke-width="1.8" stroke-dasharray="4 5" fill="none"/>
+<rect x="194" y="140" width="52" height="34" rx="4" fill="#2a1d14"/><rect x="199" y="145" width="42" height="24" rx="2" fill="#f5741f" opacity=".85"/><path d="M186 174 H254 L248 182 H192 Z" fill="#2a1d14"/>
+<text x="220" y="201" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Windows</text>
+<text x="220" y="218" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">OSSEC · Zabbix agent</text>
+<rect x="103" y="396" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="110" y="405" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="110" y="416" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="110" y="427" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="128" cy="437" r="2.4" fill="#f5741f"/>
+<text x="120" y="463" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">OSSEC</text>
+<text x="120" y="480" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">HIDS</text>
+<rect x="303" y="396" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="310" y="405" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="310" y="416" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="310" y="427" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="328" cy="437" r="2.4" fill="#f5741f"/>
+<text x="320" y="463" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Zabbix</text>
+<text x="320" y="480" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">NMS</text>
+<rect x="683" y="306" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="690" y="315" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="690" y="326" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="690" y="337" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="708" cy="347" r="2.4" fill="#f5741f"/>
+<text x="700" y="373" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Web Server</text>
+<text x="700" y="390" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">과제 정리 페이지</text>
+<path d="M830 116 L851 125 V142 C851 154 841 161 830 165 C819 161 809 154 809 142 V125 Z" fill="#f5741f"/><path d="M822 140 L828 147 L839 134" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="830" y="184" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Suricata</text>
+<text x="830" y="201" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">NIDS</text>
+<path d="M980 116 L1001 125 V142 C1001 154 991 161 980 165 C969 161 959 154 959 142 V125 Z" fill="#f5741f"/><path d="M972 140 L978 147 L989 134" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="980" y="184" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Snort</text>
+<text x="980" y="201" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">NIPS</text>
+<circle cx="1070" cy="380" r="21" fill="#ff3d20"/><path d="M1059 379 C1059 366 1081 366 1081 379 C1081 385 1076 386 1076 390 H1064 C1064 386 1059 385 1059 379 Z" fill="#fff"/><circle cx="1065.5" cy="378" r="2.8" fill="#ff3d20"/><circle cx="1074.5" cy="378" r="2.8" fill="#ff3d20"/>
+<text x="1070" y="420" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Kali</text>
+<rect x="530" y="140" width="60" height="40" rx="5" fill="#e8461c"/><g stroke="#ffd9c7" stroke-width="1.6"><path d="M530 153 H590 M530 167 H590"/><path d="M550 140 V153 M572 140 V153 M560 153 V167 M540 153 V167 M580 153 V167 M550 167 V180 M572 167 V180"/></g>
+<text x="560" y="199" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">pfSense</text>
+<text x="560" y="216" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">방화벽 룰</text>
+<rect x="623" y="496" width="34" height="48" rx="5" fill="#2a1d14"/><rect x="630" y="505" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="630" y="516" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><rect x="630" y="527" width="20" height="3.5" rx="1.5" fill="#f0a81e"/><circle cx="648" cy="537" r="2.4" fill="#f5741f"/>
+<text x="640" y="563" text-anchor="middle" font-size="14" font-weight="700" fill="#2a1d14" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Wazuh</text>
+<text x="640" y="580" text-anchor="middle" font-size="12" font-weight="500" fill="#6e5d50" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">SIEM · 파일 무결성 검사</text>
+<text x="470" y="600" text-anchor="start" font-size="13" font-weight="700" fill="#e8461c" paint-order="stroke" stroke="#fffaf4" stroke-width="5" stroke-linejoin="round">Snort·Suricata 룰: ICMP · smurf · UDP Flooding · tcpdump/Wireshark로 확인</text>
+</svg>
