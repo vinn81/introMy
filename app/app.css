@@ -430,3 +430,12 @@ mark.m-signal { background: var(--warn-soft); color: #6b3f00; box-shadow: inset 
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* 질문 고르기 / 직접 입력 */
+.qmode { border: 0; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.qmode legend { font-size: 0.88rem; font-weight: 750; margin-bottom: 6px; padding: 0; }
+.qmode label { display: inline-flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 0.95rem; line-height: 1.4; }
+.qmode input { margin-top: 3px; flex: none; }
+.qmode em { display: block; font-style: normal; color: var(--muted); font-size: 0.82rem; }
+#custom-box > label > span { display: block; margin-bottom: 6px; font-size: 0.88rem; font-weight: 750; }
+#custom-box em { font-style: normal; font-weight: 500; color: var(--muted); }

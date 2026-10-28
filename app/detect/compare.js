@@ -150,8 +150,10 @@
   // 돌려주는 값: sameAnswer(true | false | "partial" | null), mode, why(판정 근거 문장들)
   // 결론 문장을 찾지 못한(답이 중간에 끊긴 듯한) 쪽이 있으면 '다른 답'으로 단정하지 않는다.
   // a·b의 finalReliable이 false일 때만 해당하고, 같은 답이라는 판정은 그대로 둔다
-  function compare(a, b) {
-    var r = compareCore(a, b);
+  // opts.glossary: 직접 입력한 질문의 답끼리 비교할 때, 답 전체 단서에 한·영 용어 사전(glossary.js)의 용어·약어도 넣는다
+  // (60문항 비교는 측정 결과를 바꾸지 않도록 쓰지 않는다)
+  function compare(a, b, opts) {
+    var r = compareCore(a, b, opts || {});
     var cutA = a.finalReliable === false || a.cut === true, cutB = b.finalReliable === false || b.cut === true;
     // 같은 자리·방향 낱말이 반대로 바뀐 것은 최종 답과 상관없이 본문에서 찾은 것이라 보류하지 않는다
     var byDirection = r.sameAnswer === false && r.direction && r.direction.length > 0;
@@ -179,7 +181,19 @@
     return "high";
   }
 
-  function compareCore(a, b) {
+  // 답 전체 단서: 숫자(두 자리 이상)·수식·개념. glossary면 사전 용어(x:)·약어(a:)까지
+  function wholeFeatures(text, glossary) {
+    if (!glossary || !P2.crossFeatures) return neutralFeatures(text);
+    var f = P2.crossFeatures(text), out = {};
+    Object.keys(f).forEach(function (k) {
+      if (k.indexOf("w:") === 0 || /^n:\d$/.test(k)) return;
+      out[k] = f[k];
+    });
+    return out;
+  }
+
+  function compareCore(a, b, opts) {
+    opts = opts || {};
     // 갈림(반대 개념·다른 숫자)은 최종 답 칸만 보고, 같음은 첫 문장·결론 문장까지 함께 본다
     var fa = keyOf(a.finalAnswer), fb = keyOf(b.finalAnswer);
     var ka = keyOf((a.finalAnswer || "") + "\n" + (a.lead || ""));
@@ -251,7 +265,7 @@
 
     // 결론 줄로 판정이 안 되면 두 답 전체에서 언어와 무관한 단서(숫자·수식·개념)를 맞댄다
     if (same === null && a.text && b.text) {
-      var na = neutralFeatures(a.text), nb = neutralFeatures(b.text);
+      var na = wholeFeatures(a.text, opts.glossary), nb = wholeFeatures(b.text, opts.glossary);
       var la = Object.keys(na), lb = Object.keys(nb);
       var common = sharedKeys(na, nb);
       var denom = Math.min(la.length, lb.length);
@@ -260,7 +274,7 @@
         result.mode = "whole";
         result.sameAnswer = r >= 0.5 ? true : "partial";
         result.why = [
-          "결론 줄에서 맞댈 숫자·판정을 찾지 못해 두 답 전체의 숫자·수식·개념을 맞댐",
+          "결론 줄에서 맞댈 숫자·판정을 찾지 못해 두 답 전체의 숫자·수식·개념" + (opts.glossary ? "과 한·영 용어 사전의 용어·약어" : "") + "를 맞댐",
           "단서가 적은 쪽(" + denom + "개) 기준 " + common.length + "개가 겹침(" + Math.round(r * 100) + "%, 50% 이상이면 같은 내용으로 봄)",
           common.length ? "겹친 단서: " + labels(common, na).join(", ") : "겹친 단서 없음"
         ];
@@ -277,7 +291,7 @@
         "1단계 최종 답 ‘" + short(a.finalAnswer) + "’에서 찾은 단서: " + (keyLabels(fa).join(", ") || "없음"),
         "다른 언어 최종 답 ‘" + short(b.finalAnswer) + "’에서 찾은 단서: " + (keyLabels(fb).join(", ") || "없음"),
         "두 답 전체에서도 언어와 무관한 단서(두 자리 이상 숫자·수식·핵심 개념)가 각각 2개 이상 있어야 맞댈 수 있는데, " +
-          (a.text && b.text ? "1단계 답 " + Object.keys(neutralFeatures(a.text)).length + "개, 다른 언어 답 " + Object.keys(neutralFeatures(b.text)).length + "개뿐입니다" : "최종 답 칸을 직접 고쳐 전체 비교를 건너뛰었습니다")
+          (a.text && b.text ? "1단계 답 " + Object.keys(wholeFeatures(a.text, opts.glossary)).length + "개, 다른 언어 답 " + Object.keys(wholeFeatures(b.text, opts.glossary)).length + "개뿐입니다" : "최종 답 칸을 직접 고쳐 전체 비교를 건너뛰었습니다")
       ];
     }
     return result;

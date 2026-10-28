@@ -41,7 +41,7 @@
         <p class="lesson">그래서 이 앱은 점수 하나 대신 <b>결론 · 근거 · 흔들림</b>을 따로 보고, <b>같은 질문을 다른 언어로 물은 답과 짝지어</b> 확인하게 합니다.</p>
 
         <ol class="steps" aria-label="할 일 세 가지">
-          <li><a href="#step-1"><span>1</span>문항 고르고 AI 답 붙여 넣기</a></li>
+          <li><a href="#step-1"><span>1</span>질문 정하고 AI 답 붙여 넣기</a></li>
           <li><a href="#step-2"><span>2</span>결론·근거·흔들림 확인</a></li>
           <li><a href="#step-3"><span>3</span>다른 언어 답과 비교</a></li>
         </ol>
@@ -54,18 +54,28 @@
         <div class="step-head">
           <span class="num">1</span>
           <div>
-            <h2 id="s1-title">문항을 고르고 AI 답을 붙여 넣으세요</h2>
-            <p>P2-Bench 60문항 중 하나를 골라 내 AI에게 그대로 묻고, 받은 답을 넣으세요. 기준 정답과 오류 유형이 정해진 문항이라 답이 맞는지까지 함께 봅니다.</p>
+            <h2 id="s1-title">질문을 정하고 AI 답을 붙여 넣으세요</h2>
+            <p>P2-Bench 60문항 중 하나를 고르면 기준 정답과 필수 근거까지 맞대 봅니다. 내 질문을 직접 입력하면 관련성·결론·흔들림과 3단계 비교를 봅니다. 질문과 답의 언어가 달라도(한국어 질문 + 영어 답) 됩니다.</p>
           </div>
         </div>
 
         <div class="card">
-          <label class="field">
-            <span>P2-Bench 문항 고르기 <em>(필수 · 이 앱은 논문의 60문항에 대한 답만 점검합니다)</em></span>
-            <select id="item-select" required>
+          <fieldset class="qmode">
+            <legend>질문</legend>
+            <label><input type="radio" name="qmode" value="item" checked /><span>P2-Bench 60문항에서 고르기 <em>기준 정답·필수 근거까지 점검</em></span></label>
+            <label><input type="radio" name="qmode" value="custom" /><span>질문 직접 입력 <em>관련성·결론·흔들림·비교</em></span></label>
+          </fieldset>
+          <label class="field" id="item-box">
+            <span>P2-Bench 문항 고르기</span>
+            <select id="item-select">
               <option value="">— 60문항 중 고르기 —</option>
             </select>
           </label>
+          <div class="field" id="custom-box" hidden>
+            <label for="custom-question"><span>내 질문 <em>(AI에게 물은 질문을 그대로 붙여 넣으세요)</em></span></label>
+            <textarea id="custom-question" rows="3" placeholder="예: 광합성에서 빛의 세기가 산소 발생량에 어떤 영향을 주는지 설명하시오."></textarea>
+            <p class="limit-note">직접 입력한 질문에는 기준 정답과 필수 근거가 없어, <b>결론이 맞는지는 판정하지 않고</b> 답이 이 질문에 대한 것인지, 결론이 있는지, 답 속에서 흔들렸는지를 봅니다. 질문과 답의 언어가 다르면 한·영 학습 용어 사전(약 470쌍)과 숫자·수식·약어로 맞댑니다.</p>
+          </div>
           <p class="example-line">
             <label for="example-select">처음이라면 논문 예시 불러오기</label>
             <select id="example-select">
@@ -266,6 +276,7 @@
   <script src="detect/compare.js"></script>
   <script src="detect/reference.js"></script>
   <script src="detect/rubric.js"></script>
+  <script src="detect/glossary.js"></script>
   <script src="detect/relevance.js"></script>
   <script src="detect.js"></script>
   <script src="data.js"></script>

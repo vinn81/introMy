@@ -9,14 +9,15 @@
  *   final.js     결론 찾기 — 최종 답 뽑기, 답이 끊겼는지
  *   compare.js   두 답 비교(3단계)
  *   reference.js 기준 정답 대조(2단계)
- *   relevance.js 답이 고른 문항에 대한 것인지
+ *   glossary.js  한·영 학습 용어 사전 — 질문과 답의 언어가 다를 때 낱말 대신 맞댈 단서
+ *   relevance.js 답이 고른 문항(또는 직접 입력한 질문)에 대한 것인지
  * 브라우저는 index.html이 이 순서로 <script>를 읽고, Node는 아래에서 require한다.
  * 규칙마다의 근거와 측정 결과는 app/RULES.md에 있다. */
 (function (root) {
   "use strict";
 
   if (typeof module !== "undefined" && module.exports) {
-    ["./detect/text.js", "./detect/clues.js", "./detect/signals.js", "./detect/final.js", "./detect/compare.js", "./detect/reference.js", "./detect/rubric.js", "./detect/relevance.js"].forEach(function (f) { require(f); });
+    ["./detect/text.js", "./detect/clues.js", "./detect/signals.js", "./detect/final.js", "./detect/compare.js", "./detect/reference.js", "./detect/rubric.js", "./detect/glossary.js", "./detect/relevance.js"].forEach(function (f) { require(f); });
   }
   var P2 = root.P2Lib;
   if (!P2 || !P2.relevance) throw new Error("detect/의 규칙 파일을 먼저 읽어야 합니다.");
