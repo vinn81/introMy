@@ -199,6 +199,9 @@
     if (kind === "m:" || kind === "f:" || kind === "d:") return "식 " + v;
     if (kind === "t:") return "개념 " + v;
     if (kind === "g:") return "개념 " + (TAG_LABELS[v] || v);
+    // 언어가 다른 질문·답을 맞댈 때 쓰는 단서(glossary.js)
+    if (kind === "a:") return "약어 " + (typeof value === "string" ? value : v.toUpperCase());
+    if (kind === "x:") return "용어 ‘" + (typeof value === "string" ? value : v) + "’";
     return "낱말 ‘" + (typeof value === "string" ? value : v) + "’";
   }
 
