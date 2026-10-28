@@ -41,6 +41,52 @@ function initNavigationObserver() {
   sections.forEach((section) => observer.observe(section));
 }
 
+function initMobileNavigation() {
+  const header = document.querySelector(".site-header");
+  const button = header?.querySelector(".nav-toggle");
+  const menu = header?.querySelector(".nav-links");
+  if (!header || !button || !menu) return;
+
+  const closeMenu = ({ restoreFocus = false } = {}) => {
+    menu.classList.remove("is-open");
+    header.classList.remove("menu-open");
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "메뉴 열기");
+    if (restoreFocus) button.focus();
+  };
+
+  button.addEventListener("click", () => {
+    const isExpanded = button.getAttribute("aria-expanded") === "true";
+    if (isExpanded) {
+      closeMenu();
+      return;
+    }
+    menu.classList.add("is-open");
+    header.classList.add("menu-open");
+    button.setAttribute("aria-expanded", "true");
+    button.setAttribute("aria-label", "메뉴 닫기");
+  });
+
+  menu.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => closeMenu({ restoreFocus: true }));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (button.getAttribute("aria-expanded") !== "true") return;
+    if (!menu.contains(event.target) && !button.contains(event.target)) closeMenu();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || button.getAttribute("aria-expanded") !== "true") return;
+    event.preventDefault();
+    closeMenu({ restoreFocus: true });
+  });
+
+  window.matchMedia("(min-width: 721px)").addEventListener("change", (event) => {
+    if (event.matches) closeMenu();
+  });
+}
+
 function assertWebAuthnSupport() {
   if (!window.isSecureContext || !window.PublicKeyCredential || !navigator.credentials) {
     throw new Error("이 브라우저에서는 패스키를 사용할 수 없습니다. HTTPS 또는 localhost에서 열어 주세요.");
@@ -273,4 +319,5 @@ function initPrivateArea() {
 
 initStrengthToggles();
 initNavigationObserver();
+initMobileNavigation();
 initPrivateArea();

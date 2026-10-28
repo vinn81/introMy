@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#05070d" />
   <title>김가빈 | Portfolio</title>
 
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700;800;900&display=swap" />
@@ -23,8 +24,16 @@
       <span class="topbar-end">AI · SECURITY · INFRA</span>
     </div>
     <div class="container nav">
-
-      <nav class="nav-links" aria-label="주요 메뉴">
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-label="메뉴 열기"
+        aria-expanded="false"
+        aria-controls="primary-navigation"
+      >
+        <span class="nav-toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+      <nav class="nav-links" id="primary-navigation" aria-label="주요 메뉴">
         <a href="#story">이야기</a>
         <a href="#numbers">숫자</a>
         <a href="#works">대표작</a>
