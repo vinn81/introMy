@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SKT ALEPH 방어전에서 만든 제로 트러스트 보안 Agent 「헤임달」 — 단계별 코드 검토 기록, 실제 측정 화면과 예제 화면, 한계를 정리했습니다." />
+  <meta name="theme-color" content="#05070d" />
+  <title>방어전 · 보안 Agent 헤임달 | 김가빈</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" />
+  <link rel="stylesheet" href="defense.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">본문 바로가기</a>
+
+  <header class="top">
+    <div class="wrap top-row">
+      <a class="back" href="/#aleph">← 김가빈 포트폴리오</a>
+      <a class="repo" href="https://github.com/vinn81/choi-bujang-secret-vault">GitHub 저장소</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <div class="wrap">
+        <p class="eyebrow">SKT ALEPH 방어전 · 13~22단계와 총공세</p>
+        <h1>보안 Agent 「헤임달」</h1>
+        <p class="lead">
+          제로 트러스트 보안 Agent를 직접 설계하고 구현했습니다. 사용자·기기·세션 확인, 업무 앱 접근 판정,
+          보안 기록·XDR 경보, AI 연결 상태, 조치 상태, 설치 패키지 취약점 조회 화면을 만들어
+          ALEPH 판정 환경에서 13~22단계 코드 검토를 모두 통과했습니다.
+          이어진 총공세(판정 없는 개선 기간)에서는 내 PC를 실제로 읽어 직전 측정과 비교하는 기능을 더하고,
+          값을 Windows 기본 도구와 대조했습니다.
+        </p>
+
+        <ul class="facts" aria-label="요약">
+          <li><b>10 / 10</b><span>13~22단계 코드 검토 통과. 17단계는 일부 항목이 운영 정책에 따른 임시 통과</span></li>
+          <li><b>6 / 6</b><span>내 PC 실측 항목(CPU·메모리·디스크·네트워크·방화벽·Windows 기록)을 일반 권한으로 읽음</span></li>
+          <li><b>verified</b><span>앱 서버를 거친 수업용 AI 연결 확인(2026-10-29, 모델 응답 1개)</span></li>
+        </ul>
+
+        <p class="legend">
+          <span class="badge real">실제 화면</span> 내 PC에서 실제로 실행·측정한 화면
+          <span class="badge demo">예제 화면</span> 예제 데이터(demo)로 켠 화면 · 실제 회사 연결 결과가 아님
+        </p>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="scope-title">
+      <div class="wrap">
+        <h2 id="scope-title">무엇을 만들었고, 무엇이 필요한가</h2>
+        <div class="two">
+          <article class="card">
+            <h3>내가 만든 부분</h3>
+            <ul>
+              <li>학생 화면 코드 <code>student/extension.mjs</code>: 화면 함수 8개(13~20단계)</li>
+              <li>상태 요약 카드와 이번 실행 추이, 기록·패키지 요약 카드</li>
+              <li>「내 PC 측정 추이 비교」: 제공 조회 값을 다시 구현하지 않고 쌓아 직전 측정과 비교</li>
+              <li>「다시 조회」·대기 표시·조회 실패 항목과 다음 할 일 안내, 키보드 조작</li>
+              <li>앱 이름 「헤임달」과 화면 배치·색(꾸밈 파일), 실행 안내 한 장과 기록 문서</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>제공된 부분과 실제 연결 조건</h3>
+            <ul>
+              <li>앱 서버·공통 화면·실행 도구·「내 PC 상태」 조회는 과정에서 제공된 시작 틀(0.2.21)입니다</li>
+              <li>판정·탐지는 접근 제어 서버(SDP)가 하며, 실제 연결에는 서버·연결 어댑터·서버 담당자가 발급하는 개인 인증서가 모두 필요합니다</li>
+              <li>이번 과정에서는 인증서 발급 대상이 아니어서 기본 실행은 「SDP 미연결」로 표시되고, 기록·판정 화면은 예제 데이터로 확인했습니다</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="screens-title">
+      <div class="wrap">
+        <h2 id="screens-title">화면</h2>
+        <div class="gallery">
+          <figure>
+            <a href="img/demo-home.png"><img src="img/demo-home.png" alt="헤임달 보호 현황 첫 화면: 핵심 기능 3가지 안내와 로그인 사용자·기기·세션 표시" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge demo">예제 화면</span> 첫 화면: 핵심 기능 3가지와 로그인·기기·세션. 기기 보안 상태가 확인 불가면 정상으로 간주하지 않습니다.</figcaption>
+          </figure>
+          <figure>
+            <a href="img/demo-decision.png"><img src="img/demo-decision.png" alt="업무 앱 접근 판정 화면: 개발 저장소 접근 거부와 판정 이유·판정 시각" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge demo">예제 화면</span> 업무 앱 접근 판정: 기기 상태 확인 전에는 접근 거부(deny)와 이유·시각을 표시합니다.</figcaption>
+          </figure>
+          <figure>
+            <a href="img/demo-records.png"><img src="img/demo-records.png" alt="보안 기록 화면: 기록 요약 카드, 필터, 사건 event-01의 근거·규칙·접속·세션·기기 상태" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge demo">예제 화면</span> 보안 기록·XDR 경보: 요약 카드, 필터, 사건 상세의 근거·규칙·세 가지 상태.</figcaption>
+          </figure>
+          <figure>
+            <a href="img/demo-status.png"><img src="img/demo-status.png" alt="상태 요약 카드 네 개(SDP 서버 연결·기기·세션·알림)와 이번 실행 추이 표" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge demo">예제 화면</span> 상태 요약: SDP 서버 연결·기기·세션·알림 카드와 이번 실행 추이.</figcaption>
+          </figure>
+          <figure class="wide">
+            <a href="img/real-pc-trend.png"><img src="img/real-pc-trend.png" alt="내 PC 측정 추이 비교: CPU·메모리·디스크·네트워크·방화벽·Windows 기록 카드 6개와 두 번 측정한 추이 표" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge real">실제 화면</span> 내 PC 실측 6/6과 직전 측정 대비(2026-10-29 14:20). 값마다 잰 시각·단위를 붙이고, PC 조회 결과를 SDP 서버 연결과 분리해 표시합니다.</figcaption>
+          </figure>
+          <figure>
+            <a href="img/real-ai-verified.png"><img src="img/real-ai-verified.png" alt="AI 연결 점검 결과: 앱 권한 확인 후 점검(verified), 응답 모델 수 1개, 점검 시각" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge real">실제 화면</span> AI 연결 점검(verified, 모델 1개). 연결 점검과 사건 설명을 구분해 「사건 설명은 아직 실행하지 않았습니다」로 안내합니다.</figcaption>
+          </figure>
+          <figure>
+            <a href="img/real-failure.png"><img src="img/real-failure.png" alt="조회하지 못한 항목 상자: 조회 실패 이유와 다음에 할 일 안내" loading="lazy" decoding="async" /></a>
+            <figcaption><span class="badge real">실제 화면</span> 앱 서버가 꺼지면 이전 값을 현재 값처럼 보이지 않고, 실패 항목·이유·다음 할 일을 알립니다.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="checks-title">
+      <div class="wrap">
+        <h2 id="checks-title">실제로 대조한 값</h2>
+        <p class="note">학생 PC(Windows, 일반 권한)에서 같은 시각대에 앱 값과 Windows 기본 도구를 비교했습니다(2026-10-28).</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="앱 값과 Windows 도구 대조 표">
+          <table>
+            <thead><tr><th scope="col">항목</th><th scope="col">헤임달</th><th scope="col">Windows 도구</th><th scope="col">결과</th></tr></thead>
+            <tbody>
+              <tr><td>메모리</td><td>10.1 GB / 15.8 GB</td><td>작업 관리자 10.0/15.8 GB</td><td>일치(측정 순간 차이)</td></tr>
+              <tr><td>디스크 여유</td><td>91.5 GB / 382.2 GB</td><td>파일 탐색기 C: 91.4GB / 382GB</td><td>일치</td></tr>
+              <tr><td>Windows 기록(24시간)</td><td>경고 16 · 오류 9</td><td>이벤트 뷰어 경고 10+6 · 오류 5+4</td><td>일치</td></tr>
+              <tr><td>방화벽</td><td>Domain·Private·Public 켜짐</td><td>Windows 보안 세 네트워크 켜짐</td><td>일치</td></tr>
+              <tr><td>CPU</td><td>19.9%</td><td>작업 관리자 5%</td><td>순간 표본(200ms) 차이</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="stages-title">
+      <div class="wrap">
+        <h2 id="stages-title">단계별 코드 검토 기록</h2>
+        <p class="note">ALEPH 판정 환경이 제출 커밋의 코드를 읽어 판정한 기록입니다. 코드를 실행하거나 회사 서버에 연결해 확인한 것은 아닙니다. 항목을 펼치면 포털의 판정 화면을 볼 수 있습니다.</p>
+        <div class="stages">
+          <details><summary><span class="no">13</span><span class="t">세 메뉴와 로그인·기기 상태</span><span class="r">통과 · 10-19 · <code>394a0e5</code></span></summary><a href="img/stage-13.png"><img src="img/stage-13.png" alt="13단계 판정 화면: 통과, 확인 항목 5개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">14</span><span class="t">업무 앱과 접속 판정·상태</span><span class="r">통과 · 10-19 · <code>2667109</code></span></summary><a href="img/stage-14.png"><img src="img/stage-14.png" alt="14단계 판정 화면: 통과, 확인 항목 5개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">15</span><span class="t">접속 기록과 기존 XDR 사건</span><span class="r">통과 · 10-19 · <code>a1a25cb</code></span></summary><a href="img/stage-15.png"><img src="img/stage-15.png" alt="15단계 판정 화면: 통과, 확인 항목 7개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">16</span><span class="t">알림·기기·세션·오류·빈 화면</span><span class="r">통과 · 10-19 · <code>738cf16</code></span></summary><a href="img/stage-16.png"><img src="img/stage-16.png" alt="16단계 판정 화면: 통과, 확인 항목 7개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">17</span><span class="t">알레프게이트 AI 연결</span><span class="r">통과(일부 항목 임시 통과) · 10-19 · <code>78bf089</code></span></summary><a href="img/stage-17.png"><img src="img/stage-17.png" alt="17단계 판정 화면: 통과, 시스템 문제로 일부 항목은 운영 정책에 따라 임시 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">18</span><span class="t">근거가 있는 AI 사건 설명</span><span class="r">통과 · 10-27 · <code>702adbe</code></span></summary><a href="img/stage-18.png"><img src="img/stage-18.png" alt="18단계 판정 화면: 통과, 확인 항목 8개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">19</span><span class="t">AI 조치 제안과 기존 서버 처리 결과</span><span class="r">통과 · 10-27 · <code>753f5e3</code></span></summary><a href="img/stage-19.png"><img src="img/stage-19.png" alt="19단계 판정 화면: 통과, 확인 항목 8개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">20</span><span class="t">사용 라이브러리와 취약점 정보 대조</span><span class="r">통과 · 10-27 · <code>9b134a1</code></span></summary><a href="img/stage-20.png"><img src="img/stage-20.png" alt="20단계 판정 화면: 통과, 확인 항목 10개 모두 통과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">21</span><span class="t">다른 사람이 이해할 수 있는 문서</span><span class="r">통과(원문 검토) · 10-27 · <code>0a25836</code></span></summary><a href="img/stage-21.png"><img src="img/stage-21.png" alt="21단계 판정 화면: 통과, 원문 검토 결과" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">22</span><span class="t">재현 가능한 최종 인수인계</span><span class="r">통과(원문 검토) · 10-27 · <code>cc373c1</code></span></summary><a href="img/stage-22.png"><img src="img/stage-22.png" alt="22단계 판정 화면: 통과, 원문 검토 결과" loading="lazy" decoding="async" /></a></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="sprint-title">
+      <div class="wrap">
+        <h2 id="sprint-title">총공세: 판정 없는 7일 개선</h2>
+        <ol class="days">
+          <li><b>1일차</b> 상태 요약 카드 네 개와 이번 실행 추이, 핵심 기능 점검표</li>
+          <li><b>2일차</b> 「내 PC 측정 추이 비교」: CPU·메모리·디스크를 잰 시각·단위와 함께, 작업 관리자·파일 탐색기와 대조</li>
+          <li><b>3일차</b> 네트워크 구성·방화벽 설정·Windows 기록 건수(읽기만, 침해 판정 아님), SDP 미연결을 PC 조회와 분리</li>
+          <li><b>4일차</b> 학생 카드 먼저 배치, 「다시 조회」와 대기 표시, 조회 실패 항목과 다음 할 일, 키보드 조작</li>
+          <li><b>5일차</b> 처음 보는 사람용 실행 안내 한 장. 헷갈리기 쉬운 곳(폴더 위치·앱 이름)을 보완하고, 친구가 안내만 보고 실행해 문제 없음</li>
+          <li><b>6일차</b> 마무리 커밋을 GitHub에 올리고 40자리 커밋 번호 확인</li>
+          <li><b>7일차</b> 시연 순서, 한계와 근거 정리. 이후 web.dev·W3C WAI 기준으로 대비·초점 표시를 다듬음</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="limits-title">
+      <div class="wrap">
+        <h2 id="limits-title">아직 안 되거나 확인하지 못한 것</h2>
+        <ul class="limits">
+          <li>실제 로그인·기기·세션·보안 기록·업무 앱 판정·조치: 접근 제어 서버 미연결이라 예제 데이터로만 화면 확인</li>
+          <li>AI 사건 설명: AI 연결은 확인했지만 설명할 실제 보안 기록이 없어 미확인</li>
+          <li>실제 OSV 취약점 결과: 조회 대상 프로젝트가 설정되지 않아 미확인(「조회 안 됨」은 0건·안전으로 표시하지 않음)</li>
+          <li>권한 없음·오래된 값·취소 표시: 모의 응답으로만 확인</li>
+          <li>macOS·Linux 실행, 설치형 포장: 하지 않음</li>
+        </ul>
+        <p class="note">
+          자세한 근거: 저장소의 <a href="https://github.com/vinn81/choi-bujang-secret-vault/blob/main/ALEPH_FINAL_WORK_RECORD.md">완성 기록</a>,
+          <a href="https://github.com/vinn81/choi-bujang-secret-vault/blob/main/on-client/docs/DEMO_AND_LIMITS.md">시연 순서·한계·근거</a>,
+          <a href="https://github.com/vinn81/choi-bujang-secret-vault/blob/main/on-client/docs/RUN_GUIDE_ONE_PAGE.md">실행 안내 한 장</a>.
+          1~12단계(최부장 비밀 자료실: 서버 함수·판정기·탐지·복구)는 같은 저장소의 README에 정리했습니다.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <a href="/#aleph">← 포트폴리오로 돌아가기</a>
+    </div>
+  </footer>
+</body>
+</html>

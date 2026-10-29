@@ -25,7 +25,8 @@ function initStrengthToggles() {
 }
 
 function initNavigationObserver() {
-  const navLinks = [...document.querySelectorAll(".nav-links a")];
+  // 같은 페이지 절(#…)로 가는 링크만 현재 위치 표시에 씁니다. 다른 페이지(defense/ 등) 링크는 제외합니다.
+  const navLinks = [...document.querySelectorAll('.nav-links a[href^="#"]')];
   const sections = navLinks.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
   if (!("IntersectionObserver" in window)) return;
 

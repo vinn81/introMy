@@ -1613,3 +1613,7 @@ mark.ab {
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .site-header { background: rgba(5, 7, 13, 0.95); }
 }
+
+/* 방어전 페이지로 가는 카드(07 · SKT ALEPH) */
+.aleph-defense-card { margin: 0 0 14px; }
+.aleph-defense-card .links { margin-top: 10px; }
