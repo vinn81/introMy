@@ -80,7 +80,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .days li { border-left: 2px solid var(--cyan); padding: 4px 0 4px 14px; color: #cfd8e6; }
 .days b { color: var(--text); margin-right: 8px; font-family: var(--font-head); }
 
-main { padding-bottom: 48px; }
+.foot { border-top: 1px solid var(--border); padding: 28px 0 48px; }
+.foot a { color: var(--muted); text-decoration: none; }
 
 @media (max-width: 720px) {
   .gallery { grid-template-columns: 1fr; }
