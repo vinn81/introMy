@@ -1442,32 +1442,6 @@ mark.ab {
 }
 .scope-card:last-child .scope-mark { color: var(--muted); background: rgba(148, 163, 184, 0.16); }
 
-/* ───────── 마무리 ───────── */
-.site-footer {
-  margin-top: clamp(110px, 13vw, 170px);
-  padding: 0 0 clamp(48px, 7vw, 80px);
-  text-align: center;
-}
-.site-footer .container {
-  position: relative;
-  padding-top: clamp(48px, 6vw, 72px);
-}
-.site-footer .container::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.6), transparent);
-}
-.thanks {
-  font-size: clamp(2.6rem, 9vw, 6.6rem);
-  filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.3));
-}
-.thanks-contact { margin: 24px 0 0; color: var(--muted); font-size: 0.95rem; }
-.thanks-contact span { margin-right: 8px; color: var(--cyan); font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.1em; }
-.thanks-contact a { color: var(--text); text-decoration: none; }
-.thanks-contact a:hover { color: var(--cyan); }
-
 /* ───────── 스크롤하면 나타나기 (brand.js가 reveal-ready를 붙일 때만) ───────── */
 .reveal-ready :is(.journey li, .chapter, .record, .abilities, .ability-card, .tile, .calendar, .work, .lab, .stack, .glance, .index-list li, .frame, .strength-card, .band-photo, .aleph-course-card, .aleph-note-card, .aleph-task, .evidence-card, .doc-card, .private-lock-card, .scope-card) {
   transition:
