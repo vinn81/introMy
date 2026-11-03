@@ -37,7 +37,6 @@
         <a href="#works">대표작</a>
         <a href="#labs">실습</a>
         <a href="#profile">프로필</a>
-        <a href="#strengths">강점</a>
         <a href="#story">나에 대해</a>
         <a href="#aleph">ALEPH</a>
         <a href="defense/">방어전</a>
@@ -94,11 +93,10 @@
           <li><a href="#works"><span class="i-no">01</span><span class="i-name">대표작</span><span class="i-en">Works</span></a></li>
           <li><a href="#labs"><span class="i-no">02</span><span class="i-name">네트워크·보안 실습</span><span class="i-en">Labs</span></a></li>
           <li><a href="#profile"><span class="i-no">03</span><span class="i-name">프로필</span><span class="i-en">Profile</span></a></li>
-          <li><a href="#strengths"><span class="i-no">04</span><span class="i-name">강점</span><span class="i-en">Strengths</span></a></li>
-          <li><a href="#story"><span class="i-no">05</span><span class="i-name">나에 대해</span><span class="i-en">About</span></a></li>
-          <li><a href="#aleph"><span class="i-no">06</span><span class="i-name">SKT ALEPH</span><span class="i-en">Course</span></a></li>
-          <li><a href="#evidence"><span class="i-no">07</span><span class="i-name">학습 증거</span><span class="i-en">Evidence</span></a></li>
-          <li><a href="#docs"><span class="i-no">08</span><span class="i-name">이력서</span><span class="i-en">Documents</span></a></li>
+          <li><a href="#story"><span class="i-no">04</span><span class="i-name">나에 대해</span><span class="i-en">About</span></a></li>
+          <li><a href="#aleph"><span class="i-no">05</span><span class="i-name">SKT ALEPH</span><span class="i-en">Course</span></a></li>
+          <li><a href="#evidence"><span class="i-no">06</span><span class="i-name">학습 증거</span><span class="i-en">Evidence</span></a></li>
+          <li><a href="#docs"><span class="i-no">07</span><span class="i-name">이력서</span><span class="i-en">Documents</span></a></li>
         </ol>
       </div>
     </section>
@@ -206,7 +204,7 @@
 
           <div class="section-copy">
             <h2>네트워크·보안 실습</h2>
-            <p>SKT ALEPH 과정에서 다룬 실습 과제 일곱 개의 구성입니다. 과제 안내도에서 구성만 옮겨 다시 그렸습니다. 그림을 누르면 크게 볼 수 있습니다.</p>
+            <p>SKT ALEPH 과정에서 다룬 실습 과제 일곱 개의 구성입니다. 구성도는 과제 안내도에서 옮겨 다시 그렸고, 제가 맡은 일과 결과는 기록이 남아 있는 실습에만 적었습니다. 그림을 누르면 크게 볼 수 있습니다.</p>
           </div>
         </div>
 
@@ -218,6 +216,7 @@
               <h3>Full-Security Labs</h3>
               <p>상반기에 다룬 기술을 한 망에 모은 종합 실습입니다. 내부망에 방화벽·VPN·관제 서버를, 외부망에 VLAN으로 나눈 공격자 PC를 두고 결과보고서를 작성합니다.</p>
               <ul class="lab-chips"><li>VLAN</li><li>Routing</li><li>ASAv</li><li>Snort</li><li>Suricata</li><li>pfSense VPN</li><li>Wazuh</li><li>OSSEC</li><li>Zabbix</li><li>CTF</li><li>OWASP</li></ul>
+              <dl class="lab-did"><div><dt>내가 한 일</dt><dd>같은 구성을 Half-Security Labs로 혼자 구축하고 결과보고서(9쪽)를 썼습니다.</dd></div><div><dt>막힌 점</dt><dd>9월 7일 pfSense 메모리 오류로 실습 파일이 두 번 손상됐고, VLAN 설정 뒤 인터페이스가 올라오지 않았습니다. 같은 명령을 반복하는 대신 원인을 ‘설정’과 ‘실습 환경’으로 나눠, 장비를 다시 배치하고 show vlan brief·show ip interface brief로 단계마다 상태를 확인했습니다.</dd></div><div><dt>결과</dt><dd>인터페이스가 up으로 바뀌고 VLAN 간 ping이 성공해 9월 23일 과제를 마무리했습니다. 정확한 원인은 특정하지 못했습니다.</dd></div></dl>
               <p class="links"><a href="#works">결과보고서 요약은 대표작에서 보기</a> · <a href="works/half-security-labs.pdf" target="_blank" rel="noopener">PDF (9쪽)</a></p>
             </div>
           </article>
@@ -255,6 +254,7 @@
               <h3>System Security Lab</h3>
               <p>Kali로 침투 테스트를 하고 Suricata·Snort 룰로 탐지·차단합니다. firewalld·iptables 규칙과 계정 정책으로 리눅스 서버를 점검하고, 팀은 취약점 점검 스크립트를 씁니다.</p>
               <ul class="lab-chips"><li>Kali</li><li>Suricata</li><li>Snort</li><li>firewalld</li><li>iptables</li><li>Shell Script</li><li>CTF</li></ul>
+              <dl class="lab-did"><div><dt>내가 한 일</dt><dd>4명 팀에서 리눅스 서버 취약점 점검 스크립트의 초안을 쓰고, 실습 중 정리한 명령어 자료를 공유했습니다.</dd></div><div><dt>결과</dt><dd>동료들이 출력 형식 개선·테스트·오류 수정을 맡아 각자의 강점을 이어 점검 스크립트를 완성했습니다.</dd></div></dl>
             </div>
           </article>
           <article class="lab">
@@ -273,6 +273,7 @@
               <h3>보안 솔루션 확장 Lab</h3>
               <p>OSSEC·Zabbix 에이전트로 PC를 관제하고, 팀은 Snort·Suricata 룰과 pfSense 방화벽 룰, Wazuh SIEM으로 공격 트래픽을 탐지·기록합니다.</p>
               <ul class="lab-chips"><li>OSSEC</li><li>Zabbix</li><li>Snort</li><li>Suricata</li><li>pfSense</li><li>Wazuh</li><li>Wireshark</li></ul>
+              <dl class="lab-did"><div><dt>내가 한 일</dt><dd>Windows·Linux 호스트와 서버 자신을 감시하던 제 Zabbix 서버를 팀원이 구축한 Wazuh 서버에 클라이언트로 등록해, 로그가 웹 화면에 보이도록 연동했습니다. 명령을 몰라 막힌 팀원에게는 상황별 명령 정리 자료를 공유했습니다.</dd></div><div><dt>막힌 점</dt><dd>9월 11일 결과가 어떻게 나와야 하는지 모른 채 진행해 시간을 많이 썼습니다. 어디까지 했고 무엇을 모르는지 그대로 말해 도움을 청했고, 9월 29일 동료와 함께 Wazuh 오류의 해결 방법을 찾았습니다.</dd></div><div><dt>결과</dt><dd>네 명의 환경 로그를 Wazuh 웹 화면 한곳에 모으고 결과보고서까지 작성했습니다.</dd></div></dl>
             </div>
           </article>
         </div>
@@ -280,9 +281,29 @@
         <div class="stack" aria-label="실습에서 다룬 기술 스택">
           <div class="stack-head">
             <p class="stack-kicker">TECH STACK</p>
-            <h3>실습에서 다룬 기술</h3>
-            <p class="stack-note">Kali 위에서 정찰 → 공격 → 크래킹 → 권한 상승으로 이어지는 모의해킹 흐름과, 그 반대편의 탐지·관제 솔루션을 함께 다뤘습니다.</p>
+            <h3>기술</h3>
+            <p class="stack-note">결과보고서·제출물에 화면이나 기록이 남아 있는 도구와, 수업 실습에서 써 본 도구를 나눠 적었습니다.</p>
           </div>
+          <p class="stack-sub">결과로 확인한 도구 <span>결과보고서 · 방어전 · 이 사이트의 제출 기록</span></p>
+          <dl class="stack-grid stack-proven">
+            <div class="stack-row stack-row-blue">
+              <dt>네트워크 · 경계</dt>
+              <dd><span>GNS3</span><span>VLAN</span><span>Cisco ASAv</span><span>ACL</span><span>pfSense OpenVPN</span></dd>
+            </div>
+            <div class="stack-row stack-row-blue">
+              <dt>탐지 · 관제</dt>
+              <dd><span>Snort 3</span><span>Wazuh</span><span>OSSEC</span><span>Zabbix</span><span>PMM</span><span>rsyslog · LogAnalyzer</span></dd>
+            </div>
+            <div class="stack-row stack-row-blue">
+              <dt>서버 · 검증</dt>
+              <dd><span>Ubuntu</span><span>Rocky Linux</span><span>MariaDB</span><span>Kali (ping · nmap)</span><span>Earth CTF</span><span>Shell Script</span></dd>
+            </div>
+            <div class="stack-row stack-row-blue">
+              <dt>웹 · 인증</dt>
+              <dd><span>HTML · CSS · JavaScript</span><span>Vercel Functions</span><span>Neon PostgreSQL</span><span>WebAuthn</span></dd>
+            </div>
+          </dl>
+          <p class="stack-sub">실습에서 써 본 도구 <span>Kali 위의 정찰 → 공격 → 크래킹 → 권한 상승 흐름과 그 반대편의 탐지·관제</span></p>
           <dl class="stack-grid">
             <div class="stack-row">
               <dt>정찰 · 스캐닝</dt>
@@ -300,7 +321,7 @@
               <dt>쉘 · 후속 작업</dt>
               <dd><span>netcat</span><span>reverse shell</span><span>python http.server</span><span>pty TTY 업그레이드</span></dd>
             </div>
-            <div class="stack-row stack-row-blue">
+            <div class="stack-row">
               <dt>방어 · 모니터링</dt>
               <dd><span>Snort</span><span>Suricata</span><span>OSSEC</span><span>Wazuh</span><span>Zabbix</span><span>pfSense</span><span>ModSecurity · OWASP CRS</span><span>GoAccess</span><span>Nagios</span><span>Splunk</span></dd>
             </div>
@@ -358,167 +379,12 @@
       </div>
     </section>
 
-    <!-- Strengths -->
-    <section class="section strengths-section" id="strengths">
-      <div class="container">
-        <p class="display section-word" aria-hidden="true">STRENGTHS</p>
-        <div class="section-header">
-          <div class="section-index">04 · Strengths</div>
-
-          <div class="section-copy">
-            <h2>나를 보여주는 3가지</h2>
-            <p>
-              꾸준함, 도전 정신, 문제 해결력을 실제 경험을 통해 설명합니다.
-            </p>
-          </div>
-        </div>
-
-        <div class="strength-grid">
-          <article class="strength-card">
-            <div class="strength-main">
-              <div class="strength-number">01</div>
-              <h3>꾸준함</h3>
-              <p>
-                이해되지 않는 부분은 그냥 넘기지 않고,
-                끝까지 이해하려고 노력합니다.
-              </p>
-            </div>
-
-            <button
-              class="strength-toggle"
-              type="button"
-              aria-expanded="true"
-              aria-controls="strength-detail-1"
-            >
-              접기
-            </button>
-
-            <div class="strength-detail" id="strength-detail-1">
-              <div class="detail-item">
-                <strong>상황</strong>
-                <p>
-                  운영체제 전공 수업에서 페이지 교체 알고리즘이
-                  잘 이해되지 않았습니다.
-                </p>
-              </div>
-
-              <div class="detail-item">
-                <strong>행동</strong>
-                <p>
-                  그냥 넘어가지 않고 웹 자료를 찾아보고 선배들에게 질문하며
-                  여러 방식으로 개념을 다시 확인했습니다.
-                </p>
-              </div>
-
-              <div class="detail-item">
-                <strong>결과</strong>
-                <p>
-                  결국 페이지 교체 알고리즘을 스스로 설명할 수 있을 정도로
-                  이해하고 내 지식으로 만들 수 있었습니다.
-                </p>
-              </div>
-            </div>
-          </article>
-
-          <article class="strength-card">
-            <div class="strength-main">
-              <div class="strength-number">02</div>
-              <h3>도전 정신</h3>
-              <p>
-                다른 사람이 어려워하는 문제도 직접 부딪혀보는 과정을 즐깁니다.
-              </p>
-            </div>
-
-            <button
-              class="strength-toggle"
-              type="button"
-              aria-expanded="true"
-              aria-controls="strength-detail-2"
-            >
-              접기
-            </button>
-
-            <div class="strength-detail" id="strength-detail-2">
-              <div class="detail-item">
-                <strong>상황</strong>
-                <p>
-                  팀 프로젝트 중 문제의 분기점을 설계하는 활동을
-                  팀원들이 어려워했습니다.
-                </p>
-              </div>
-
-              <div class="detail-item">
-                <strong>행동</strong>
-                <p>
-                  직접 나서서 여러 분기점을 만들고,
-                  팀원들에게 하나씩 확인받으며 내용을 보완했습니다.
-                </p>
-              </div>
-
-              <div class="detail-item">
-                <strong>결과</strong>
-                <p>
-                  팀에서 사용할 수 있는 분기 구조를 완성하고
-                  다음 작업을 진행할 수 있었습니다.
-                </p>
-              </div>
-            </div>
-          </article>
-
-          <article class="strength-card">
-            <div class="strength-main">
-              <div class="strength-number">03</div>
-              <h3>문제 해결력</h3>
-              <p>
-                복잡한 문제도 하나씩 확인하며 원인을 좁혀 해결합니다.
-              </p>
-            </div>
-
-            <button
-              class="strength-toggle"
-              type="button"
-              aria-expanded="true"
-              aria-controls="strength-detail-3"
-            >
-              접기
-            </button>
-
-            <div class="strength-detail" id="strength-detail-3">
-              <div class="detail-item">
-                <strong>상황</strong>
-                <p>
-                  네트워크 실습 중 라우터 설정 오류로
-                  서로 다른 네트워크 간 통신이 되지 않았습니다.
-                </p>
-              </div>
-
-              <div class="detail-item">
-                <strong>행동</strong>
-                <p>
-                  여러 설정을 한꺼번에 바꾸지 않고 인터페이스와 라우팅 설정을
-                  하나씩 확인하며 문제 원인을 좁혀갔습니다.
-                </p>
-              </div>
-
-              <div class="detail-item">
-                <strong>결과</strong>
-                <p>
-                  잘못된 설정을 찾아 수정했고,
-                  최종적으로 네트워크 간 통신에 성공했습니다.
-                </p>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
     <!-- Story -->
     <section class="section story-section" id="story">
       <div class="container">
         <p class="display section-word" aria-hidden="true">ABOUT</p>
         <div class="section-header">
-          <div class="section-index">05 · About</div>
+          <div class="section-index">04 · About</div>
 
           <div class="section-copy">
             <h2>두 번 사라진 화면,<br />그다음 날들</h2>
@@ -617,7 +483,7 @@
       <div class="container">
         <p class="display section-word" aria-hidden="true">ALEPH</p>
         <div class="section-header">
-          <div class="section-index">06 · SKT ALEPH</div>
+          <div class="section-index">05 · SKT ALEPH</div>
 
           <div class="section-copy">
             <h2>SKT ALEPH 교육 과정</h2>
@@ -739,7 +605,7 @@
       <div class="container">
         <p class="display section-word" aria-hidden="true">EVIDENCE</p>
         <div class="section-header">
-          <div class="section-index">07 · Evidence</div>
+          <div class="section-index">06 · Evidence</div>
 
           <div class="section-copy">
             <h2>배운 것을 결과로 남깁니다.</h2>
@@ -783,7 +649,7 @@
       <div class="container">
         <p class="display section-word" aria-hidden="true">DOCUMENTS</p>
         <div class="section-header">
-          <div class="section-index">08 · Documents</div>
+          <div class="section-index">07 · Documents</div>
 
           <div class="section-copy">
             <h2>함께 보내는 문서</h2>
