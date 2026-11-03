@@ -1279,7 +1279,7 @@ mark.ab {
 }
 
 /* ───────── 08 학습 증거 ───────── */
-.evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.evidence-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .evidence-card { padding: 28px; }
 .evidence-label { color: var(--cyan); font-size: 0.72rem; font-weight: 600; text-transform: uppercase; }
 .certificate-mark {
