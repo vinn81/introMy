@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#05070d" />
+  <title>나만의 공간 | 김가빈</title>
+
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700;800;900&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <a class="skip-link" href="#main-content">본문 바로가기</a>
+
+  <header class="site-header">
+    <div class="container topbar">
+      <a class="brand" href="/">KIM GABIN</a>
+      <span class="topbar-mid">2026 PORTFOLIO</span>
+      <a class="topbar-end" href="/">← 포트폴리오로</a>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <!-- Private Space -->
+    <section class="section private-section" id="private">
+      <div class="container">
+        <p class="display section-word" aria-hidden="true">PRIVATE</p>
+        <div class="section-header">
+          <div class="section-index">Private Space</div>
+
+          <div class="section-copy">
+            <h2>나만의 공간</h2>
+            <p>등록된 패스키로만 열 수 있는 개인 공간입니다.</p>
+          </div>
+        </div>
+
+        <div class="private-area" data-private-area>
+          <div class="private-lock-card" data-auth-state="locked">
+            <div class="private-lock-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div>
+              <p class="private-status" data-auth-status>잠금 상태</p>
+              <h3>나만의 공간</h3>
+              <p>등록된 패스키로만 열 수 있는 개인 공간입니다.</p>
+            </div>
+            <div class="private-actions">
+              <button class="private-button private-button-primary" type="button" data-login-button>
+                패스키로 들어가기
+              </button>
+              <div class="private-setup" data-setup-panel hidden>
+                <label for="passkey-name">첫 패스키 이름</label>
+                <input id="passkey-name" type="text" maxlength="80" placeholder="예: 내 노트북" data-passkey-name />
+                <button class="private-button private-button-secondary" type="button" data-register-button>
+                  첫 패스키 등록
+                </button>
+              </div>
+            </div>
+            <p class="auth-message" data-auth-message role="status" aria-live="polite"></p>
+          </div>
+
+          <div class="private-content" data-private-content hidden>
+            <div class="private-content-header">
+              <div>
+                <p class="private-status">Private notes</p>
+                <h3>오늘의 기록</h3>
+              </div>
+              <button class="private-button private-button-secondary" type="button" data-logout-button>로그아웃</button>
+            </div>
+            <div class="private-grid" data-private-grid></div>
+
+            <div class="passkey-panel">
+              <div class="passkey-panel-header">
+                <div>
+                  <p class="private-status">Access</p>
+                  <h3>패스키 관리</h3>
+                </div>
+              </div>
+              <ul class="passkey-list" data-passkey-list></ul>
+              <div class="private-setup">
+                <label for="additional-passkey-name">추가 패스키 이름</label>
+                <input id="additional-passkey-name" type="text" maxlength="80" placeholder="예: 보조 기기" data-additional-passkey-name />
+                <button class="private-button private-button-secondary" type="button" data-add-passkey-button>패스키 추가</button>
+              </div>
+              <p class="auth-message" data-private-message role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

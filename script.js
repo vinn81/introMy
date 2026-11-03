@@ -42,6 +42,24 @@ function initNavigationObserver() {
   sections.forEach((section) => observer.observe(section));
 }
 
+function initStoryDetails() {
+  // 접어 둔 이야기 안의 장면(#scene-…)으로 가는 링크를 누르면 먼저 펼칩니다.
+  const details = document.querySelector(".story-more");
+  if (!details) return;
+
+  const openFor = (hash) => {
+    if (!hash || hash.length < 2) return;
+    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    if (target && details.contains(target)) details.open = true;
+  };
+
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest('a[href^="#"]');
+    if (link) openFor(link.getAttribute("href"));
+  });
+  openFor(window.location.hash);
+}
+
 function initMobileNavigation() {
   const header = document.querySelector(".site-header");
   const button = header?.querySelector(".nav-toggle");
@@ -321,4 +339,5 @@ function initPrivateArea() {
 initStrengthToggles();
 initNavigationObserver();
 initMobileNavigation();
+initStoryDetails();
 initPrivateArea();

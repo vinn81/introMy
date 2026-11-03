@@ -147,14 +147,11 @@ def tile(value, label, source, note=""):
 
 
 def stats_block(r, att, sub, cfg):
-    rng = f"{r['기록시작']} ~ {r['기록종료']}"
+    # 포트폴리오에는 핵심 넷만 둡니다. 나머지(기록 주·기록일·감사 기록)는 stats.json에 그대로 남습니다.
     t = [
-        tile(f"{r['기록주']}주 / {r['전체주']}주", "기록을 남긴 주", "리추얼 기록", f"{rng}, 지금까지 {r['경과주']}주차"),
-        tile(f"{r['기록일']}일", "리추얼을 연 날", "리추얼 기록", rng),
         tile(f"{r['실천일'] + r['일부실천일']}일 / {r['마감기록일']}일", "실천 또는 일부 실천",
-             "리추얼 기록", f"실천 {r['실천일']} · 일부 {r['일부실천일']} · 못 했다 {r['미실천일']}"),
+             "리추얼 기록", f"실천 {r['실천일']} · 일부 {r['일부실천일']} · 못 했다 {r['미실천일']} · {r['기록종료']}까지 반영"),
         tile(f"{r['최장연속']}일", "‘못 했다’ 없이 이어진 최장 기록", "리추얼 기록"),
-        tile(f"{r['감사기록']}건", "동료와 나눈 감사 기록", "리추얼 기록"),
     ]
     if att:
         extra = f" · {cfg['attendance_note']}" if cfg.get("attendance_note") and att["결석"] else ""
@@ -195,7 +192,7 @@ def calendar_block(days, cfg):
             if day < first:
                 cls, tip = "future", f"{label} · 개강 전"
             elif day > last:
-                cls, tip = "future", f"{label} · 아직 오지 않은 날"
+                cls, tip = "future", f"{label} · 아직 반영하지 않은 날"
             elif st in CELL:
                 cls, tip = CELL[st][0], f"{label} · {CELL[st][1]}"
             elif st == "열기만":
@@ -208,7 +205,7 @@ def calendar_block(days, cfg):
     legend = ('<ul class="cal-legend">'
               '<li><i class="cal-cell done"></i>실천했다</li><li><i class="cal-cell part"></i>일부 실천했다</li>'
               '<li><i class="cal-cell miss"><span aria-hidden="true">✕</span></i>못 했다</li>'
-              '<li><i class="cal-cell none"></i>기록 없음·휴일</li><li><i class="cal-cell future"></i>남은 날</li></ul>')
+              '<li><i class="cal-cell none"></i>기록 없음·휴일</li><li><i class="cal-cell future"></i>반영 전</li></ul>')
     return ('<figure class="calendar"><figcaption><strong>13주 리추얼 달력</strong>'
             '<span>칸 하나가 평일 하루입니다. 마감 기록의 ‘강점 행동’을 그대로 칠했습니다.</span></figcaption>'
             '<div class="cal-scroll"><ol class="cal-grid" aria-label="주차별 평일 기록">' + "".join(cols) + "</ol></div>"
@@ -223,7 +220,7 @@ def glance_block(r, att, sub):
     if sub:
         rows.append((f"{sub['최종확인완료']}<small>/{sub['제출']}건</small>", "과제 최종 확인 완료", "내 제출 현황"))
     items = "".join(f'<li><b>{v}</b><span>{esc(l)}</span><em>{esc(src)}</em></li>' for v, l, src in rows)
-    return (f'<aside class="glance" aria-label="한눈에 보기"><p class="glance-title">13주 중 {r["경과주"]}주차 · 한눈에</p>'
+    return (f'<aside class="glance" aria-label="한눈에 보기"><p class="glance-title">{r["기록종료"]}까지 반영 · 한눈에</p>'
             f'<ul>{items}</ul><a class="glance-link" href="#numbers">기록 자세히 보기</a></aside>')
 
 
@@ -295,7 +292,8 @@ def main():
         site = Path(a.site)
         page = replace_block(site.read_text(encoding="utf-8"), "stats", block_stats)
         page = replace_block(page, "paragraphs", block_para)
-        page = replace_block(page, "glance", block_glance)
+        if "<!-- renew:glance -->" in page:  # 첫 화면은 직무 결과 카드로 바뀌어 표시가 없을 수 있음
+            page = replace_block(page, "glance", block_glance)
         write(site, page)
         print(f"사이트 갱신: {site}")
     for k, v in digests.items():
