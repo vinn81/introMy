@@ -131,6 +131,11 @@
             </dl>
             <p class="overview-label">OVERVIEW</p>
             <p>GNS3에서 외부망을 /26 단위 VLAN 3개로 나누고 Cisco ASAv로 Inside·DMZ·Outside를 분리했습니다. Snort 3 룰 3개를 직접 작성해 Kali의 ping·nmap·웹 접속에 모두 경보가 뜨는 것을 확인했고, Wazuh Agent 4대를 Active로 연결해 24시간 이벤트 384건을 조회했습니다. rsyslog 기동 실패, OpenVPN 인증서 오류, Wazuh·OSSEC 설치 경로 충돌은 재설치 없이 원인을 좁혀 해결했습니다. Snort는 passive IDS로 동작해 차단(IPS)은 다음 과제로 남겼습니다.</p>
+            <div class="work-shots">
+              <figure><a href="assets/works/hsl-topology.webp" target="_blank" rel="noopener"><img src="assets/works/hsl-topology.webp" width="1173" height="698" alt="GNS3 구성도: ASAv를 가운데 두고 Inside(pfSense·Earth), DMZ(DNS·OSSEC·Zabbix·Web-DB·Wazuh·PMM), Outside(NIDS와 VLAN 10·20·30)로 나눈 망" loading="lazy" decoding="async" /></a><figcaption>망 구성 · VLAN 3개와 ASAv로 나눈 Inside·DMZ·Outside</figcaption></figure>
+              <figure><a href="assets/works/hsl-snort-alerts.webp" target="_blank" rel="noopener"><img src="assets/works/hsl-snort-alerts.webp" width="661" height="521" alt="Snort 3 콘솔: 직접 작성한 ICMP Echo Request, HTTP Web Access, TCP SYN Scan 룰의 경보가 출력된 화면" loading="lazy" decoding="async" /></a><figcaption>Snort 3 · 직접 쓴 룰 3개의 경보</figcaption></figure>
+              <figure><a href="assets/works/hsl-wazuh-384.webp" target="_blank" rel="noopener"><img src="assets/works/hsl-wazuh-384.webp" width="1400" height="617" alt="Wazuh Threat Hunting 화면: 최근 24시간 384 hits, 에이전트별 PAM 로그인·rootcheck 이벤트 목록" loading="lazy" decoding="async" /></a><figcaption>Wazuh · 24시간 이벤트 384건</figcaption></figure>
+            </div>
             <p class="links"><a href="works/half-security-labs.pdf" target="_blank" rel="noopener">결과보고서 PDF 보기 (9쪽)</a> · <a href="#labs">실습 구성도 보기</a></p>
             </div>
           </article>
