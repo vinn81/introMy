@@ -984,6 +984,15 @@ mark.ab {
   border-radius: 999px;
 }
 .overview-label { margin: 0 0 4px; color: var(--cyan); font-size: 0.74rem; font-weight: 600; }
+.work-trouble { margin: 18px 0 0; }
+.work-trouble ol { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: trouble; }
+.work-trouble li { position: relative; padding: 14px 16px 14px 46px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255, 255, 255, 0.02); counter-increment: trouble; }
+.work-trouble li::before { content: counter(trouble, decimal-leading-zero); position: absolute; top: 14px; left: 16px; color: var(--cyan); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; }
+.work-trouble h4 { margin: 0 0 8px; font-size: 0.95rem; line-height: 1.4; }
+.work-trouble dl { display: grid; gap: 6px; margin: 0; }
+.work-trouble dl div { display: grid; grid-template-columns: 34px 1fr; gap: 8px; }
+.work-trouble dt { color: var(--subtle); font-size: 0.78rem; font-weight: 700; }
+.work-trouble dd { margin: 0; color: #c3cedc; font-size: 0.86rem; line-height: 1.6; }
 .work-shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0 16px; }
 .work-shots figure { margin: 0; }
 .work-shots a { display: block; overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: #fff; }

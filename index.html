@@ -130,7 +130,15 @@
               <div><dt>범위</dt><dd><span>혼자 구축</span><span>결과보고서</span></dd></div>
             </dl>
             <p class="overview-label">OVERVIEW</p>
-            <p>GNS3에서 외부망을 /26 단위 VLAN 3개로 나누고 Cisco ASAv로 Inside·DMZ·Outside를 분리했습니다. Snort 3 룰 3개를 직접 작성해 Kali의 ping·nmap·웹 접속에 모두 경보가 뜨는 것을 확인했고, Wazuh Agent 4대를 Active로 연결해 24시간 이벤트 384건을 조회했습니다. rsyslog 기동 실패, OpenVPN 인증서 오류, Wazuh·OSSEC 설치 경로 충돌은 재설치 없이 원인을 좁혀 해결했습니다. Snort는 passive IDS로 동작해 차단(IPS)은 다음 과제로 남겼습니다.</p>
+            <p>GNS3에서 외부망을 /26 단위 VLAN 3개로 나누고 Cisco ASAv로 Inside·DMZ·Outside를 분리했습니다. Snort 3 룰 3개를 직접 작성해 Kali의 ping·nmap·웹 접속에 모두 경보가 뜨는 것을 확인했고, Wazuh Agent 4대를 Active로 연결해 24시간 이벤트 384건을 조회했습니다. rsyslog 기동 실패, OpenVPN 인증서 오류, Wazuh·OSSEC 설치 경로 충돌은 재설치 없이 원인을 좁혀 해결했습니다(아래 3건). Snort는 passive IDS로 동작해 차단(IPS)은 다음 과제로 남겼습니다.</p>
+            <div class="work-trouble">
+              <p class="overview-label">TROUBLESHOOTING · 재설치 없이 해결한 3건</p>
+              <ol>
+                <li><h4>rsyslog가 기동되지 않아 로그를 DB에 모을 수 없음</h4><dl><div><dt>원인</dt><dd>수업 자료의 구형 지시자 방식 설정이 설치된 rsyslog 버전의 모듈 선언 방식과 맞지 않았습니다.</dd></div><div><dt>해결</dt><dd>다시 설치하지 않고 설정 → 서비스 → DB 순서로 점검해 원인을 찾았고, 설정을 모듈 선언 방식으로 다시 써서 기동했습니다. 이후 LogAnalyzer에서 DNS 서버 로그를 확인했습니다.</dd></div></dl></li>
+                <li><h4>pfSense OpenVPN 클라이언트 내보내기에서 인증서 오류</h4><dl><div><dt>원인</dt><dd>OpenVPN 서버가 웹 관리용 자체 서명 인증서를 쓰고 있었습니다.</dd></div><div><dt>해결</dt><dd>OpenVPN 전용 CA와 인증서로 바꿨고, 클라이언트에 VPN 주소가 할당되며 터널이 연결되는 것을 확인했습니다.</dd></div></dl></li>
+                <li><h4>Wazuh와 OSSEC 설치가 서로 충돌</h4><dl><div><dt>원인</dt><dd>Wazuh와 OSSEC이 같은 설치 경로(/var/ossec)를 씁니다.</dd></div><div><dt>해결</dt><dd>강제로 덮어쓰지 않고 OSSEC Server는 별도 VM에, Wazuh Agent는 다른 서버 4대에 두어 역할을 나눴습니다. OSSEC 변조 탐지와 Wazuh Agent 4/4 Active를 함께 유지했습니다.</dd></div></dl></li>
+              </ol>
+            </div>
             <div class="work-shots">
               <figure><a href="assets/works/hsl-topology.webp" target="_blank" rel="noopener"><img src="assets/works/hsl-topology.webp" width="1173" height="698" alt="GNS3 구성도: ASAv를 가운데 두고 Inside(pfSense·Earth), DMZ(DNS·OSSEC·Zabbix·Web-DB·Wazuh·PMM), Outside(NIDS와 VLAN 10·20·30)로 나눈 망" loading="lazy" decoding="async" /></a><figcaption>망 구성 · VLAN 3개와 ASAv로 나눈 Inside·DMZ·Outside</figcaption></figure>
               <figure><a href="assets/works/hsl-snort-alerts.webp" target="_blank" rel="noopener"><img src="assets/works/hsl-snort-alerts.webp" width="661" height="521" alt="Snort 3 콘솔: 직접 작성한 ICMP Echo Request, HTTP Web Access, TCP SYN Scan 룰의 경보가 출력된 화면" loading="lazy" decoding="async" /></a><figcaption>Snort 3 · 직접 쓴 룰 3개의 경보</figcaption></figure>
