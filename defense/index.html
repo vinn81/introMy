@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="SKT ALEPH 방어전에서 만든 제로 트러스트 보안 Agent 「헤임달」 — 단계별 코드 검토 기록, 실제 측정 화면과 예제 화면, 한계를 정리했습니다." />
+  <meta name="description" content="SKT ALEPH 과정의 보안 실전 과제로 만든 제로 트러스트 보안 Agent 「헤임달」 — 단계별 코드 검토 기록, 실제 측정 화면과 예제 화면, 한계를 정리했습니다." />
   <meta name="theme-color" content="#05070d" />
-  <title>방어전 · 보안 Agent 헤임달 | 김가빈</title>
+  <title>제로 트러스트 보안 Agent 헤임달 | 김가빈</title>
   <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,18 +25,18 @@
   <main id="main">
     <section class="hero">
       <div class="wrap">
-        <p class="eyebrow">SKT ALEPH 방어전 · 13~22단계와 총공세</p>
+        <p class="eyebrow">SKT ALEPH 보안 실전 과제 · 단계별 코드 검토와 추가 개선</p>
         <h1>보안 Agent 「헤임달」</h1>
         <p class="lead">
           제로 트러스트 보안 Agent를 직접 설계하고 구현했습니다. 사용자·기기·세션 확인, 업무 앱 접근 판정,
           보안 기록·XDR 경보, AI 연결 상태, 조치 상태, 설치 패키지 취약점 조회 화면을 만들어
-          ALEPH 판정 환경에서 13~22단계 코드 검토를 모두 통과했습니다.
-          이어진 총공세(판정 없는 개선 기간)에서는 내 PC를 실제로 읽어 직전 측정과 비교하는 기능을 더하고,
+          과정의 자동 코드 검토 환경에서 단계별 검토 10건(13~22단계)을 모두 통과했습니다.
+          이어진 추가 개선 기간(검토 없이 7일)에는 내 PC를 실제로 읽어 직전 측정과 비교하는 기능을 더하고,
           값을 Windows 기본 도구와 대조했습니다.
         </p>
 
         <ul class="facts" aria-label="요약">
-          <li><b>10 / 10</b><span>13~22단계 코드 검토 통과</span></li>
+          <li><b>10 / 10</b><span>단계별 코드 검토 통과</span></li>
           <li><b>6 / 6</b><span>내 PC 실측 항목(CPU·메모리·디스크·네트워크·방화벽·Windows 기록)을 일반 권한으로 읽음</span></li>
           <li><b>verified</b><span>앱 서버를 거친 수업용 AI 연결 확인(2026-10-29, 모델 응답 1개)</span></li>
         </ul>
@@ -132,13 +132,13 @@
     <section class="block" aria-labelledby="stages-title">
       <div class="wrap">
         <h2 id="stages-title">단계별 코드 검토 기록</h2>
-        <p class="note">ALEPH 판정 환경이 제출 커밋의 코드를 읽어 판정한 기록입니다. 코드를 실행하거나 회사 서버에 연결해 확인한 것은 아닙니다. 항목을 펼치면 포털의 판정 화면을 볼 수 있습니다.</p>
+        <p class="note">과정의 자동 코드 검토 환경이 제출 커밋의 코드를 읽어 판정한 기록입니다. 코드를 실행하거나 회사 서버에 연결해 확인한 것은 아닙니다. 항목을 펼치면 포털의 판정 화면을 볼 수 있습니다.</p>
         <div class="stages">
           <details><summary><span class="no">13</span><span class="t">세 메뉴와 로그인·기기 상태</span><span class="r">통과 · 10-19 · <code>394a0e5</code></span></summary><a href="img/stage-13.png"><img src="img/stage-13.png" alt="13단계 판정 화면: 통과, 확인 항목 5개 모두 통과" loading="lazy" decoding="async" /></a></details>
           <details><summary><span class="no">14</span><span class="t">업무 앱과 접속 판정·상태</span><span class="r">통과 · 10-19 · <code>2667109</code></span></summary><a href="img/stage-14.png"><img src="img/stage-14.png" alt="14단계 판정 화면: 통과, 확인 항목 5개 모두 통과" loading="lazy" decoding="async" /></a></details>
           <details><summary><span class="no">15</span><span class="t">접속 기록과 기존 XDR 사건</span><span class="r">통과 · 10-19 · <code>a1a25cb</code></span></summary><a href="img/stage-15.png"><img src="img/stage-15.png" alt="15단계 판정 화면: 통과, 확인 항목 7개 모두 통과" loading="lazy" decoding="async" /></a></details>
           <details><summary><span class="no">16</span><span class="t">알림·기기·세션·오류·빈 화면</span><span class="r">통과 · 10-19 · <code>738cf16</code></span></summary><a href="img/stage-16.png"><img src="img/stage-16.png" alt="16단계 판정 화면: 통과, 확인 항목 7개 모두 통과" loading="lazy" decoding="async" /></a></details>
-          <details><summary><span class="no">17</span><span class="t">알레프게이트 AI 연결</span><span class="r">통과 · 10-19 · <code>78bf089</code></span></summary><a href="img/stage-17.png"><img src="img/stage-17.png" alt="17단계 판정 화면(2026-10-19 판정 당시)" loading="lazy" decoding="async" /></a></details>
+          <details><summary><span class="no">17</span><span class="t">과정 제공 AI 게이트웨이 연결</span><span class="r">통과 · 10-19 · <code>78bf089</code></span></summary><a href="img/stage-17.png"><img src="img/stage-17.png" alt="17단계 판정 화면(2026-10-19 판정 당시)" loading="lazy" decoding="async" /></a></details>
           <details><summary><span class="no">18</span><span class="t">근거가 있는 AI 사건 설명</span><span class="r">통과 · 10-27 · <code>702adbe</code></span></summary><a href="img/stage-18.png"><img src="img/stage-18.png" alt="18단계 판정 화면: 통과, 확인 항목 8개 모두 통과" loading="lazy" decoding="async" /></a></details>
           <details><summary><span class="no">19</span><span class="t">AI 조치 제안과 기존 서버 처리 결과</span><span class="r">통과 · 10-27 · <code>753f5e3</code></span></summary><a href="img/stage-19.png"><img src="img/stage-19.png" alt="19단계 판정 화면: 통과, 확인 항목 8개 모두 통과" loading="lazy" decoding="async" /></a></details>
           <details><summary><span class="no">20</span><span class="t">사용 라이브러리와 취약점 정보 대조</span><span class="r">통과 · 10-27 · <code>9b134a1</code></span></summary><a href="img/stage-20.png"><img src="img/stage-20.png" alt="20단계 판정 화면: 통과, 확인 항목 10개 모두 통과" loading="lazy" decoding="async" /></a></details>
@@ -150,7 +150,7 @@
 
     <section class="block" aria-labelledby="sprint-title">
       <div class="wrap">
-        <h2 id="sprint-title">총공세: 판정 없는 7일 개선</h2>
+        <h2 id="sprint-title">추가 개선: 검토 없이 7일</h2>
         <ol class="days">
           <li><b>1일차</b> 상태 요약 카드 네 개와 이번 실행 추이, 핵심 기능 점검표</li>
           <li><b>2일차</b> 「내 PC 측정 추이 비교」: CPU·메모리·디스크를 잰 시각·단위와 함께, 작업 관리자·파일 탐색기와 대조</li>
@@ -177,7 +177,7 @@
           자세한 근거: 저장소의 <a href="https://github.com/vinn81/choi-bujang-secret-vault/blob/main/ALEPH_FINAL_WORK_RECORD.md">완성 기록</a>,
           <a href="https://github.com/vinn81/choi-bujang-secret-vault/blob/main/on-client/docs/DEMO_AND_LIMITS.md">시연 순서·한계·근거</a>,
           <a href="https://github.com/vinn81/choi-bujang-secret-vault/blob/main/on-client/docs/RUN_GUIDE_ONE_PAGE.md">실행 안내 한 장</a>.
-          1~12단계(최부장 비밀 자료실: 서버 함수·판정기·탐지·복구)는 같은 저장소의 README에 정리했습니다.
+          앞선 1~12단계(과제용 가상 자료실의 서버 함수·판정기·탐지·복구)는 같은 저장소의 README에 정리했습니다.
         </p>
       </div>
     </section>

@@ -1640,3 +1640,7 @@ mark.ab {
 /* 방어전 페이지로 가는 카드(07 · SKT ALEPH) */
 .aleph-defense-card { margin: 0 0 14px; }
 .aleph-defense-card .links { margin-top: 10px; }
+
+/* ALEPH: 보안과 별개인 AI 과제는 맨 아래에 접어 둠 */
+.aleph-more { margin: 28px 0 0; }
+.about-numbers .story-more { margin-top: 4px; }
