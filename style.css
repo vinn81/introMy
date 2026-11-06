@@ -1490,16 +1490,20 @@ mark.ab {
 /* ───────── 스크롤하면 나타나기 (brand.js가 reveal-ready를 붙일 때만) ───────── */
 .reveal-ready :is(.journey li, .chapter, .record, .abilities, .ability-card, .tile, .calendar, .work, .lab, .stack, .glance, .index-list li, .frame, .strength-card, .band-photo, .aleph-course-card, .aleph-note-card, .aleph-task, .evidence-card, .doc-card, .private-lock-card, .scope-card) {
   transition:
-    opacity 700ms var(--ease) var(--reveal-delay, 0ms),
-    transform 700ms var(--ease) var(--reveal-delay, 0ms),
-    filter 700ms var(--ease) var(--reveal-delay, 0ms),
+    opacity 450ms var(--ease) var(--reveal-delay, 0ms),
+    transform 450ms var(--ease) var(--reveal-delay, 0ms),
     border-color 260ms ease,
     box-shadow 360ms var(--ease);
 }
 .reveal-ready :is(.journey li, .chapter, .record, .abilities, .ability-card, .tile, .calendar, .work, .lab, .stack, .glance, .index-list li, .frame, .strength-card, .band-photo, .aleph-course-card, .aleph-note-card, .aleph-task, .evidence-card, .doc-card, .private-lock-card, .scope-card):not(.is-visible) {
   opacity: 0;
-  transform: translateY(24px);
-  filter: blur(6px);
+  transform: translateY(12px);
+}
+@media print {
+  .reveal-ready :is(.journey li, .chapter, .record, .abilities, .ability-card, .tile, .calendar, .work, .lab, .stack, .glance, .index-list li, .frame, .strength-card, .band-photo, .aleph-course-card, .aleph-note-card, .aleph-task, .evidence-card, .doc-card, .private-lock-card, .scope-card) {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* ───────── 반응형 ───────── */

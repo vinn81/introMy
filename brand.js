@@ -25,10 +25,30 @@
         entry.target.classList.add("is-visible");
         observer.unobserve(entry.target);
       });
-    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+    }, { rootMargin: "0px 0px 15% 0px", threshold: 0 });
     revealTargets.forEach((el, i) => {
-      el.style.setProperty("--reveal-delay", `${(i % 4) * 70}ms`);
+      el.style.setProperty("--reveal-delay", `${(i % 4) * 50}ms`);
       observer.observe(el);
+    });
+
+    // 메뉴·앵커로 바로 이동하면 그 구역은 애니메이션 없이 즉시 보여 줌
+    const showSection = () => {
+      const id = decodeURIComponent(location.hash.slice(1));
+      const section = id && document.getElementById(id);
+      if (!section) return;
+      const scope = section.closest("section") || section;
+      revealTargets.forEach((el) => {
+        if (scope.contains(el)) {
+          el.style.setProperty("--reveal-delay", "0ms");
+          el.classList.add("is-visible");
+          observer.unobserve(el);
+        }
+      });
+    };
+    showSection();
+    window.addEventListener("hashchange", showSection);
+    window.addEventListener("beforeprint", () => {
+      revealTargets.forEach((el) => el.classList.add("is-visible"));
     });
   }
 
