@@ -130,7 +130,7 @@ def candidates(days, cfg):
         for score, date, fname, text, hits in found[:cfg["candidates_per_ability"]]:
             cid = hashlib.sha256(f"{name}|{date}|{fname}".encode()).hexdigest()[:8]
             m, dd = int(date[5:7]), int(date[8:10])
-            out.append({"id": cid, "ability": name, "date": date, "evidence": f"리추얼 기록 {date} · {fname}",
+            out.append({"id": cid, "ability": name, "date": date, "evidence": f"마감 기록 {date} · {fname}",
                         "quote": text, "keywords": hits,
                         "sentence": f"{m}월 {dd}일, 저는 이렇게 적었습니다. “{text.rstrip('.')}.”"})
     return out
@@ -150,8 +150,8 @@ def stats_block(r, att, sub, cfg):
     # 포트폴리오에는 핵심 넷만 둡니다. 나머지(기록 주·기록일·감사 기록)는 stats.json에 그대로 남습니다.
     t = [
         tile(f"{r['실천일'] + r['일부실천일']}일 / {r['마감기록일']}일", "실천 또는 일부 실천",
-             "리추얼 기록", f"실천 {r['실천일']} · 일부 {r['일부실천일']} · 못 했다 {r['미실천일']} · {r['기록종료']}까지 반영"),
-        tile(f"{r['최장연속']}일", "‘못 했다’ 없이 이어진 최장 기록", "리추얼 기록"),
+             "마감 기록", f"실천 {r['실천일']} · 일부 {r['일부실천일']} · 못 했다 {r['미실천일']} · {r['기록종료']}까지 반영"),
+        tile(f"{r['최장연속']}일", "‘못 했다’ 없이 이어진 최장 기록", "마감 기록"),
     ]
     if att:
         extra = f" · {cfg['attendance_note']}" if cfg.get("attendance_note") and att["결석"] else ""
@@ -206,7 +206,7 @@ def calendar_block(days, cfg):
               '<li><i class="cal-cell done"></i>실천했다</li><li><i class="cal-cell part"></i>일부 실천했다</li>'
               '<li><i class="cal-cell miss"><span aria-hidden="true">✕</span></i>못 했다</li>'
               '<li><i class="cal-cell none"></i>기록 없음·휴일</li><li><i class="cal-cell future"></i>반영 전</li></ul>')
-    return ('<figure class="calendar"><figcaption><strong>13주 리추얼 달력</strong>'
+    return ('<figure class="calendar"><figcaption><strong>13주 마감 기록 달력</strong>'
             '<span>칸 하나가 평일 하루입니다. 마감 기록의 ‘강점 행동’을 그대로 칠했습니다.</span></figcaption>'
             '<div class="cal-scroll"><ol class="cal-grid" aria-label="주차별 평일 기록">' + "".join(cols) + "</ol></div>"
             + legend + "</figure>")
@@ -214,7 +214,7 @@ def calendar_block(days, cfg):
 
 def glance_block(r, att, sub):
     """첫 화면의 ‘한눈에 보기’ 카드."""
-    rows = [(f"{r['실천일'] + r['일부실천일']}<small>/{r['마감기록일']}일</small>", "실천 또는 일부 실천", "리추얼 기록")]
+    rows = [(f"{r['실천일'] + r['일부실천일']}<small>/{r['마감기록일']}일</small>", "실천 또는 일부 실천", "마감 기록")]
     if att:
         rows.append((f"{att['출석']}<small>/{att['확정일']}일</small>", "확정된 훈련일 중 출석", "내 출석 기록"))
     if sub:
