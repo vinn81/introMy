@@ -107,7 +107,7 @@ CAREER = [
 SOURCES = [
     ("이야기의 장면과 날짜, 숫자", "본인 리추얼 기록 (2026-08-11 ~ 2026-10-08), 갱신 장치 renew/out/stats.json"),
     ("Half-Security Labs", "사이트 works/half-security-labs.pdf (결과보고서 9쪽)"),
-    ("보안 Agent 「헤임달」", "사이트 defense/ 페이지 · github.com/vinn81/choi-bujang-secret-vault"),
+    ("보안 Agent 「헤임달」", "사이트 defense/ 페이지 · github.com/vinn81/zero-trust-security-agent"),
     ("논문 · 앱", "사이트 works/paper.pdf (2026-10-06 최종본) · app/"),
     ("사이트 · 패스키 과제", "github.com/vinn81/introMy 의 SUBMISSION.md · AUTH_IMPLEMENTATION.md"),
     ("출석 · 제출", "내 출석 기록 화면 요약(2026-10-08), 내 제출 현황 T01~T11 최종 확인 완료"),
