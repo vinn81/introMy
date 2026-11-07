@@ -74,6 +74,50 @@
       </div>
     </section>
 
+    <section class="block" aria-labelledby="ai-title">
+      <div class="wrap">
+        <h2 id="ai-title">AI와 함께 만들었습니다</h2>
+        <div class="two">
+          <article class="card">
+            <h3>AI가 한 일</h3>
+            <ul>
+              <li>코드와 문서는 과정에서 제공된 AI(Claude Code)가 작성했습니다</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>내가 한 일</h3>
+            <ul>
+              <li>설계 선택과 변경 승인</li>
+              <li>실제 PC에서의 실행·측정과 Windows 기본 도구 대조</li>
+              <li>결과 확인과 제출</li>
+            </ul>
+          </article>
+        </div>
+        <p class="note">이 구분은 저장소의 <a href="https://github.com/vinn81/zero-trust-security-agent/blob/main/ALEPH_FINAL_WORK_RECORD.md">완성 기록</a>에도 같은 내용으로 적혀 있습니다. 그래서 이 페이지의 “만들었습니다”는 위 역할 분담을 전제로 한 표현입니다.</p>
+      </div>
+    </section>
+
+    <section class="block" aria-labelledby="rules-title">
+      <div class="wrap">
+        <h2 id="rules-title">제로 트러스트 원칙별로 구현한 판정·탐지 규칙 (1~12단계)</h2>
+        <p class="note">과제용 가상 자료실을 대상으로 판정 규칙과 탐지 로직을 설계·구현했습니다. 실제 집행을 맡는 SDP 엔진은 제공받은 것이며, 실제 회사 시스템과 연동한 적은 없습니다.</p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="제로 트러스트 원칙별 구현 표">
+          <table>
+            <thead><tr><th scope="col">원칙</th><th scope="col">구현</th><th scope="col">위치</th></tr></thead>
+            <tbody>
+              <tr><td>요청마다 검증</td><td>매 요청 토큰을 검증하고 owner_id를 대조합니다. 본문·쿼리로 들어온 role·owner_id는 믿지 않습니다</td><td>api/notes.js, src/verify-login.mjs</td></tr>
+              <tr><td>기기 신뢰</td><td>등록 기기가 아니면 값이 없어도 거부합니다. 패스키로 기기를 승인하고, 승인 전 기기는 403 device_not_approved</td><td>src/decider.mjs, src/device-flow.mjs</td></tr>
+              <tr><td>상황 기반 추가 인증</td><td>이상 시각·처음 보는 네트워크·대량 읽기가 겹칠 때만 추가 인증을 요구하고, 검증된 출처의 신호만 믿습니다</td><td>src/decider.mjs</td></tr>
+              <tr><td>최소 권한</td><td>자기 메모 한 건만 허용하고 전체 목록·공지 쓰기는 거부합니다. 원본 DB의 직접 권한은 회수했습니다</td><td>src/resources.mjs, src/decider.mjs</td></tr>
+              <tr><td>지속 감시</td><td>요청마다 접속 기록을 남기고, 10분 120건을 넘는 대량 읽기는 회수를 제안합니다. 무차별 로그인·웹 주입은 15분 차단 후보로 올립니다</td><td>src/access-log.mjs, src/detect.mjs, xdr/</td></tr>
+              <tr><td>복구와 감사</td><td>확인 번호를 거친 정책 복원, 메모 한 건의 해시 대조 복원과 감사 기록</td><td>scripts/policy-*.mjs, api/restore.js</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">클라이언트 쪽(13~22단계)도 같은 태도입니다. 판정이 unknown이면 허용으로 보지 않고, AI 제안은 사람이 확인하고 서버가 처리한 뒤 효과가 관측될 때만 확인으로 표시하며, 근거 ID가 기록과 맞지 않는 AI 설명은 보여 주지 않습니다.</p>
+      </div>
+    </section>
+
     <section class="block" aria-labelledby="screens-title">
       <div class="wrap">
         <h2 id="screens-title">화면</h2>
@@ -172,6 +216,7 @@
           <li>실제 OSV 취약점 결과: 조회 대상 프로젝트가 설정되지 않아 미확인(「조회 안 됨」은 0건·안전으로 표시하지 않음)</li>
           <li>권한 없음·오래된 값·취소 표시: 모의 응답으로만 확인</li>
           <li>macOS·Linux 실행, 설치형 포장: 하지 않음</li>
+          <li>실제 회사 시스템 연동: 하지 않음. 헤임달은 SDP에 연결된 적이 없습니다</li>
         </ul>
         <p class="note">
           자세한 근거: 저장소의 <a href="https://github.com/vinn81/zero-trust-security-agent/blob/main/ALEPH_FINAL_WORK_RECORD.md">완성 기록</a>,
