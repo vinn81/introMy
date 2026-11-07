@@ -101,21 +101,6 @@
       </div>
     </section>
 
-    <!-- Index -->
-    <section class="index-section" aria-labelledby="index-title">
-      <div class="container">
-        <h2 class="display index-title" id="index-title">CONTENTS</h2>
-        <ol class="index-list">
-          <li><a href="#works"><span class="i-no">01</span><span class="i-name">대표작</span><span class="i-en">Works</span></a></li>
-          <li><a href="#labs"><span class="i-no">02</span><span class="i-name">네트워크·보안 실습</span><span class="i-en">Labs</span></a></li>
-          <li><a href="#profile"><span class="i-no">03</span><span class="i-name">프로필</span><span class="i-en">Profile</span></a></li>
-          <li><a href="#aleph"><span class="i-no">04</span><span class="i-name">SKT ALEPH</span><span class="i-en">Course</span></a></li>
-          <li><a href="#evidence"><span class="i-no">05</span><span class="i-name">학습 증거</span><span class="i-en">Evidence</span></a></li>
-          <li><a href="#docs"><span class="i-no">06</span><span class="i-name">이력서</span><span class="i-en">Documents</span></a></li>
-        </ol>
-      </div>
-    </section>
-
     <!-- Works -->
     <section class="section works-section" id="works">
       <div class="container">
@@ -224,7 +209,7 @@
 
           <div class="section-copy">
             <h2>네트워크·보안 실습</h2>
-            <p>SKT ALEPH 과정에서 다룬 실습 과제 일곱 개의 구성입니다. 구성도는 과제 안내도에서 옮겨 다시 그렸고, 제가 맡은 일과 결과는 기록이 남아 있는 실습에만 적었습니다. 그림을 누르면 크게 볼 수 있습니다.</p>
+            <p>SKT ALEPH 과정에서 다룬 실습 과제 일곱 개 중 결과보고서까지 쓴 종합 실습을 먼저 놓고, 나머지 여섯 개의 구성도는 접어 두었습니다. 구성도는 과제 안내도에서 옮겨 다시 그렸고, 제가 맡은 일과 결과는 기록이 남아 있는 실습에만 적었습니다. 그림을 누르면 크게 볼 수 있습니다.</p>
           </div>
         </div>
 
@@ -234,12 +219,16 @@
             <div class="lab-body">
               <p class="lab-tag">종합 실습 · GNS3 · 가상머신</p>
               <h3>Security Labs</h3>
-              <p>상반기에 다룬 기술을 한 망에 모은 종합 실습입니다. 내부망에 방화벽·VPN·관제 서버를, 외부망에 VLAN으로 나눈 공격자 PC를 두고 결과보고서를 작성합니다.</p>
-              <ul class="lab-chips"><li>VLAN</li><li>Routing</li><li>ASAv</li><li>Snort</li><li>Suricata</li><li>pfSense VPN</li><li>Wazuh</li><li>OSSEC</li><li>Zabbix</li><li>CTF</li><li>OWASP</li></ul>
-              <dl class="lab-did"><div><dt>내가 한 일</dt><dd>이 구성을 혼자 구축하고 결과보고서(9쪽)를 썼습니다.</dd></div><div><dt>막힌 점</dt><dd>9월 7일 pfSense 메모리 오류로 실습 파일이 두 번 손상됐고, VLAN 설정 뒤 인터페이스가 올라오지 않았습니다. 같은 명령을 반복하는 대신 원인을 ‘설정’과 ‘실습 환경’으로 나눠, 장비를 다시 배치하고 show vlan brief·show ip interface brief로 단계마다 상태를 확인했습니다.</dd></div><div><dt>결과</dt><dd>인터페이스가 up으로 바뀌고 VLAN 간 ping이 성공해 9월 23일 과제를 마무리했습니다. 정확한 원인은 특정하지 못했습니다.</dd></div></dl>
+              <p>과정에서 다룬 방화벽·VPN·탐지·관제 기술을 한 망에 모은 종합 실습입니다. 내부망에 방화벽·VPN·관제 서버를, 외부망에 VLAN으로 나눈 공격자 PC를 두었습니다.</p>
+              <dl class="lab-did"><div><dt>막힌 점</dt><dd>9월 7일 pfSense 메모리 오류로 실습 파일이 두 번 손상됐고, VLAN 설정 뒤 인터페이스가 올라오지 않았습니다. 같은 명령을 반복하는 대신 원인을 ‘설정’과 ‘실습 환경’으로 나눠, 장비를 다시 배치하고 show vlan brief·show ip interface brief로 단계마다 상태를 확인했습니다.</dd></div><div><dt>결과</dt><dd>인터페이스가 up으로 바뀌고 VLAN 간 ping이 성공해 9월 23일 과제를 마무리했습니다. 정확한 원인은 특정하지 못했습니다.</dd></div></dl>
               <p class="links"><a href="#works">결과보고서 요약은 대표작에서 보기</a> · <a href="works/security-labs.pdf" target="_blank" rel="noopener">PDF (9쪽)</a></p>
             </div>
           </article>
+        </div>
+
+        <details class="story-more lab-more">
+          <summary>그 밖의 실습 6개 · 구성도 보기</summary>
+          <div class="lab-grid">
           <article class="lab">
             <a class="lab-figure" href="assets/labs/network-basic.svg" target="_blank" rel="noopener" aria-label="네트워크 보안 기초 통합 Lab 구성도 크게 보기"><img src="assets/labs/network-basic.svg" alt="EIGRP AS 100 영역의 라우터 3대와 OSPF Area 0, 본사 VLAN 망, 지사 NAT 망이 시리얼로 연결되고 본사–지사 간 VPN이 표시된 구성도" loading="lazy" decoding="async" /></a>
             <div class="lab-body">
@@ -296,7 +285,8 @@
               <dl class="lab-did"><div><dt>내가 한 일</dt><dd>Windows·Linux 호스트와 서버 자신을 감시하던 제 Zabbix 서버를 팀원이 구축한 Wazuh 서버에 클라이언트로 등록해, 로그가 웹 화면에 보이도록 연동했습니다. 명령을 몰라 막힌 팀원에게는 상황별 명령 정리 자료를 공유했습니다.</dd></div><div><dt>막힌 점</dt><dd>9월 11일 결과가 어떻게 나와야 하는지 모른 채 진행해 시간을 많이 썼습니다. 어디까지 했고 무엇을 모르는지 그대로 말해 도움을 청했고, 9월 29일 동료와 함께 Wazuh 오류의 해결 방법을 찾았습니다.</dd></div><div><dt>결과</dt><dd>네 명의 환경 로그를 Wazuh 웹 화면 한곳에 모으고 결과보고서까지 작성했습니다.</dd></div></dl>
             </div>
           </article>
-        </div>
+          </div>
+        </details>
 
         <div class="stack" aria-label="실습에서 다룬 기술 스택">
           <div class="stack-head">
@@ -396,7 +386,7 @@
           <div class="section-copy">
             <h2>SKT ALEPH 교육 과정</h2>
             <p>
-              AI 보안·인프라 교육 과정에서 AI를 활용한 과제를 수행하고 있습니다.
+              AI 보안·인프라 교육 과정(2026.08 ~ 2026.11)에서 AI를 활용해 수행한 과제입니다.
             </p>
           </div>
         </div>
@@ -404,11 +394,11 @@
         <figure class="band-photo"><img src="assets/aleph-bg.webp" alt="" loading="lazy" decoding="async" /><figcaption>SKT ALEPH · AI 보안·인프라 과정</figcaption></figure>
         <div class="aleph-intro">
           <article class="aleph-course-card">
-            <div class="aleph-kicker">Current Learning</div>
+            <div class="aleph-kicker">Course</div>
             <h3>AI 보안·인프라 과정</h3>
             <p>
               새로운 도구를 직접 사용하고 결과물을 만들어보며
-              AI 활용 경험을 쌓고 있습니다.
+              AI 활용 경험을 쌓았습니다.
             </p>
           </article>
 
@@ -416,14 +406,13 @@
             <div class="aleph-kicker">Assignment Archive</div>
             <h3>AI 과제 수행 기록</h3>
             <p>
-              보안 직무와 가까운 과제를 먼저 놓았습니다.
-              그 밖의 AI 활용 과제 4개는 맨 아래에 접어 두었습니다.
+              보안 직무와 가까운 과제를 정리했습니다.
             </p>
           </article>
         </div>
 
         <article class="aleph-note-card aleph-defense-card">
-          <div class="aleph-kicker">Defense · 과정 보안 실전 과제</div>
+          <div class="aleph-kicker">Zero Trust · 과정 보안 실전 과제</div>
           <h3>제로 트러스트 보안 Agent 「헤임달」</h3>
           <p>
             제로 트러스트 보안 Agent를 직접 만들어 기본 12단계와 코드 검토 10단계, 총 22단계를 모두 통과했습니다(과정 판정 기준).
@@ -442,71 +431,6 @@
           <p class="links"><a href="https://github.com/vinn81/introMy/blob/main/AUTH_IMPLEMENTATION.md">구현 기록</a></p>
         </article>
 
-        <details class="story-more aleph-more">
-        <summary>그 밖의 AI 활용 과제 4개 · 보안 직무와 별개</summary>
-        <div class="aleph-task-list">
-          <details class="aleph-task">
-            <summary>
-              <span class="aleph-task-meta">AI 과제 01</span>
-              <span class="aleph-task-title">RIFT DESCENT</span>
-              <span class="aleph-task-action" aria-hidden="true">펼쳐보기</span>
-            </summary>
-            <div class="aleph-task-body">
-              <img
-                src="assets/aleph-task-01.webp"
-                alt="RIFT DESCENT 게임 화면과 난이도 선택 UI"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </details>
-          <details class="aleph-task">
-            <summary>
-              <span class="aleph-task-meta">AI 과제 02</span>
-              <span class="aleph-task-title">짤·카드 스튜디오</span>
-              <span class="aleph-task-action" aria-hidden="true">펼쳐보기</span>
-            </summary>
-            <div class="aleph-task-body">
-              <img
-                src="assets/aleph-task-02.webp"
-                alt="이미지와 문구를 조합하는 짤·카드 스튜디오 화면"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </details>
-          <details class="aleph-task">
-            <summary>
-              <span class="aleph-task-meta">AI 과제 03</span>
-              <span class="aleph-task-title">달구벌 NOW</span>
-              <span class="aleph-task-action" aria-hidden="true">펼쳐보기</span>
-            </summary>
-            <div class="aleph-task-body">
-              <img
-                src="assets/aleph-task-03.webp"
-                alt="달구벌대로 교통 흐름을 보여주는 달구벌 NOW 대시보드 화면"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </details>
-          <details class="aleph-task">
-            <summary>
-              <span class="aleph-task-meta">AI 과제 04</span>
-              <span class="aleph-task-title">Plan Do See</span>
-              <span class="aleph-task-action" aria-hidden="true">펼쳐보기</span>
-            </summary>
-            <div class="aleph-task-body">
-              <img
-                src="assets/learning-notes.webp"
-                alt="개인 기록 대신 사용하는 가상의 학습 계획 이미지"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          </details>
-        </div>
-        </details>
       </div>
     </section>
 
