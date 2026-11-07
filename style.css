@@ -1656,3 +1656,5 @@ mark.ab {
 /* ALEPH: 보안과 별개인 AI 과제는 맨 아래에 접어 둠 */
 .aleph-more { margin: 28px 0 0; }
 .about-numbers .story-more { margin-top: 4px; }
+
+.evidence-card .links { margin: 16px 0 0; }
