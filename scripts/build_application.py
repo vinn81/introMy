@@ -32,7 +32,7 @@ PROFILE = [
 ]
 
 WORKS = [
-    ("2026.09", "Half-Security Labs (개인)",
+    ("2026.09", "Security Labs (개인)",
      "VLAN 3개·Cisco ASAv로 망 분리, Snort 3 룰 3/3 실탐지, Wazuh Agent 4/4 Active·24시간 이벤트 384건, 결과보고서 9쪽"),
     ("2026.09", "보안 솔루션 확장 Lab (팀)",
      "내 Zabbix 서버를 팀 Wazuh 서버에 연동해 네 명의 로그를 한 화면에 모으고 결과보고서 작성"),
@@ -74,7 +74,7 @@ STORY = [
 CAREER_INTRO = ("정식 고용 경력은 없습니다. 아래는 교육 과정의 과제 수행 경험이며, 과제 하나당 한 줄로 "
                 "역할과 상황·행동·결과를 적었습니다. 근거는 결과보고서·제출 기록·학습 일지(날짜)입니다.")
 CAREER = [
-    (("Half-Security Labs", "2026-09-07 ~ 09-23"), "개인",
+    (("Security Labs", "2026-09-07 ~ 09-23"), "개인",
      "네트워크 분리부터 탐지·관제까지 혼자 구축·검증해야 함. 9월 7일 pfSense 메모리 오류로 실습 파일이 두 번 손상됨",
      "VLAN 3개와 ASAv로 Inside·DMZ·Outside 분리, Snort 3 룰 3개 작성, Wazuh·OSSEC·Zabbix·PMM 연동. VLAN 인터페이스가 안 올라올 때 원인을 설정·환경으로 나눠 show vlan brief 등으로 단계별 점검. rsyslog·OpenVPN 인증서·Wazuh/OSSEC 경로 충돌을 재설치 없이 해결",
      "Snort 룰 3/3 실탐지, Wazuh Agent 4/4·24시간 이벤트 384건, VLAN 간 ping 성공, 결과보고서 9쪽"),
@@ -106,7 +106,7 @@ CAREER = [
 
 SOURCES = [
     ("이야기의 장면과 날짜", "본인 학습 일지 (2026-08-11 ~ 2026-10-08)"),
-    ("Half-Security Labs", "사이트 works/half-security-labs.pdf (결과보고서 9쪽)"),
+    ("Security Labs", "사이트 works/security-labs.pdf (결과보고서 9쪽)"),
     ("보안 Agent 「헤임달」", "사이트 defense/ 페이지 · github.com/vinn81/zero-trust-security-agent"),
     ("논문 · 앱", "사이트 works/paper.pdf (2026-10-06 최종본) · app/"),
     ("사이트 · 패스키 과제", "github.com/vinn81/introMy 의 SUBMISSION.md · AUTH_IMPLEMENTATION.md"),

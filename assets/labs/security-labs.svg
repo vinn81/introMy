@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 790" width="1200" height="790" font-family="'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif" role="img" aria-label="Full-Security Labs 종합 구성도">
-<title>Full-Security Labs 종합 구성도</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 790" width="1200" height="790" font-family="'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif" role="img" aria-label="Security Labs 종합 구성도">
+<title>Security Labs 종합 구성도</title>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#ff3d20"/></marker><marker id="arrow-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker><marker id="arrow-ms" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#6e5d50"/></marker></defs>
 <rect x="20" y="40" width="640" height="720" rx="20" fill="#fdebd3" stroke="#f0a81e" stroke-width="1.6" stroke-dasharray="6 6"/>
 <text x="38" y="66" text-anchor="start" font-size="14" font-weight="800" fill="#e8461c" paint-order="stroke" stroke="#fdebd3" stroke-width="5" stroke-linejoin="round">내부망 192.168.0.0/16</text>
