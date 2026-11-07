@@ -54,7 +54,7 @@ TOOLS = [
     "웹 · 인증: HTML · CSS · JavaScript · Vercel Functions · Neon PostgreSQL · WebAuthn",
 ]
 
-# 사이트 ‘나에 대해’의 이야기와 같은 문장
+# 자기소개서 본문(이야기)
 STORY_TITLE = "두 번 사라진 화면, 그다음 날들"
 STORY = [
     ("2026년 9월 7일 · 무너진 날", [
