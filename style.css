@@ -655,6 +655,9 @@ h3, h4 { font-family: var(--font-head); letter-spacing: -0.025em; }
   border-radius: 999px;
 }
 .overview-label { margin: 0 0 4px; color: var(--cyan); font-size: 0.74rem; font-weight: 600; }
+.work-fold { margin: 0 0 12px; }
+.work-fold > p { margin: 0; font-size: 0.92rem; line-height: 1.7; }
+.work-fold .work-trouble { margin: 0; }
 .work-trouble { margin: 18px 0 0; }
 .work-trouble ol { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: trouble; }
 .work-trouble li { position: relative; padding: 14px 16px 14px 46px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255, 255, 255, 0.02); counter-increment: trouble; }
