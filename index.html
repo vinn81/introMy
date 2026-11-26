@@ -93,7 +93,7 @@
       </figure>
       <div class="container hero-foot">
         <div>
-          <p class="foot-label">CONTACT</p>
+          <p class="foot-label">연락처</p>
           <p><a href="mailto:gabin5556@naver.com">gabin5556@naver.com</a></p>
           <p><a href="https://github.com/vinn81">github.com/vinn81</a></p>
         </div>
@@ -104,7 +104,6 @@
     <!-- Works -->
     <section class="section works-section" id="works">
       <div class="container">
-        <p class="display section-word" aria-hidden="true">WORKS</p>
         <div class="section-header">
 
           <div class="section-copy">
@@ -128,7 +127,7 @@
               <div><dt>구성</dt><dd><span>GNS3</span><span>VLAN</span><span>Cisco ASAv</span><span>Snort 3</span><span>Wazuh</span><span>OSSEC</span><span>OpenVPN</span></dd></div>
               <div><dt>범위</dt><dd><span>혼자 구축</span><span>결과보고서</span></dd></div>
             </dl>
-            <p class="overview-label">OVERVIEW</p>
+            <p class="overview-label">개요</p>
             <p>GNS3에서 외부망을 /26 단위 VLAN 3개로 나누고 Cisco ASAv로 Inside·DMZ·Outside를 분리했습니다. Snort 3 룰 3개를 직접 작성해 Kali의 ping·nmap·웹 접속에 모두 경보가 뜨는 것을 확인했고, Wazuh Agent 4대를 Active로 연결해 24시간 이벤트 384건을 조회했습니다. rsyslog 기동 실패, OpenVPN 인증서 오류, Wazuh·OSSEC 설치 경로 충돌은 재설치 없이 원인을 좁혀 해결했습니다(아래 3건). Snort는 passive IDS로 동작해 차단(IPS)은 다음 과제로 남겼습니다.</p>
             <div class="work-shots">
               <figure><a href="assets/works/hsl-topology.webp" target="_blank" rel="noopener"><img src="assets/works/hsl-topology.webp" width="1173" height="698" alt="GNS3 구성도: ASAv를 가운데 두고 Inside(pfSense·Earth), DMZ(DNS·OSSEC·Zabbix·Web-DB·Wazuh·PMM), Outside(NIDS와 VLAN 10·20·30)로 나눈 망" loading="lazy" decoding="async" /></a><figcaption>망 구성 · VLAN 3개와 ASAv로 나눈 Inside·DMZ·Outside</figcaption></figure>
@@ -163,7 +162,7 @@
               <div><dt>맡은 일</dt><dd><span>존 분리·방화벽 규칙</span><span>OpenVPN 접속 구조</span><span>Suricata 탐지</span><span>외부 공격자(Kali)</span></dd></div>
               <div><dt>범위</dt><dd><span>팀 4명</span><span>Wazuh·WAF·게임 서버는 팀원 담당</span></dd></div>
             </dl>
-            <p class="overview-label">OVERVIEW</p>
+            <p class="overview-label">개요</p>
             <p>확률형 카드 웹게임을 가상 게임사 PixelGate의 서비스로 놓고, 공격(Red)과 방어(Blue)를 번갈아 수행한 팀 프로젝트입니다. 저는 네트워크/인프라를 맡아 pfSense 한 대로 WAN_NET·DMZ·GAME·INTERNAL·OFFICE·SOC 6개 존을 나누고 존별 최소 권한 규칙(허용 목록 + deny all)을 적용했습니다. 팀원 4명의 PC에 흩어진 VM은 학원 LAN 위에서 OpenVPN L2(TAP) 서버 6개로 같은 존에 붙였고, 10단계 접속 가이드를 만들어 비전문 팀원도 따라 하게 했습니다.</p>
             <p>탐지는 Suricata 인스턴스 7개(존 6 + VPN_WAN)를 IDS 모드로 두고 pfSense 로그를 Wazuh까지 보내 경보가 SIEM에 닿는 것을 확인했습니다. 팀이 준 탐지 룰 19개는 14031개 룰이 오류 없이 적재되는지, HOME_NET 설정이 맞는지 검증했고, 제가 쓴 LAB 룰 2개로 Kali의 ping·SYN 스캔 경보를 확인했습니다. 공격 라운드에서는 Kali 공격자 역할도 직접 수행했습니다. 5개 시나리오 중 SQLi·XSS, 횡적 이동 시도, 무차별 대입은 팀이 탐지·차단을 확인했고, 두 가지는 탐지 공백으로 남았습니다(아래 한계).</p>
             <div class="work-shots">
@@ -204,7 +203,7 @@
               <div><dt>검증</dt><dd><span>코드 검토 10/10</span><span>내 PC 실측</span><span>Windows 기본 도구 대조</span></dd></div>
               <div><dt>범위</dt><dd><span>AI와 협업</span><span>SDP 서버 미연결</span></dd></div>
             </dl>
-            <p class="overview-label">OVERVIEW</p>
+            <p class="overview-label">개요</p>
             <p>사용자·기기·세션 확인, 업무 앱 접근 판정, 보안 기록·XDR 경보, AI 연결 상태, 설치 패키지 취약점 조회 화면을 만들었습니다. 기기 보안 상태를 확인할 수 없으면 정상으로 간주하지 않고 접근 거부와 이유를 보여 줍니다. 과정의 자동 코드 검토 10건(13~22단계)을 모두 통과했고, 앞선 기본 12단계의 판정 규칙·탐지 로직·복구까지 합쳐 22/22를 과정 판정 기준으로 통과했습니다.</p>
             <p>이어진 추가 개선 7일에는 내 PC의 CPU·메모리·디스크·네트워크·방화벽·Windows 기록 6개 항목을 일반 권한으로 읽어 직전 측정과 비교하는 기능을 더하고, 값을 작업 관리자·파일 탐색기·Windows 보안과 대조했습니다. 코드와 문서는 과정 제공 AI(Claude Code)와 함께 작성했고, 설계 선택·승인·실제 PC 검증·제출은 제가 맡았습니다. 실제 접근 제어 서버(SDP) 연결은 인증서를 발급받을 수 없어 예제 데이터로 확인했고, 그 한계는 화면에도 「SDP 미연결」로 표시합니다.</p>
             <div class="work-shots">
@@ -232,7 +231,6 @@
     <!-- Labs -->
     <section class="section labs-section" id="labs">
       <div class="container">
-        <p class="display section-word" aria-hidden="true">LABS</p>
         <div class="section-header">
 
           <div class="section-copy">
@@ -367,7 +365,6 @@
     <!-- Profile -->
     <section class="section profile-section" id="profile">
       <div class="container">
-        <p class="display section-word" aria-hidden="true">PROFILE</p>
         <div class="section-header">
 
           <div class="section-copy">
@@ -379,22 +376,22 @@
         <figure class="profile-photo"><img src="assets/profile-study.webp" alt="책상에서 코드를 보며 공부하는 모습을 그린 일러스트" loading="lazy" decoding="async" /></figure>
         <aside class="summary" aria-label="핵심 정보">
           <div class="summary-item">
-            <div class="summary-label">[ WHO <span>_ 소개</span> ]</div>
+            <div class="summary-label">소개</div>
             <p class="summary-value">김가빈 · 영남대학교 컴퓨터학부 재학 중</p>
           </div>
 
           <div class="summary-item">
-            <div class="summary-label">[ INTEREST <span>_ 관심 분야</span> ]</div>
+            <div class="summary-label">관심 분야</div>
             <p class="summary-value">네트워크 보안 · 시스템 보안 · 인프라</p>
           </div>
 
           <div class="summary-item">
-            <div class="summary-label">[ COURSE <span>_ 과정</span> ]</div>
+            <div class="summary-label">과정</div>
             <p class="summary-value">SKT ALEPH 과정 수료 (2026.08.11 ~ 2026.11.12)</p>
           </div>
 
           <div class="summary-item">
-            <div class="summary-label">[ EVIDENCE <span>_ 증거</span> ]</div>
+            <div class="summary-label">증거</div>
             <p class="summary-value">정보처리기사 취득 · 리눅스마스터 2급 1차 합격(2026.11) · Notion 학습 필기</p>
           </div>
         </aside>
@@ -405,7 +402,6 @@
     <!-- SKT ALEPH -->
     <section class="section aleph-section" id="aleph">
       <div class="container">
-        <p class="display section-word" aria-hidden="true">ALEPH</p>
         <div class="section-header">
 
           <div class="section-copy">
@@ -419,7 +415,7 @@
         <article class="aleph-note-card aleph-cert">
           <a class="aleph-cert-img" href="assets/aleph-certificate.webp" target="_blank" rel="noopener"><img src="assets/aleph-certificate.webp" width="1400" height="990" alt="SKT ALEPH 수료증: 김가빈, 2026.08.11~2026.11.12, 대구 B반, 2026년 11월 12일 발급(사진과 인증서 번호는 가림)" loading="lazy" decoding="async" /></a>
           <div>
-            <div class="aleph-kicker">Certificate</div>
+            <div class="aleph-kicker">수료증</div>
             <h3>SKT ALEPH 과정 수료증</h3>
             <p>2026.08.11 ~ 2026.11.12 · 대구 B반. 수료증에는 아래 네 가지가 적혀 있습니다.</p>
             <ul class="aleph-cert-list">
@@ -433,27 +429,8 @@
         </article>
 
         <figure class="band-photo"><img src="assets/aleph-bg.webp" alt="" loading="lazy" decoding="async" /></figure>
-        <div class="aleph-intro">
-          <article class="aleph-course-card">
-            <div class="aleph-kicker">Course</div>
-            <h3>AI 보안·인프라 과정</h3>
-            <p>
-              새로운 도구를 직접 사용하고 결과물을 만들어보며
-              AI 활용 경험을 쌓았습니다.
-            </p>
-          </article>
-
-          <article class="aleph-note-card">
-            <div class="aleph-kicker">Assignment Archive</div>
-            <h3>AI 과제 수행 기록</h3>
-            <p>
-              보안 직무와 가까운 과제를 정리했습니다.
-            </p>
-          </article>
-        </div>
-
         <article class="aleph-note-card aleph-defense-card">
-          <div class="aleph-kicker">Zero Trust · 과정 보안 실전 과제</div>
+          <div class="aleph-kicker">과정 보안 실전 과제</div>
           <h3>제로 트러스트 보안 Agent 「헤임달」</h3>
           <p>
             제로 트러스트 보안 Agent를 직접 만들어 기본 12단계와 코드 검토 10단계, 총 22단계를 모두 통과했습니다(과정 판정 기준).
@@ -463,7 +440,7 @@
         </article>
 
         <article class="aleph-note-card aleph-defense-card">
-          <div class="aleph-kicker">Auth · 패스키 로그인</div>
+          <div class="aleph-kicker">패스키 로그인</div>
           <h3>패스키(WebAuthn) 로그인 구현</h3>
           <p>
             서버에서 challenge·origin·서명을 검증하고, HMAC으로 서명한 HttpOnly 세션 쿠키로 로그인을 유지합니다.
@@ -478,7 +455,6 @@
     <!-- Evidence -->
     <section class="section evidence-section" id="evidence">
       <div class="container">
-        <p class="display section-word" aria-hidden="true">EVIDENCE</p>
         <div class="section-header">
 
           <div class="section-copy">
@@ -491,7 +467,7 @@
 
         <div class="evidence-grid">
           <article class="evidence-card">
-            <div class="evidence-label">Certificate · Notion</div>
+            <div class="evidence-label">자격증 · Notion 정리</div>
             <div class="certificate-mark">✓</div>
             <h3>정보처리기사</h3>
             <p>
@@ -510,7 +486,7 @@
           </article>
 
           <article class="evidence-card">
-            <div class="evidence-label">Notion</div>
+            <div class="evidence-label">학습 필기 · Notion</div>
             <h3>리눅스마스터 2급 정리노트</h3>
             <p>
               정보처리기사에 이어 리눅스마스터 2급 1차(리눅스 일반)에 합격(2026.11)했고, 2차(운영 및 관리 · 리눅스 활용)를 준비하고 있습니다. 1·2차 범위 23장을
@@ -533,7 +509,6 @@
     <!-- Documents -->
     <section class="section docs-section" id="docs">
       <div class="container">
-        <p class="display section-word" aria-hidden="true">DOCUMENTS</p>
         <div class="section-header">
 
           <div class="section-copy">
@@ -554,7 +529,7 @@
             <span>내려받기</span>
           </a>
           <a class="doc-card" href="mailto:gabin5556@naver.com">
-            <span class="doc-label">Contact</span>
+            <span class="doc-label">연락처</span>
             <strong>gabin5556@naver.com</strong>
             <span>메일 보내기 · GitHub github.com/vinn81</span>
           </a>
