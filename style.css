@@ -637,17 +637,6 @@ h3, h4 { font-family: var(--font-head); letter-spacing: -0.025em; }
 @media (max-width: 640px) { .work-shots { grid-template-columns: 1fr; } .work-shots img { height: 180px; } }
 .work p { color: #c3cedc; }
 
-/* 보조 작업(논문·앱): 설명 중심의 작은 카드 */
-.work-sub-title { margin: clamp(32px, 5vw, 48px) 0 16px; color: var(--muted); font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; }
-.work-grid-sub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
-.work.work-compact,
-.work + .work.work-compact { display: block; grid-template-columns: none; }
-.work-compact .work-text { padding: clamp(20px, 3vw, 28px); }
-.work-compact h3 { margin: 0 0 12px; font-size: 1.05rem; line-height: 1.45; }
-.work-compact p { margin: 0 0 12px; font-size: 0.92rem; line-height: 1.7; }
-.work-compact .work-facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; padding: 0; list-style: none; }
-.work-compact .work-facts li { padding: 3px 11px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 0.78rem; }
-@media (max-width: 860px) { .work-grid-sub { grid-template-columns: 1fr; } }
 .links { font-weight: 600; }
 .links a { color: var(--cyan); text-decoration-color: rgba(34, 211, 238, 0.45); }
 .links a:hover { color: #a5f3fc; }
@@ -1134,3 +1123,11 @@ h3, h4 { font-family: var(--font-head); letter-spacing: -0.025em; }
 .aleph-defense-card .links { margin-top: 10px; }
 
 .evidence-card .links { margin: 16px 0 0; }
+
+/* ALEPH 수료증 */
+.aleph-cert { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 36px); align-items: center; margin-bottom: 16px; }
+.aleph-cert-img { display: block; overflow: hidden; border-radius: 10px; border: 1px solid var(--border); }
+.aleph-cert-img img { display: block; width: 100%; height: auto; transition: transform 0.4s ease; }
+.aleph-cert-img:hover img { transform: scale(1.02); }
+.aleph-cert-list { margin: 0 0 12px; padding-left: 1.1em; color: var(--muted); font-size: 0.93rem; line-height: 1.8; }
+@media (max-width: 860px) { .aleph-cert { grid-template-columns: 1fr; } }
