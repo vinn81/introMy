@@ -288,8 +288,8 @@ def main():
                ("SCRIPT", "ROCKY", "dash", "취약점 점검", (0, 20))],
         notes=[(40, 600, "계정 정책: root 원격 접속 제한 · 패스워드 복잡도 · 만료 90일 · SetUID · Sticky Bit", 13)])
 
-    # 7. Full-Security Labs (종합)
-    diagram("full-security", 1200, 790, "Full-Security Labs 종합 구성도",
+    # 7. Security Labs (종합)
+    diagram("security-labs", 1200, 790, "Security Labs 종합 구성도",
         zones=[(20, 40, 640, 720, "내부망 192.168.0.0/16", "warm"),
                (720, 40, 460, 720, "외부망 10.10.10.0/24", "hot")],
         nodes={

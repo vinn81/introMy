@@ -15,7 +15,7 @@
 
   // 나타나기 (style.css의 reveal-ready 목록과 같은 대상)
   const revealTargets = document.querySelectorAll(
-    ".journey li, .chapter, .record, .abilities, .ability-card, .tile, .calendar, .work, .lab, .stack, .glance, .index-list li, .frame, .strength-card, .band-photo, .aleph-course-card, .aleph-note-card, .aleph-task, .evidence-card, .doc-card, .private-lock-card, .scope-card"
+    ".work, .lab, .stack, .glance, .frame, .band-photo, .aleph-course-card, .aleph-note-card, .evidence-card, .doc-card, .private-lock-card, .scope-card"
   );
   if ("IntersectionObserver" in window) {
     document.documentElement.classList.add("reveal-ready");
@@ -53,7 +53,7 @@
   }
 
   // 카드 스포트라이트: 포인터 위치를 --mx/--my로 넘김 (마우스·펜만, 터치는 제외)
-  const spotlight = ".glance, .hero-current, .index-list a, .chapter, .record, .abilities, .ability-card, .tile, .calendar, .pair, .work, .lab, .stack, .frame, .strength-card, .aleph-note-card, .aleph-task, .evidence-card, .doc-card, .private-lock-card, .private-content, .scope-card";
+  const spotlight = ".glance, .hero-current, .work, .lab, .stack, .frame, .aleph-note-card, .evidence-card, .doc-card, .private-lock-card, .private-content, .scope-card";
   let last = null;
   document.addEventListener("pointermove", (event) => {
     if (event.pointerType === "touch") return;
