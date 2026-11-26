@@ -10,8 +10,8 @@
   --teal: #2dd4bf;
   --amber: #fbbf24;
   --radius: 16px;
-  --font-head: "Space Grotesk", "Noto Sans KR", sans-serif;
-  --font-body: "Noto Sans KR", "Space Grotesk", system-ui, sans-serif;
+  --font-head: "IBM Plex Sans", "Noto Sans KR", sans-serif;
+  --font-body: "Noto Sans KR", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 * { box-sizing: border-box; }
